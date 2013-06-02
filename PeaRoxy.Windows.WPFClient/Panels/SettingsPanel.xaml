@@ -1,0 +1,105 @@
+﻿<UserControl x:Class="PeaRoxy.Windows.WPFClient.SettingsPanel"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:p="clr-namespace:PeaRoxy.Windows.WPFClient.SettingTabs"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:uc="clr-namespace:PeaRoxy.Windows.WPFClient.UserControls" 
+      xmlns:d3="http://research.microsoft.com/DynamicDataDisplay/1.0"
+      mc:Ignorable="d" 
+      d:DesignHeight="319" d:DesignWidth="510" Width="510" MaxWidth="510" MinWidth="510" Height="319" MaxHeight="319" MinHeight="319" Loaded="UserControl_Loaded">
+    <Grid Name="OptionsGrid" Width="510">
+        <Grid.Background>
+            <RadialGradientBrush>
+                <GradientStop Color="#FFE8E8E8" Offset="0" />
+                <GradientStop Color="White" Offset="1" />
+                <GradientStop Color="WhiteSmoke" Offset="0.313" />
+            </RadialGradientBrush>
+        </Grid.Background>
+        <Rectangle HorizontalAlignment="Left" Margin="126,13,0,12" Name="rectangle2" Width="1">
+            <Rectangle.Stroke>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="White" Offset="0" />
+                    <GradientStop Color="White" Offset="1" />
+                    <GradientStop Color="DimGray" Offset="0.5" />
+                </LinearGradientBrush>
+            </Rectangle.Stroke>
+        </Rectangle>
+        <WrapPanel HorizontalAlignment="Left" Margin="10,15,0,12" Name="wp_OptionButtons" Width="111" Orientation="Vertical">
+            <uc:SettingsButton TooltipText="General settings of PeaRoxy client specially AutoRun settings and common usage statistics." x:Name="General"
+                               TooltipTitle="General Settings and Stats" SelectedChanged="SettingsButton_SelectedChanged"
+                               Image="/PeaRoxy.Windows.WPFClient;component/Images/SettingsPanel/General.png"
+                               Text="General">
+                <uc:SettingsButton.SettingsPage>
+                    <p:General Margin="0,0,0,0" />
+                </uc:SettingsButton.SettingsPage>
+            </uc:SettingsButton>
+            <uc:SettingsButton TooltipText="PeaRoxy Server and PeaRoxyWeb (PHPear, ASPear) advanced settings."  x:Name="Protocol"
+                               TooltipTitle="PeaRoxy Protocol"  SelectedChanged="SettingsButton_SelectedChanged"
+                               Image="/PeaRoxy.Windows.WPFClient;component/Images/SettingsPanel/Protocol.png"
+                               Text="Protocol">
+                <uc:SettingsButton.SettingsPage>
+                    <p:Protocol Margin="0,0,0,0" />
+                </uc:SettingsButton.SettingsPage>
+            </uc:SettingsButton>
+            <uc:SettingsButton TooltipText="PeaRoxy use proxy protocol to deliver data to your applications and operating system. You can enable or disable this functionality for network devices or limit it to one of your network adapters. There are different options for limiting or extending this functionality."  x:Name="LocalListener"
+                               TooltipTitle="Local Proxy Settings"  SelectedChanged="SettingsButton_SelectedChanged"
+                               Image="/PeaRoxy.Windows.WPFClient;component/Images/SettingsPanel/LocalProxy.png"
+                               Text="Local Proxy">
+                <uc:SettingsButton.SettingsPage>
+                    <p:LocalProxy Margin="0,0,0,0" />
+                </uc:SettingsButton.SettingsPage>
+            </uc:SettingsButton>
+            <uc:SettingsButton TooltipText="SmartPear let you send traffics from your internet connection before sending them to the server. This will help you reduce ping and improve performance. In this tab, you can change SmartPear's settings about how to recognize HTTP and HTTPS connections and how to route different addresses. "  x:Name="SmartPear"
+                               TooltipTitle="SmartPear!"  SelectedChanged="SettingsButton_SelectedChanged"
+                               Image="/PeaRoxy.Windows.WPFClient;component/Images/SettingsPanel/SmartPear.png"
+                               Text="Smart Pear">
+                <uc:SettingsButton.SettingsPage>
+                    <p:SmartPear Margin="0,0,0,0" />
+                </uc:SettingsButton.SettingsPage>
+            </uc:SettingsButton>
+            <uc:SettingsButton TooltipText="If you are behind a firewall or closed network without any internet connection, you may need to use Local DNS server to route Hostname Lookups through the server. Although you don't need this functionality for browsing web as most of the browsers don't use local resolver when using Proxy.[N][Note:] It is important to change related settings in your network adapter to use PeaRoxy; we don't do that automatically.[N][Note 2:] TAP Adapter will enable it forcefully."  x:Name="LocalDNS"
+                               TooltipTitle="Local DNS Server"  SelectedChanged="SettingsButton_SelectedChanged"
+                               Image="/PeaRoxy.Windows.WPFClient;component/Images/SettingsPanel/LocalDNS.png"
+                               Text="Local DNS">
+                <uc:SettingsButton.SettingsPage>
+                    <p:LocalDNS Margin="0,0,0,0" />
+                </uc:SettingsButton.SettingsPage>
+            </uc:SettingsButton>
+            <uc:SettingsButton TooltipText="Select how you want us to grab traffic from applications and settings of each grabber module."  x:Name="Grabber"
+                               TooltipTitle="Grabber Settings"  SelectedChanged="SettingsButton_SelectedChanged"
+                               Image="/PeaRoxy.Windows.WPFClient;component/Images/SettingsPanel/Grabber.png"
+                               Text="Grabber">
+                <uc:SettingsButton.SettingsPage>
+                    <p:Grabber Margin="0,0,0,0" />
+                </uc:SettingsButton.SettingsPage>
+            </uc:SettingsButton>
+            <uc:SettingsButton TooltipText="Show currently active connections separated by application names." x:Name="Connections"
+                               TooltipTitle="Current Connections"  SelectedChanged="SettingsButton_SelectedChanged"
+                               Image="/PeaRoxy.Windows.WPFClient;component/Images/SettingsPanel/Connections.png"
+                               Text="Connections">
+                <uc:SettingsButton.SettingsPage>
+                    <p:ActiveConnections Margin="0,0,0,0" />
+                </uc:SettingsButton.SettingsPage>
+            </uc:SettingsButton>
+            <uc:SettingsButton TooltipText="You can check latest errors and warnings as well as settings about how to show them to the user when happen."  x:Name="Log"
+                               TooltipTitle="Error Rendering and Log"  SelectedChanged="SettingsButton_SelectedChanged"
+                               Image="/PeaRoxy.Windows.WPFClient;component/Images/SettingsPanel/Log.png"
+                               Text="Log">
+                <uc:SettingsButton.SettingsPage>
+                    <p:Log Margin="0,0,0,0" />
+                </uc:SettingsButton.SettingsPage>
+            </uc:SettingsButton>
+            <uc:SettingsButton TooltipTitle="About Creator and Application Version" x:Name="About" 
+                               Image="/PeaRoxy.Windows.WPFClient;component/Images/SettingsPanel/About.png" SelectedChanged="SettingsButton_SelectedChanged"
+                               Text="About">
+                <uc:SettingsButton.SettingsPage>
+                    <p:About Margin="0,0,0,0" />
+                </uc:SettingsButton.SettingsPage>
+            </uc:SettingsButton>
+        </WrapPanel>
+        <ContentControl Margin="133,15,0,1" Name="cc_Options" HorizontalAlignment="Left" Width="360">
+            <Grid/>
+        </ContentControl>
+    </Grid>
+</UserControl>

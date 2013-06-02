@@ -1,0 +1,16 @@
+﻿<st:Base x:Class="PeaRoxy.Windows.WPFClient.SettingTabs.About"
+             xmlns:st="clr-namespace:PeaRoxy.Windows.WPFClient.SettingTabs"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="360">
+    <Grid>
+        <Image Height="100" Stretch="Fill" VerticalAlignment="Top" Source="/PeaRoxy.Windows.WPFClient;component/Images/Icons/Pear.ico" HorizontalAlignment="Center" Width="100" Margin="130,10,130,0" />
+        <Label Name="lbl_MainVersion" Content="PeaRoxy Client, v%version Beta By PeaRoxy.com" HorizontalAlignment="Center" Margin="0,112,0,0" VerticalAlignment="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+        <Label Name="lbl_versions" Content="" Height="400" HorizontalAlignment="Right" Margin="0,140,30,0" VerticalAlignment="Top" HorizontalContentAlignment="Left" FontSize="10" />
+        <Label Name="lbl_libraries" Content="" Height="400" HorizontalAlignment="Left" Margin="50,140,0,0" VerticalAlignment="Top" HorizontalContentAlignment="Left" FontSize="10" />
+        <Button Name="ResetSettingsButton" Content="Reset Settings" HorizontalAlignment="Left" Margin="275,271,0,0" VerticalAlignment="Top" Width="75" Click="btn_resetsettings_Click" />
+    </Grid>
+</st:Base>

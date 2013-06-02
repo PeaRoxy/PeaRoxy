@@ -1,0 +1,16 @@
+﻿<UserControl xmlns:my="clr-namespace:PeaRoxy.Windows.WPFClient.UserControls"  x:Class="PeaRoxy.Windows.WPFClient.UserControls.LoadingBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="5" d:DesignWidth="300">
+    <Grid>
+        <my:LoadingItem HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Top" />
+        <my:LoadingItem HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Top" Delay="0.15" />
+        <my:LoadingItem HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Top" Delay="0.3" />
+        <my:LoadingItem HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Top" Delay="0.45" />
+        <my:LoadingItem HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Top" Delay="0.6" />
+        <my:LoadingItem HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Top" Delay="0.75" />
+    </Grid>
+</UserControl>

@@ -1,0 +1,54 @@
+"General"
+{
+"ProjectType" = "local"
+"AutoLoadTemplate" = "%s.php;class.%s.php;"
+"IncludeDirs" = ""
+}
+"Configurations"
+{
+    "Local|PHP 5.2"
+    {
+    }
+    "Staging|PHP 5.2"
+    {
+    }
+    "Production|PHP 5.2"
+    {
+    }
+}
+"Files"
+{
+    "config.php"
+    {
+    "ProjRelPath" = "T"
+    }
+    "Includes"
+    {
+    "ProjRelPath" = "T"
+    }
+    "Includes\\Common.php"
+    {
+    "ProjRelPath" = "T"
+    }
+    "Includes\\SimpleXORCryptor.php"
+    {
+    "ProjRelPath" = "T"
+    }
+    "index.php"
+    {
+    "ProjRelPath" = "T"
+    }
+    "users.php"
+    {
+    "ProjRelPath" = "T"
+    }
+}
+"ProjStartupServices"
+{
+}
+"Globals"
+{
+}
+"References"
+{
+}

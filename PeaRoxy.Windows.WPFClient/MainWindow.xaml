@@ -1,0 +1,43 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:my="clr-namespace:PeaRoxy.Windows.WPFClient"
+        xmlns:UserControls="clr-namespace:PeaRoxy.Windows.WPFClient.UserControls" x:Class="PeaRoxy.Windows.WPFClient.MainWindow"
+        Foreground="White"
+        Title="PeaRoxy Windows Client"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        WindowStartupLocation="CenterScreen"
+        Icon="/PeaRoxy.Windows.WPFClient;component/Images/Icons/Pear.ico"
+        AllowsTransparency="True"
+        Loaded="Window_Loaded"
+        Background="Transparent"
+        Unloaded="Window_Unloaded"
+        Width="580"
+        Height="354"
+        BorderThickness="0" Closing="Window_Closing" StateChanged="Window_StateChanged" ContentRendered="Window_ContentRendered">
+    <Canvas Height="334" Width="560">
+        <Canvas.Effect>
+            <DropShadowEffect Direction="0" ShadowDepth="0" BlurRadius="12" Color="#7F000000"/>
+        </Canvas.Effect>
+        <Border Height="336" Width="562" BorderBrush="#FFE8E8E8" BorderThickness="1">
+            <DockPanel Width="1170" Margin="0,0,0,0" >
+                <my:HeadPanel Height="15" DockPanel.Dock="Top" VerticalAlignment="Top" x:Name="Header" MouseLeftButtonDown="Drag_MouseLeftButtonDown" MinimizeClick="Exit_MinimizeClick"/>
+                <Grid Height="319" Width="610" HorizontalAlignment="Left" DockPanel.Dock="Left" VerticalAlignment="Top" x:Name="MainGrid">
+                    <my:MainPanel Height="319" Width="610" HorizontalAlignment="Left" VerticalAlignment="Top" x:Name="MainPage" MouseLeftButtonDown="Drag_MouseLeftButtonDown"/>
+                    <UserControls:StartStopButton Height="60" Width="200" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,52,-6" x:Name="Controls" StartClick="Controls_StartClick" StopClick="Controls_StopClick" MinimizeClick="Exit_MinimizeClick"/>
+                    <UserControls:ToolbarButtons Height="20" VerticalAlignment="Top" Width="190" Margin="0,11,5,0" x:Name="Toolbar" BackClick="Toolbar_BackClick" OptionClick="Toolbar_OptionsClick" HorizontalAlignment="Right" ReConfigClick="Toolbar_ReConfigClick" SmartPearSelectedChanged="Toolbar_SmartPearSelectedChanged" GrabberSelectedChanged="Toolbar_GrabberSelectedChanged" />
+                    <Image Name="img_logo" Stretch="Uniform" StretchDirection="Both" Source="/PeaRoxy.Windows.WPFClient;component/Images/MainPanel/Pear.png" HorizontalAlignment="Left" Width="77" Height="104" VerticalAlignment="Bottom" Opacity="1" MouseLeftButtonDown="img_logo_MouseLeftButtonDown" ToolTip="About PeaRoxy" />
+                    <Grid.RenderTransform>
+                        <TranslateTransform X="0" Y="0" />
+                    </Grid.RenderTransform>
+                </Grid>
+                <my:SettingsPanel Height="319" HorizontalAlignment="Left" DockPanel.Dock="Left" VerticalAlignment="Top" x:Name="Options" IsEnabled="False">
+                    <my:SettingsPanel.RenderTransform>
+                        <TranslateTransform X="0" Y="0" />
+                    </my:SettingsPanel.RenderTransform>
+                </my:SettingsPanel>
+            </DockPanel>
+        </Border>
+    </Canvas>
+</Window>

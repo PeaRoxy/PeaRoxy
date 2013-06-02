@@ -1,0 +1,422 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{36E2EEFF-6F05-4BD4-BE84-3FD1CFE2524A}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PeaRoxy.Windows.WPFClient</RootNamespace>
+    <AssemblyName>PeaRoxy.Windows.WPFClient</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
+    <NoWarn />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\bin\WPFClient\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Images\Icons\Pear.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup />
+  <PropertyGroup>
+    <StartupObject>PeaRoxy.Windows.WPFClient.App</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup />
+  <PropertyGroup>
+    <SignManifests>false</SignManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>0B3EF537B31F3F93B6C991C2907332DEB6A7A05B</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>PeaRoxy.com.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetZone>LocalIntranet</TargetZone>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>false</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <DelaySign>true</DelaySign>
+  </PropertyGroup>
+  <PropertyGroup />
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="DynamicDataDisplay">
+      <HintPath>..\Reference Libraries\DynamicDataDisplay.dll</HintPath>
+    </Reference>
+    <Reference Include="EasyHook">
+      <HintPath>..\Reference Libraries\EasyHook\EasyHook.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Windows.Shell">
+      <HintPath>..\Reference Libraries\Microsoft.Windows.Shell.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.WindowsAPICodePack">
+      <HintPath>..\Reference Libraries\WindowsAPICodePack\Microsoft.WindowsAPICodePack.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.WindowsAPICodePack.Shell">
+      <HintPath>..\Reference Libraries\WindowsAPICodePack\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Remoting" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Thriple">
+      <HintPath>..\Reference Libraries\Thriple.dll</HintPath>
+    </Reference>
+    <Reference Include="VDialog">
+      <HintPath>..\Reference Libraries\VDialog.dll</HintPath>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="chartPoint.cs" />
+    <Compile Include="MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MainWindow_Logic.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MultiInstance.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>MultiInstance.settings</DependentUpon>
+    </Compile>
+    <Compile Include="Panels\HeadPanel.xaml.cs">
+      <DependentUpon>HeadPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Panels\MainPanel.xaml.cs">
+      <DependentUpon>MainPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Panels\SettingsPanel.xaml.cs">
+      <DependentUpon>SettingsPanel.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SettingTabs\About.xaml.cs">
+      <DependentUpon>About.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SettingTabs\ActiveConnections.xaml.cs">
+      <DependentUpon>ActiveConnections.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SettingTabs\Base.cs" />
+    <Compile Include="SettingTabs\General.xaml.cs">
+      <DependentUpon>General.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SettingTabs\Grabber.xaml.cs">
+      <DependentUpon>Grabber.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SettingTabs\LocalDNS.xaml.cs">
+      <DependentUpon>LocalDNS.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SettingTabs\LocalProxy.xaml.cs">
+      <DependentUpon>LocalProxy.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SettingTabs\Log.xaml.cs">
+      <DependentUpon>Log.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SettingTabs\Protocol.xaml.cs">
+      <DependentUpon>Protocol.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SettingTabs\SmartPear.xaml.cs">
+      <DependentUpon>SmartPear.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\ToolbarButtons.xaml.cs">
+      <DependentUpon>ToolbarButtons.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\SettingsButton.xaml.cs">
+      <DependentUpon>SettingsButton.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\StartStopButton.xaml.cs">
+      <DependentUpon>StartStopButton.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\Tooltip.xaml.cs">
+      <DependentUpon>Tooltip.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows7ShellPreviewWindowFixer.cs" />
+    <Page Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UserControls\LoadingBox.xaml.cs">
+      <DependentUpon>LoadingBox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\LoadingItem.xaml.cs">
+      <DependentUpon>LoadingItem.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SingleInstance.cs" />
+    <Page Include="MainWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Panels\HeadPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Panels\MainPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Panels\SettingsPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SettingTabs\About.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SettingTabs\ActiveConnections.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SettingTabs\General.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SettingTabs\Grabber.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SettingTabs\LocalDNS.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SettingTabs\LocalProxy.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SettingTabs\Log.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SettingTabs\Protocol.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SettingTabs\SmartPear.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\ToolbarButtons.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\SettingsButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\StartStopButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\Tooltip.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="app.manifest" />
+    <None Include="MultiInstance.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>MultiInstance.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <AppDesigner Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="UserControls\LoadingBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\LoadingItem.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4 Client Profile %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PeaRoxy.ClientLibrary\PeaRoxy.ClientLibrary.csproj">
+      <Project>{EAE02F72-D535-420D-8A36-C8CE5ED607C9}</Project>
+      <Name>PeaRoxy.ClientLibrary</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PeaRoxy.CommonLibrary\PeaRoxy.CommonLibrary.csproj">
+      <Project>{0FA3DDDE-8A3C-4346-8C58-4662559D8A7B}</Project>
+      <Name>PeaRoxy.CommonLibrary</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PeaRoxy.CoreProtocol\PeaRoxy.CoreProtocol.csproj">
+      <Project>{033154EE-19B5-4D3A-91EC-6B0FD48A80C3}</Project>
+      <Name>PeaRoxy.CoreProtocol</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PeaRoxy.Platform\PeaRoxy.Platform.csproj">
+      <Project>{511CA971-9FAD-4BFA-9841-105CF644CF77}</Project>
+      <Name>PeaRoxy.Platform</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PeaRoxy.Windows.Network\PeaRoxy.Windows.Network.csproj">
+      <Project>{3A0F7A2E-216F-47F1-A31F-2A9A29949931}</Project>
+      <Name>PeaRoxy.Windows.Network</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PeaRoxy.Windows.Updater\PeaRoxy.Windows.Updater.csproj">
+      <Project>{51A9F6FA-3D62-4F59-8E0A-CEB7B37FDC0A}</Project>
+      <Name>PeaRoxy.Windows.Updater</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PeaRoxy.Windows\PeaRoxy.Windows.csproj">
+      <Project>{C22FD32B-1361-42AC-8874-43A6A9424993}</Project>
+      <Name>PeaRoxy.Windows</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="TPTools\InsertIcons.exe" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Header\Close.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Icons\Close.ico" />
+    <Resource Include="Images\Icons\Connected.ico" />
+    <Resource Include="Images\Icons\Pear.ico" />
+    <Resource Include="Images\Icons\Pear_Notify.ico" />
+    <Resource Include="Images\Icons\Pear_Red_Notify.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\MainPanel\Background.png" />
+    <Resource Include="Images\MainPanel\Connected.png" />
+    <Resource Include="Images\MainPanel\Disconnected.png" />
+    <Resource Include="Images\MainPanel\Help.png" />
+    <Resource Include="Images\MainPanel\Pear.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\SettingsPanel\About.png" />
+    <Resource Include="Images\SettingsPanel\Connections.png" />
+    <Resource Include="Images\SettingsPanel\Connection_def.png" />
+    <Resource Include="Images\SettingsPanel\General.png" />
+    <Resource Include="Images\SettingsPanel\Grabber.png" />
+    <Resource Include="Images\SettingsPanel\LocalDNS.png" />
+    <Resource Include="Images\SettingsPanel\LocalProxy.png" />
+    <Resource Include="Images\SettingsPanel\Log.png" />
+    <Resource Include="Images\SettingsPanel\Process_def.png" />
+    <Resource Include="Images\SettingsPanel\Protocol.png" />
+    <Resource Include="Images\SettingsPanel\SmartPear.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Toolbar\Back.png" />
+    <Resource Include="Images\Toolbar\Grabber.png" />
+    <Resource Include="Images\Toolbar\Menu_Update.png" />
+    <Resource Include="Images\Toolbar\Options.png" />
+    <Resource Include="Images\Toolbar\ReConfig.png" />
+    <Resource Include="Images\Toolbar\SmartPear.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>"$(ProjectDir)TPTools\InsertIcons.exe" "$(TargetPath)" "$(ProjectDir)Images\Icons\Close.ico"</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,170 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="PeaRoxy.Windows.WPFClient.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="Server_Type" Type="System.Byte" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="Auth_Type" Type="System.Byte" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="PeaRoxySocks_Address" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="PeaRoxySocks_Port" Type="System.UInt16" Scope="User">
+      <Value Profile="(Default)">80</Value>
+    </Setting>
+    <Setting Name="PeaRoxyWeb_Address" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="UserAndPassword_User" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="UserAndPassword_Pass" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="Proxy_Address" Type="System.String" Scope="User">
+      <Value Profile="(Default)">127.0.0.1</Value>
+    </Setting>
+    <Setting Name="Proxy_Port" Type="System.UInt16" Scope="User">
+      <Value Profile="(Default)">1080</Value>
+    </Setting>
+    <Setting Name="Proxy_SOCKS" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Proxy_HTTP" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Proxy_HTTPS" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="AutoConfig_Address" Type="System.String" Scope="User">
+      <Value Profile="(Default)">proxy.pac</Value>
+    </Setting>
+    <Setting Name="AutoConfig_KeepRuning" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="AutoConfig_Enable" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="AutoConfig_Mime" Type="System.Byte" Scope="User">
+      <Value Profile="(Default)">2</Value>
+    </Setting>
+    <Setting Name="Connection_NoDataTimeout" Type="System.UInt16" Scope="User">
+      <Value Profile="(Default)">6000</Value>
+    </Setting>
+    <Setting Name="Connection_Encryption" Type="System.Byte" Scope="User">
+      <Value Profile="(Default)">2</Value>
+    </Setting>
+    <Setting Name="Startup_StartServer" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Startup_ShowWindow" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Connection_SendPacketSize" Type="System.UInt32" Scope="User">
+      <Value Profile="(Default)">1024</Value>
+    </Setting>
+    <Setting Name="Connection_RecPacketSize" Type="System.UInt32" Scope="User">
+      <Value Profile="(Default)">8192</Value>
+    </Setting>
+    <Setting Name="Connection_Compression" Type="System.Byte" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="Smart_HTTP_Enable" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Smart_HTTP_AutoRoute_Enable" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Smart_HTTP_AutoRoute_Pattern" Type="System.String" Scope="User">
+      <Value Profile="(Default)">^HTTP/1.1 403 Forbidden(\r\nConnection:close)*</Value>
+    </Setting>
+    <Setting Name="Smart_HTTPS_Enable" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Smart_SOCKS_Enable" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Smart_Timeout_Value" Type="System.UInt16" Scope="User">
+      <Value Profile="(Default)">20</Value>
+    </Setting>
+    <Setting Name="Smart_Timeout_Enable" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Smart_Direct_Port80Router" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Smart_HTTP_List" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="Smart_Direct_List" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="PeaRoxySocks_Domain" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ProxyServer_Address" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ProxyServer_Port" Type="System.UInt16" Scope="User">
+      <Value Profile="(Default)">1080</Value>
+    </Setting>
+    <Setting Name="ProxyServer_Type" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="DNS_Enable" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="DNS_IPAddress" Type="System.String" Scope="User">
+      <Value Profile="(Default)">8.8.8.8</Value>
+    </Setting>
+    <Setting Name="ErrorRenderer_EnableHTTP" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="ErrorRenderer_Enable443" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="ErrorRenderer_Enable80" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Connection_StopOnInterrupt" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Smart_Direct_AutoRoutePort80AsHTTP" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="TAP_IPRange" Type="System.String" Scope="User">
+      <Value Profile="(Default)">10.0.0.0</Value>
+    </Setting>
+    <Setting Name="Hook_IntoRuningProcesses" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Hook_Processes" Type="System.String" Scope="User">
+      <Value Profile="(Default)">firefox.exe
+iexplorer.exe
+chrome,exe
+opera.exe
+safari.exe
+avant.exe
+rockmelt.exe
+deepnet.exe
+maxthon.exe
+seamonkey.exe
+gameoverlayui.exe
+steam.exe</Value>
+    </Setting>
+    <Setting Name="Grabber" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="FirstRun" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Smart_AntiDNS_Enable" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Smart_AntiDNSPattern" Type="System.String" Scope="User">
+      <Value Profile="(Default)">^(10.10.*.*)$</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

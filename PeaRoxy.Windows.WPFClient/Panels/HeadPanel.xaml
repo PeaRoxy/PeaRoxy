@@ -1,0 +1,21 @@
+﻿<UserControl x:Class="PeaRoxy.Windows.WPFClient.HeadPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="15" d:DesignWidth="1170" Height="15" Width="1170" MinHeight="15" MinWidth="1170" MaxHeight="15" MaxWidth="1170">
+    <Grid Name="HeaderGrid" Height="15" Margin="0,0,0,0" DockPanel.Dock="Top" >
+        <Rectangle Height="15" HorizontalAlignment="Stretch" Name="cc_Title" VerticalAlignment="Top" MouseLeftButtonDown="cc_Title_MouseLeftButtonDown" ForceCursor="False">
+            <Rectangle.Fill>
+                <LinearGradientBrush EndPoint="1,0.5" StartPoint="0,0.5">
+                    <GradientStop Color="#FF262626" Offset="0" />
+                    <GradientStop Color="#FF1F1F1F" Offset="1" />
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+        <Button Name="btn_close" Style="{DynamicResource NoChromeButton}" Height="15" Margin="0,0,615,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="15" Opacity="0.5" Click="btn_exit_Click">
+            <Image Height="10" HorizontalAlignment="Center" Name="img_closeButton" Stretch="Fill" VerticalAlignment="Center" Width="10" Source="/PeaRoxy.Windows.WPFClient;component/Images/Header/Close.png" Cursor="Hand" MouseEnter="img_closeButton_MouseEnter" MouseLeave="img_closeButton_MouseLeave" />
+        </Button>
+    </Grid>
+</UserControl>
