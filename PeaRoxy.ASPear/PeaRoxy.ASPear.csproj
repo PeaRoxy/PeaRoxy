@@ -59,6 +59,7 @@
     <Content Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
+    <Content Include="ZipExcludeList.txt" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="index.ashx.cs">
@@ -76,6 +77,10 @@
     <ProjectReference Include="..\PeaRoxy.CommonLibrary\PeaRoxy.CommonLibrary.csproj">
       <Project>{0FA3DDDE-8A3C-4346-8C58-4662559D8A7B}</Project>
       <Name>PeaRoxy.CommonLibrary</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PeaRoxy.CoreProtocol\PeaRoxy.CoreProtocol.csproj">
+      <Project>{033154ee-19b5-4d3a-91ec-6b0fd48a80c3}</Project>
+      <Name>PeaRoxy.CoreProtocol</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
@@ -104,6 +109,11 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
+  <PropertyGroup>
+    <PostBuildEvent>if $(ConfigurationName) == Release (
+"$(SolutionDir)Solution Items\7za" a -tzip "$(SolutionDir)Packages\PeaRoxyWeb_PHPear.zip" "$(SolutionDir)\PeaRoxy.PHPear*" -mx9 -xr@"$(ProjectDir)ZipExcludeList.txt"
+)</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

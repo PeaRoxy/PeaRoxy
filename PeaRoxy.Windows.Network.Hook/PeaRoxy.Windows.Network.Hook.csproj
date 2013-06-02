@@ -42,9 +42,8 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="EasyHook, Version=2.5.0.0, Culture=neutral, PublicKeyToken=4b580fca19d0b0c5, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\EasyHook\EasyHook.dll</HintPath>
+    <Reference Include="EasyHook">
+      <HintPath>..\Reference Libraries\EasyHook\EasyHook.dll</HintPath>
     </Reference>
     <Reference Include="System" />
   </ItemGroup>
@@ -54,6 +53,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="PeaRoxy.Windows.Network.Hook.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TEST\TEST.csproj">
+      <Project>{261cb9db-5029-4506-871f-3bca9a8d4ccb}</Project>
+      <Name>TEST</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
