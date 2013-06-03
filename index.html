@@ -34,7 +34,7 @@
 <p>PeaRoxy is a complete solution for bypassing any firewall or restriction. Possible usage of PeaRoxy are:</p>
 
 <ul>
-<li>Accessing to free internet in school/work</li>
+<li>Accessing free internet in school/work</li>
 <li>Accessing free internet in countries with strict filtering/censorship systems.</li>
 <li>Bypassing any firewall limiting access to certain Domains/IPs or Ports</li>
 <li>Bypassing any limitation based on your geo-ip</li>
@@ -42,25 +42,33 @@
 </ul><h2>
 <a name="why-pearoxy" class="anchor" href="#why-pearoxy"><span class="octicon octicon-link"></span></a>Why PeaRoxy?</h2>
 
-<p>There are lot of other solutions out there. PPTP, L2TP. OpenVPN, SOCKS, Http Proxy and so on. Yet there all have their own disadvantages. First of all, none of them designed to be undetectable.
-PPTP and L2TP are using known ports and can be blocked easily by firewalls. HTTP and HTTPS proxies are not encrypted and a firewall can block site through them same way as it do with normal connections. OpenVPN and similar projects has a special protocol or using SSL as a method for encryption and both ways are block-able with a content-filtering and protocol-filtering firewalls.
-PeaRoxy developed with the idea to make an unblock-able, open-source and easy to use application for bypassing any firewall.</p>
+<p>There are a lot of other solutions out there. PPTP, L2TP. OpenVPN, SOCKS, Http Proxy and so on, yet they all have their own disadvantages.
+<br />
+Mainly, none of them designed to be undetectable. PPTP and L2TP are using known ports and can be blocked easily by firewalls. HTTP and HTTPS proxies are not encrypted and a firewall can block domains through them, in the same way it does with normal connections.
+<br />
+OpenVPN and similar projects has a special protocol or using SSL as a method for encryption; both ways are block-able with a content-filtering and protocol-filtering firewall.
+<br />
+PeaRoxy developed with the idea to make an unblock-able, open-source and easy to use solution for bypassing any firewall.</p>
 
 <h2>
 <a name="what-is-pearoxy" class="anchor" href="#what-is-pearoxy"><span class="octicon octicon-link"></span></a>What is PeaRoxy?</h2>
 
-<p>PeaRoxy is a complete solution for bypassing firewalls. It has a WPF Windows based client and different type of servers. MacOSX and Linux clients are in to-do list. 
-Like other solutions it has a server application that can be executed on Windows operating systems with .Net4 and on Linux and OSX using Mono. This, of-course give users best experience, yet not all users have a dedicated system to run their own server.
+<p>PeaRoxy is a complete solution for bypassing firewalls. It has a WPF Windows based client and different type of servers. MacOSX and Linux clients are in to-do list.
+<br />
+Like other solutions it has a server application that can be executed on Windows operating systems with .Net4 and on Linux and OSX using Mono. This, of-course give users the best experience, yet not all users have a dedicated system to run their own server.
+<br />
 Other types of server are ASPear and PHPear servers. These light-weight servers are based on Aspx.Net and PHP for handling HTTP and HTTPS traffics coming from PeaRoxy client.</p>
 
 <h2>
 <a name="how-secure-is-pearoxy" class="anchor" href="#how-secure-is-pearoxy"><span class="octicon octicon-link"></span></a>How Secure is PeaRoxy?</h2>
 
-<p>PeaRoxy has it's own protocol; this protocol supports encryption with two method and in two direction. Each user and each client has their own settings for encryption. In other word both server and client are responsible for data they send to other side.
-Actually reason of this type of design is that, PeaRoxy never designed to be safe. It is designed to be lightweight and un-detectable and keeping these goals in mind show us that in lot of cases there is no need for encryption from server side and this can slow server down too. So it is server that can decide whenever it wants to send encrypted data to clients or not. But at same time user can change settings for uploads to prevent detecting of uploading data.
-Currently servers can reject encryption/compression but there is no option for this behavior in client application. We have it in our to-do list.</p>
+<p>PeaRoxy has its own protocol; this protocol supports encryption with two methods and in two direction. Each user and each client has their own settings for encryption. In other word both server and client are responsible for data they send to other side.
+<br />
+Actually reason of this type of design is that, PeaRoxy never designed to be safe. It is designed to be lightweight and undetectable and keeping these goals in mind show us that in a lot of cases there is no need for encryption from server side and this can slow server down too. So it is server that can decide whenever it wants to send encrypted data to clients or not. But at same time user can change settings for uploads to prevent detecting of uploading data.
+<br />
+Currently servers can reject encryption/compression, but there is no option for this behavior in client application. We have it in our to-do list.</p>
 
-<p>Two available methods for encryption are SimpleXOR and TripleDES. SimpeXOR is easily breakable for a expert hacker and mainly developed to confuse firewalls and content-filtering systems, yet TripleDES is lot more stronger, but it is slower and use more resource.</p>
+<p>Two available methods for encryption are SimpleXOR and TripleDES. SimpeXOR is easily breakable for an expert hacker and mainly developed to confuse firewalls and content-filtering systems, yet TripleDES is lot more stronger, but it is slower and use more resource.</p>
 
 <p>PeaRoxy also supports compression of data using gZip and Deflate.</p>
 
@@ -81,7 +89,7 @@ Currently servers can reject encryption/compression but there is no option for t
 <li>Supports PeaRoxy, PHPear, ASPear, SOCKS 4/5 and HTTPS as server</li>
 <li>Supports grabbing of data using a virtual network adapter (OpenVPN driver)</li>
 <li>Supports communicating with other applications through HTTP, HTTPS and SOCKS</li>
-<li>SmartPear and Anti-DNSGrabber which forward traffic through tunnel only of access to domain/ip/port was blocked through direct connection</li>
+<li>SmartPear and Anti-DNSGrabber which will forward traffic through tunnel only if access to domain/ip/port was blocked through direct connection</li>
 <li>Automatic Configuration Script generator</li>
 <li>Local DNS resolver</li>
 <li>User Friendly and Interactive UI</li>
@@ -101,7 +109,7 @@ Currently servers can reject encryption/compression but there is no option for t
 <ul>
 <li>Supporting HTTP and HTTPS connections</li>
 <li>Supporting SimpleXOR encryption (And TripleDES in ASPear)</li>
-<li>No shell access needed</li>
+<li>No root/administrator access needed</li>
 <li>Unique protocol and yet Undetectable</li>
 <li>Possibility to force users to authenticate</li>
 </ul><h3>
@@ -110,8 +118,8 @@ Currently servers can reject encryption/compression but there is no option for t
 <ul>
 <li>PeaRoxy Client: Possibility to reject encryption and compression from server</li>
 <li>PeaRoxy Client: Auto update of application and SmartPear list</li>
-<li>PeaRoxy Client: Popup screen in first run to select desired setting easily</li>
-<li>PeaRoxy Client: New grabbers, Hook into applications and LSP module</li>
+<li>PeaRoxy Client: Popup screen at first run to select desired setting easily</li>
+<li>PeaRoxy Client: New grabbers - WinSocket Hook and LSP module</li>
 <li>PeaRoxy Client: Adding new server type</li>
 <li>ASPear: Completing ASPX.Net code</li>
 <li>Project: Adding new server type</li>
