@@ -1,0 +1,2 @@
+SetEnv no-gzip dont-vary
+php_flag zlib.output_compression "0"
