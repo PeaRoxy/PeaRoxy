@@ -67,6 +67,9 @@
     <Content Include="HTTPSCerts\makecert.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="HTTPSCerts\msvcr100.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="HTTPSCerts\nss3.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
