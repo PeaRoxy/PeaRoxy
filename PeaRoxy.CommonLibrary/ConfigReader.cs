@@ -9,14 +9,14 @@ namespace PeaRoxy.CommonLibrary
     public class ConfigReader
     {
         private static System.Collections.ObjectModel.Collection<User> _users = null;
-        public static System.Collections.ObjectModel.Collection<User> GetUsers()
+        public static System.Collections.ObjectModel.Collection<User> GetUsers(string fileAddress = "users.ini")
         {
             if (_users != null)
                 return _users;
             _users = new System.Collections.ObjectModel.Collection<User>();
             try
             {
-                StreamReader st = new StreamReader("users.ini");
+                StreamReader st = new StreamReader(fileAddress);
                 while (!st.EndOfStream)
                 {
                     try
@@ -42,7 +42,7 @@ namespace PeaRoxy.CommonLibrary
             return _users;
         }
         private static System.Collections.Generic.Dictionary<string,string> _settings = null;
-        public static System.Collections.Generic.Dictionary<string, string> GetSettings()
+        public static System.Collections.Generic.Dictionary<string, string> GetSettings(string fileAddress = "settings.ini")
         {
             if (_settings != null)
                 return _settings;
@@ -50,7 +50,7 @@ namespace PeaRoxy.CommonLibrary
             _settings = new System.Collections.Generic.Dictionary<string, string>();
             try
             {
-                StreamReader st = new StreamReader("settings.ini");
+                StreamReader st = new StreamReader(fileAddress);
                 while (!st.EndOfStream)
                 {
                     try
