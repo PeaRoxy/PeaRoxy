@@ -570,5 +570,15 @@ namespace PeaRoxy.Windows.WPFClient
             Options.SaveSettings();
             QuickButtonsRefresh();
         }
+
+        private void Window_Activated(object sender, EventArgs e)
+        {
+            DropShadow.BlurRadius = 12;
+        }
+
+        private void Window_Deactivated(object sender, EventArgs e)
+        {
+            DropShadow.BlurRadius = 7;
+        }
     }
 }

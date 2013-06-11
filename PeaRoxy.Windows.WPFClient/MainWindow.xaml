@@ -15,10 +15,10 @@
         Unloaded="Window_Unloaded"
         Width="580"
         Height="354"
-        BorderThickness="0" Closing="Window_Closing" StateChanged="Window_StateChanged" ContentRendered="Window_ContentRendered">
+        BorderThickness="0" Closing="Window_Closing" StateChanged="Window_StateChanged" ContentRendered="Window_ContentRendered" Activated="Window_Activated" Deactivated="Window_Deactivated">
     <Canvas Height="334" Width="560">
         <Canvas.Effect>
-            <DropShadowEffect Direction="0" ShadowDepth="0" BlurRadius="12" Color="#7F000000"/>
+            <DropShadowEffect x:Name="DropShadow" Direction="0" ShadowDepth="0" BlurRadius="12" Color="#7F000000"/>
         </Canvas.Effect>
         <Border Height="336" Width="562" BorderBrush="#FFE8E8E8" BorderThickness="1">
             <DockPanel Width="1170" Margin="0,0,0,0" >
