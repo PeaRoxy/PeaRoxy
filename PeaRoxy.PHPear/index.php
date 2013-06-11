@@ -95,10 +95,8 @@ if (Config::EncryptionType == 2) // Simple XOR
 	}
 }
 
-$request['Encryption'] = FALSE;
-$request['Compression'] = FALSE;
 $request['Https'] = false;
-if (stripos($request['Host'],"https")!==false)
+if (stripos($request['Host'],"https")===0)
 {
     $request['Https'] = true;
     if (!extension_loaded('openssl') || !version_compare(PHP_VERSION, '4.3.0', '>='))
@@ -116,8 +114,9 @@ $request['Port'] = 80;
 $portStartPoint = strripos($request['Host'],":");
 if ($portStartPoint!==false)
 {
-    $request['Port'] = substr($request['Host'],$portStartPoint + 1,strlen($request['Host']) - ($portStartPoint + 1));
-    $request['Host'] = substr($request['Host'],0,$portStartPoint);
+	$portStartPoint += 1;
+    $request['Port'] = substr($request['Host'],$portStartPoint,strlen($request['Host']) - $portStartPoint);
+    $request['Host'] = substr($request['Host'],0,$portStartPoint - 1);
 }
 
 $errorNumber = false;
