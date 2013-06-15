@@ -229,23 +229,31 @@ namespace PeaRoxy.ClientLibrary
             return null;
         }
 
-        public void Write(byte[] bytes)
+        public void Write(byte[] bytes, System.IO.Stream toStream = null)
         {
             try
             {
                 IsReceivingStarted = true;
-                if (bytes != null)
+                if (toStream == null)
                 {
-                    this.Status = eStatus.Routing;
-                    Array.Resize(ref writeBuffer, writeBuffer.Length + bytes.Length);
-                    Array.Copy(bytes, 0, writeBuffer, writeBuffer.Length - bytes.Length, bytes.Length);
+                    if (bytes != null)
+                    {
+                        this.Status = eStatus.Routing;
+                        Array.Resize(ref writeBuffer, writeBuffer.Length + bytes.Length);
+                        Array.Copy(bytes, 0, writeBuffer, writeBuffer.Length - bytes.Length, bytes.Length);
+                    }
+                    if (writeBuffer.Length > 0 && Client.Poll(0, SelectMode.SelectWrite))
+                    {
+                        int bytesWritten = Client.Send(writeBuffer, SocketFlags.None);
+                        this.DataReceived(writeBuffer.Length);
+                        Array.Copy(writeBuffer, bytesWritten, writeBuffer, 0, writeBuffer.Length - bytesWritten);
+                        Array.Resize(ref writeBuffer, writeBuffer.Length - bytesWritten);
+                    }
                 }
-                if (writeBuffer.Length > 0 && Client.Poll(0, SelectMode.SelectWrite))
+                else
                 {
-                    int bytesWritten = Client.Send(writeBuffer, SocketFlags.None);
-                    this.DataReceived(writeBuffer.Length);
-                    Array.Copy(writeBuffer, bytesWritten, writeBuffer, 0, writeBuffer.Length - bytesWritten);
-                    Array.Resize(ref writeBuffer, writeBuffer.Length - bytesWritten);
+                    toStream.Write(bytes, 0, bytes.Length);
+                    this.DataReceived(bytes.Length);
                 }
             }
             catch (Exception e)

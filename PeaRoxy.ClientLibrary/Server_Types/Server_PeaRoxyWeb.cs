@@ -436,10 +436,12 @@ namespace PeaRoxy.ClientLibrary.Server_Types
             bytes = peerCryptor.Decrypt(bytes);
             return true;
         }
-
+        bool isChunked = false;
         private bool ReadHeaderOfActualResponce(ref byte[] bytes)
         {
             //--------------------------- Everything is Done. But let wait until we read header of actual response
+            bytes = CheckChunked(bytes);
+
             string Header = System.Text.Encoding.ASCII.GetString(bytes);
             bool erChecked = false;
             CurrentTimeout = this.NoDataTimeout * 1000;
@@ -468,6 +470,7 @@ namespace PeaRoxy.ClientLibrary.Server_Types
                         this.Close("No response from server, Read Failure.", null, ErrorRenderer.HTTPHeaderCode.C_502_BAD_GATEWAY);
                         return false;
                     }
+                    response = CheckChunked(response);
                     Array.Resize(ref bytes, bytes.Length + response.Length);
                     Array.Copy(response, 0, bytes, bytes.Length - response.Length, response.Length);
                     Header += System.Text.Encoding.ASCII.GetString(response);
@@ -488,8 +491,8 @@ namespace PeaRoxy.ClientLibrary.Server_Types
             Header = Header.Substring(0, endOfHeaderIndex);
             int headerLenght = System.Text.Encoding.ASCII.GetByteCount(Header);
             Array.Copy(bytes, headerLenght, bytes, 0, bytes.Length - headerLenght);
+            //headerLenght += 2;
             Array.Resize(ref bytes, bytes.Length - headerLenght);
-
             //--------------------------- It is better to add connection close to response header. Of course it may not solve our keep alive problem so we keep
             // content length of response too so we can close it later.
             int start = Header.IndexOf("Content-Length:", StringComparison.InvariantCultureIgnoreCase);
@@ -500,7 +503,7 @@ namespace PeaRoxy.ClientLibrary.Server_Types
                 contentBytes = int.Parse(Header.Substring(start, count).Trim());
             }
 
-            int indexOfConnectionType = Header.IndexOf("\r\nConnection: ", StringComparison.InvariantCultureIgnoreCase);
+            int indexOfConnectionType = Header.IndexOf("\r\nConnection:", StringComparison.InvariantCultureIgnoreCase);
             if (indexOfConnectionType != -1)
             {
                 int countUntilEndOfLine = Header.IndexOf("\r\n", indexOfConnectionType + 2) - indexOfConnectionType;
@@ -517,10 +520,69 @@ namespace PeaRoxy.ClientLibrary.Server_Types
             return true;
         }
 
+        int chunkedNeeded = 0;
+        bool chunkedIsFirst = true;
+        private byte[] CheckChunked(byte[] bytes)
+        {
+            try
+            {
+                if (bytes.Length > 0)
+                {
+                    if (chunkedIsFirst)
+                    {
+                        int pChunk = CommonLibrary.Common.GetFirstBytePatternIndex(bytes, System.Text.Encoding.ASCII.GetBytes("HTTP/1"), 0);
+                        isChunked = pChunk > 0 || (pChunk == -1 && bytes.Length < 6);
+                        chunkedIsFirst = false;
+                    }
+                    if (isChunked)
+                    {
+                        while (chunkedNeeded == 0 && bytes.Length >= 2)
+                        {
+                            int digitPlace = CommonLibrary.Common.GetFirstBytePatternIndex(bytes, System.Text.Encoding.ASCII.GetBytes("\r\n"), 0);
+                            if (digitPlace == -1)
+                            {
+                                isChunked = false;
+                                return bytes;
+                            }
+                            else if (digitPlace != 0)
+                            {
+                                chunkedNeeded = int.Parse(System.Text.Encoding.ASCII.GetString(bytes, 0, digitPlace), System.Globalization.NumberStyles.HexNumber);
+                            }
+                            digitPlace += 2;
+                            Array.Copy(bytes, digitPlace, bytes, 0, bytes.Length - digitPlace);
+                            Array.Resize(ref bytes, bytes.Length - digitPlace);
+                        }
+                        byte[] newBytes;
+                        if (bytes.Length >= chunkedNeeded)
+                        {
+                            newBytes = new byte[chunkedNeeded];
+                            chunkedNeeded = 0;
+                            Array.Copy(bytes, newBytes, newBytes.Length);
+                            Array.Copy(bytes, newBytes.Length, bytes, 0, bytes.Length - newBytes.Length);
+                            Array.Resize(ref bytes, bytes.Length - newBytes.Length);
+                            bytes = CheckChunked(bytes);
+                            Array.Resize(ref newBytes, newBytes.Length + bytes.Length);
+                            Array.Copy(bytes, 0, newBytes, newBytes.Length - bytes.Length, bytes.Length);
+                        }
+                        else
+                        {
+                            newBytes = new byte[bytes.Length];
+                            Array.Copy(bytes, newBytes, bytes.Length);
+                            chunkedNeeded -= bytes.Length;
+                            Array.Resize(ref bytes, 0);
+                        }
+                        return newBytes;
+                    }
+                }
+            }
+            catch (Exception) { }
+            return bytes;
+        }
+
         private void WriteToClient(byte[] bytes)
         {
             if (isHTTPS && clientsslStream != null)
-                clientsslStream.Write(bytes);
+                ParentClient.Write(bytes, clientsslStream);
             else
                 ParentClient.Write(bytes);
 
@@ -557,6 +619,7 @@ namespace PeaRoxy.ClientLibrary.Server_Types
                         IsDataSent = true;
                         CurrentTimeout = this.NoDataTimeout * 1000;
                         byte[] buffer = this.Read();
+                        buffer = CheckChunked(buffer);
                         if (buffer != null && buffer.Length > 0)
                         {
                             if (RcvCallback != null && RcvCallback.Invoke(ref buffer, this, ParentClient) == false)
