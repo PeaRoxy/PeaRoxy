@@ -374,7 +374,7 @@ namespace PeaRoxy.ClientLibrary.Server_Types
                 if (UnderlyingSocket.Available > 0)
                 {
                     CurrentTimeout = this.NoDataTimeout * 1000;
-                    byte[] response = this.Read(false);
+                    byte[] response = this.Read();
                     if (response == null || response.Length <= 0)
                     {
                         this.Close("No response from server, Read Failure.", null, ErrorRenderer.HTTPHeaderCode.C_504_GATEWAY_TIMEOUT);
@@ -428,12 +428,12 @@ namespace PeaRoxy.ClientLibrary.Server_Types
                         break;
                     case Common.Encryption_Type.SimpleXOR:
                         peerCryptor = new CoreProtocol.Cryptors.SimpleXORCryptor(encryptionKey, false);
+                        peerCryptor.SetSalt(encryptionSaltBytes);
                         break;
                     default:
                         this.Close("Unsupported encryption method used by server.", null, ErrorRenderer.HTTPHeaderCode.C_502_BAD_GATEWAY);
                         return false;
                 }
-            bytes = peerCryptor.Decrypt(bytes);
             return true;
         }
         bool isChunked = false;
@@ -441,6 +441,7 @@ namespace PeaRoxy.ClientLibrary.Server_Types
         {
             //--------------------------- Everything is Done. But let wait until we read header of actual response
             bytes = CheckChunked(bytes);
+            bytes = peerCryptor.Decrypt(bytes);
 
             string Header = System.Text.Encoding.ASCII.GetString(bytes);
             bool erChecked = false;
@@ -464,13 +465,15 @@ namespace PeaRoxy.ClientLibrary.Server_Types
                 if (UnderlyingSocket.Available > 0)
                 {
                     CurrentTimeout = this.NoDataTimeout * 1000;
-                    byte[] response = this.Read(false);
+                    byte[] response = this.Read();
                     if (response == null || response.Length <= 0)
                     {
                         this.Close("No response from server, Read Failure.", null, ErrorRenderer.HTTPHeaderCode.C_502_BAD_GATEWAY);
                         return false;
                     }
                     response = CheckChunked(response);
+                    response = peerCryptor.Decrypt(response);
+                    
                     Array.Resize(ref bytes, bytes.Length + response.Length);
                     Array.Copy(response, 0, bytes, bytes.Length - response.Length, response.Length);
                     Header += System.Text.Encoding.ASCII.GetString(response);
@@ -530,8 +533,8 @@ namespace PeaRoxy.ClientLibrary.Server_Types
                 {
                     if (chunkedIsFirst)
                     {
-                        int pChunk = CommonLibrary.Common.GetFirstBytePatternIndex(bytes, System.Text.Encoding.ASCII.GetBytes("HTTP/1"), 0);
-                        isChunked = pChunk > 0 || (pChunk == -1 && bytes.Length < 6);
+                        int pLocation = CommonLibrary.Common.GetFirstBytePatternIndex(bytes, System.Text.Encoding.ASCII.GetBytes("\r\n"), 0);
+                        isChunked = pLocation < 5 && pLocation > 0;
                         chunkedIsFirst = false;
                     }
                     if (isChunked)
@@ -619,9 +622,10 @@ namespace PeaRoxy.ClientLibrary.Server_Types
                         IsDataSent = true;
                         CurrentTimeout = this.NoDataTimeout * 1000;
                         byte[] buffer = this.Read();
-                        buffer = CheckChunked(buffer);
                         if (buffer != null && buffer.Length > 0)
                         {
+                            buffer = CheckChunked(buffer);
+                            buffer = peerCryptor.Decrypt(buffer);
                             if (RcvCallback != null && RcvCallback.Invoke(ref buffer, this, ParentClient) == false)
                             {
                                 ParentClient = null;
@@ -692,7 +696,7 @@ namespace PeaRoxy.ClientLibrary.Server_Types
             }
         }
 
-        private byte[] Read(bool encryption = true)
+        private byte[] Read()
         {
             try
             {
@@ -706,9 +710,6 @@ namespace PeaRoxy.ClientLibrary.Server_Types
                         byte[] buffer = new byte[ParentClient.ReceivePacketSize];
                         int bytes = UnderlyingSocket.Receive(buffer);
                         Array.Resize(ref buffer, bytes);
-
-                        if (encryption)
-                            buffer = peerCryptor.Decrypt(buffer);
 
                         return buffer;
                     }
