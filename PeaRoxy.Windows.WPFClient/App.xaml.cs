@@ -23,6 +23,11 @@ namespace PeaRoxy.Windows.WPFClient
             try
             {
                 App.Args = string.Join(" ", args).ToLower().Trim();
+                if (App.Args.Contains("/quit"))
+                {
+                    Application.Current.Shutdown();
+                    Environment.Exit(0);
+                }
                 DefualtApp = new App();
                 SingleInstance.WpfSingleInstance.Make();
                 SingleInstance.WpfSingleInstance.SecondInstanceCallback +=
