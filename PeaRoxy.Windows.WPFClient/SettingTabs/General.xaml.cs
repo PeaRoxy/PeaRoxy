@@ -49,7 +49,7 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
 
         public override void SetEnable(bool enable)
         {
-            cb_openProgramAtStartup.IsEnabled = cb_runAtStartup.IsEnabled = cb_StartServerAtStartup.IsEnabled = enable;
+            CheckBoxes.IsEnabled = enable;
         }
 
         public override void SaveSettings()

@@ -8,9 +8,11 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="360">
     <Grid x:Name="SettingsGrid">
-        <CheckBox Content="Open PeaRoxy automatically at Windows startup" Height="16" HorizontalAlignment="Left" Margin="8,9,0,0" Name="cb_runAtStartup" VerticalAlignment="Top" Grid.Column="1"  Unchecked="cb_runAtStartup_CheckedChanged" Loaded="cb_runAtStartup_CheckedChanged" Checked="cb_runAtStartup_CheckedChanged" />
-        <CheckBox Content="Show PeaRoxy at Windows startup" Height="16" HorizontalAlignment="Left" Margin="24,27,0,0" Name="cb_openProgramAtStartup" VerticalAlignment="Top" Grid.Column="1" Checked="txt_TextBox_LostFocus" Unchecked="txt_TextBox_LostFocus" />
-        <CheckBox Content="Start previously connected server automatically" Height="16" HorizontalAlignment="Left" Margin="8,50,0,0" Name="cb_StartServerAtStartup" VerticalAlignment="Top" Checked="txt_TextBox_LostFocus" Unchecked="txt_TextBox_LostFocus" />
+        <Grid HorizontalAlignment="Stretch" Height="70" Margin="0,0,0,0" VerticalAlignment="Top" Name="CheckBoxes">
+            <CheckBox Content="Open PeaRoxy automatically at Windows startup" Height="16" HorizontalAlignment="Left" Margin="8,9,0,0" Name="cb_runAtStartup" VerticalAlignment="Top" Grid.Column="1"  Unchecked="cb_runAtStartup_CheckedChanged" Loaded="cb_runAtStartup_CheckedChanged" Checked="cb_runAtStartup_CheckedChanged" />
+            <CheckBox Content="Show PeaRoxy at Windows startup" Height="16" HorizontalAlignment="Left" Margin="24,27,0,0" Name="cb_openProgramAtStartup" VerticalAlignment="Top" Grid.Column="1" Checked="txt_TextBox_LostFocus" Unchecked="txt_TextBox_LostFocus" />
+            <CheckBox Content="Start previously connected server automatically" Height="16" HorizontalAlignment="Left" Margin="8,50,0,0" Name="cb_StartServerAtStartup" VerticalAlignment="Top" Checked="txt_TextBox_LostFocus" Unchecked="txt_TextBox_LostFocus" />
+        </Grid>
         <GroupBox Header="Stats" Height="202" HorizontalAlignment="Left" Margin="8,72,0,0" VerticalAlignment="Top" Width="350" Foreground="Black">
             <Grid>
                 <Grid.RowDefinitions>
@@ -46,5 +48,6 @@
                 </d3:ChartPlotter>
             </Grid>
         </GroupBox>
+        
     </Grid>
 </st:Base>
