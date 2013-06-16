@@ -109,7 +109,7 @@ namespace PeaRoxy.ASPear
                     cryptor = peerCryptor;
                 else
                 {
-                    cryptor = new CoreProtocol.Cryptors.SimpleXORCryptor(encryptionKey);
+                    cryptor = new CoreProtocol.Cryptors.SimpleXORCryptor(encryptionKey, false);
                     cryptor.SetSalt(encryptionSalt);
                 }
             }
@@ -124,12 +124,12 @@ namespace PeaRoxy.ASPear
                 Host = Host.Substring(protocolStartPoint, Host.Length - protocolStartPoint);
             }
 
-            short Port = 80;
+            ushort Port = 80;
             int portStartPoint = Host.IndexOf(":");
             if (portStartPoint != -1)
             {
                 portStartPoint += 1;
-                Port = short.Parse(Host.Substring(portStartPoint, Host.Length - portStartPoint));
+                Port = ushort.Parse(Host.Substring(portStartPoint, Host.Length - portStartPoint));
                 Host = Host.Substring(0, portStartPoint - 1);
             }
 
