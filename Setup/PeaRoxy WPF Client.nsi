@@ -130,9 +130,9 @@ Section "Uninstall"
   RMDir "$INSTDIR"
   Delete "$SMPROGRAMS\PeaRoxy Client.lnk"
 
-
+  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "PeaRoxy Client"
   DeleteRegKey /ifempty HKLM "Software\PeaRoxy"
-  DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PeaRoxy Client 0.9.5 for Windows"
+  DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PeaRoxy Client 0.9.5 for Windows"
 SectionEnd
 Function un.onInit
 	SetRebootFlag true 
