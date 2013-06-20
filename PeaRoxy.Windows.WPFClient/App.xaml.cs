@@ -23,13 +23,13 @@ namespace PeaRoxy.Windows.WPFClient
             try
             {
                 App.Args = string.Join(" ", args).ToLower().Trim();
+                DefualtApp = new App();
+                SingleInstance.WpfSingleInstance.Make();
                 if (App.Args.Contains("/quit"))
                 {
                     Application.Current.Shutdown();
                     Environment.Exit(0);
                 }
-                DefualtApp = new App();
-                SingleInstance.WpfSingleInstance.Make();
                 SingleInstance.WpfSingleInstance.SecondInstanceCallback +=
                     new SingleInstance.WpfSingleInstance.SecondInstanceDelegate(SecondInstanceExecuted);
                 App.isExecutedByUser = true;
