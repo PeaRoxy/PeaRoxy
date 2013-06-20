@@ -8,7 +8,6 @@ namespace PeaRoxy.ASPear
 {
     public class index : IHttpHandler
     {
-        bool isValid = false;
         System.Collections.Generic.Dictionary<string, string> Config;
         System.Collections.ObjectModel.Collection<CommonLibrary.ConfigReader.User> Users;
         HttpContext context;
@@ -32,7 +31,6 @@ namespace PeaRoxy.ASPear
                 encryptionType = (Common.Encryption_Type)requestInfo[4];
                 encryptedHost = new byte[requestInfo.Length - 5];
                 Array.Copy(requestInfo, 5, encryptedHost, 0, requestInfo.Length - 5);
-                isValid = true;
             }
             catch (Exception)
             {
