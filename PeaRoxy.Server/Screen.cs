@@ -46,7 +46,7 @@ namespace PeaRoxy.Server
             {
                 lastConnectedClientId++;
                 if (!usersCollection.ContainsKey(UserId))
-                    usersCollection.Add(UserId, new User(Screen.LogUsage, Screen.UsageLogAddress) { Id = UserId });
+                    usersCollection.Add(UserId, new User(Screen.LogUsage, Screen.UsageLogAddress, UserId));
 
                 usersCollection[UserId].Clients.Add(lastConnectedClientId, new User.Client() { Id = lastConnectedClientId, RequestAddress = IPAddress, RemoteAddress = RemoteIPAddress });
             }
@@ -86,7 +86,7 @@ namespace PeaRoxy.Server
             lock (usersCollection)
             {
                 if (!usersCollection.ContainsKey(NewUserId))
-                    usersCollection.Add(NewUserId, new User(Screen.LogUsage, Screen.UsageLogAddress) { Id = NewUserId });
+                    usersCollection.Add(NewUserId, new User(Screen.LogUsage, Screen.UsageLogAddress, NewUserId));
 
                 User.Client client = usersCollection[LastUserId].Clients[ClientId];
                 usersCollection[LastUserId].Clients.Remove(ClientId);
@@ -217,8 +217,9 @@ namespace PeaRoxy.Server
             public long UpSpeed { get; set; }
             private System.IO.StreamWriter UsageLog = null;
             private int lrC = 0;
-            public User(bool LogUsage, string UsageLogAddress)
+            public User(bool LogUsage, string UsageLogAddress, string Id)
             {
+                this.Id = Id;
                 if (LogUsage)
                     UsageLog = new System.IO.StreamWriter(UsageLogAddress + Id + ".log", false);
                 Clients = new Dictionary<int, Client>();
