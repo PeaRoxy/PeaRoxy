@@ -127,8 +127,8 @@ namespace PeaRoxy.Windows.WPFClient
                 {
                     if ((int)registry.GetValue("ProxyEnable", 0) != 1)
                         return false;
-                    if (proxyString == string.Empty)
-                        return false;
+                    //if (proxyString == string.Empty)
+                    //    return false;
                     if ((string)registry.GetValue("ProxyServer", string.Empty) == proxyString)
                         return true;
                 }
