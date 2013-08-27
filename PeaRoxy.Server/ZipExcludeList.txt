@@ -2,3 +2,5 @@
 *.lib
 *.exp
 *.ilk
+*.vshost.exe
+ZipExcludeList.txt

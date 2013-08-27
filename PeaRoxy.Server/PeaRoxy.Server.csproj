@@ -68,7 +68,9 @@
     <Compile Include="Screen.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ZipExcludeList.txt" />
+    <Content Include="ZipExcludeList.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="app.config" />
     <Content Include="settings.ini">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
