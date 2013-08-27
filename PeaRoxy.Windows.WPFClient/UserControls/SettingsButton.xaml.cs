@@ -37,7 +37,6 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
                     if (_isSelected)
                     {
                         DoubleAnimation da_ShowS = new DoubleAnimation(5, 20, new Duration(TimeSpan.FromSeconds(0.3)));
-                        Timeline.SetDesiredFrameRate(da_ShowS, 60); // 60 FPS
                         TranslateTransform tt2 = new TranslateTransform();
                         _button.RenderTransform = tt2;
                         da_ShowS.DecelerationRatio = 0.8;
@@ -46,12 +45,10 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
                     else
                     {
                         DoubleAnimation da_HideL = new DoubleAnimation(20, 0, new Duration(TimeSpan.FromSeconds(0.2)));
-                        Timeline.SetDesiredFrameRate(da_HideL, 60); // 60 FPS
                         TranslateTransform tt = new TranslateTransform();
                         _button.RenderTransform = tt;
                         tt.BeginAnimation(TranslateTransform.XProperty, da_HideL);
                         DoubleAnimation da_IncOpa = new DoubleAnimation(1, 0.7, new Duration(TimeSpan.FromSeconds(0.3)));
-                        Timeline.SetDesiredFrameRate(da_IncOpa, 60); // 60 FPS
                         _button.BeginAnimation(Button.OpacityProperty, da_IncOpa);
                     }
                     if (SelectedChanged != null)
@@ -75,14 +72,12 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
             if ((SettingsPage != null && !_button.Equals(SettingsPage)) || SettingsPage == null)
             {
                 DoubleAnimation da_ShowS = new DoubleAnimation(0, 5, new Duration(TimeSpan.FromSeconds(0.3)));
-                Timeline.SetDesiredFrameRate(da_ShowS, 60); // 60 FPS
                 TranslateTransform tt = new TranslateTransform();
                 _button.RenderTransform = tt;
                 da_ShowS.DecelerationRatio = 0.8;
                 tt.BeginAnimation(TranslateTransform.XProperty, da_ShowS);
 
                 DoubleAnimation da_IncOpa = new DoubleAnimation(0.7, 1, new Duration(TimeSpan.FromSeconds(0.3)));
-                Timeline.SetDesiredFrameRate(da_IncOpa, 60); // 60 FPS
                 _button.BeginAnimation(Button.OpacityProperty, da_IncOpa);
             }
         }
@@ -93,14 +88,12 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
             if ((SettingsPage != null && !_button.Equals(SettingsPage)) || SettingsPage == null)
             {
                 DoubleAnimation da_HideS = new DoubleAnimation(5, 0, new Duration(TimeSpan.FromSeconds(0.2)));
-                Timeline.SetDesiredFrameRate(da_HideS, 60); // 60 FPS
                 da_HideS.DecelerationRatio = 0.8;
                 TranslateTransform tt = new TranslateTransform();
                 _button.RenderTransform = tt;
                 tt.BeginAnimation(TranslateTransform.XProperty, da_HideS);
 
                 DoubleAnimation da_IncOpa = new DoubleAnimation(1, 0.7, new Duration(TimeSpan.FromSeconds(0.3)));
-                Timeline.SetDesiredFrameRate(da_IncOpa, 60); // 60 FPS
                 _button.BeginAnimation(Button.OpacityProperty, da_IncOpa);
             }
         }

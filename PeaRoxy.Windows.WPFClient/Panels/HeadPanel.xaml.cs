@@ -34,13 +34,11 @@ namespace PeaRoxy.Windows.WPFClient
         private void img_closeButton_MouseEnter(object sender, MouseEventArgs e)
         {
             DoubleAnimation da_IncOpa = new DoubleAnimation(0.5, 1, new Duration(TimeSpan.FromSeconds(0.3)));
-            Timeline.SetDesiredFrameRate(da_IncOpa, 60); // 60 FPS
             btn_close.BeginAnimation(Button.OpacityProperty, da_IncOpa);
         }
         private void img_closeButton_MouseLeave(object sender, MouseEventArgs e)
         {
             DoubleAnimation da_IncOpa = new DoubleAnimation(1, 0.5, new Duration(TimeSpan.FromSeconds(0.7)));
-            Timeline.SetDesiredFrameRate(da_IncOpa, 60); // 60 FPS
             btn_close.BeginAnimation(Button.OpacityProperty, da_IncOpa);
         }
 

@@ -126,7 +126,6 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
             else
                 da = img_optionsButton.Tag as DoubleAnimation;
 
-            Timeline.SetDesiredFrameRate(da, 60); // 60 FPS
             da.Duration = new Duration(TimeSpan.FromSeconds(2));
             da.RepeatBehavior = RepeatBehavior.Forever;
             RotateTransform rt = img_optionsButton.RenderTransform as RotateTransform;
@@ -140,7 +139,6 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
                 return;
 
             DoubleAnimation da = img_optionsButton.Tag as DoubleAnimation;
-            Timeline.SetDesiredFrameRate(da, 60); // 60 FPS
             da.RepeatBehavior = new RepeatBehavior(1);
             da.Duration = new Duration(TimeSpan.FromSeconds(1));
             RotateTransform rt = img_optionsButton.RenderTransform as RotateTransform;
@@ -197,7 +195,6 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
                     break;
             }
             ColorAnimation ca_changesm = new ColorAnimation(c, new Duration(TimeSpan.FromSeconds(0.4)));
-            Timeline.SetDesiredFrameRate(ca_changesm, 60); // 60 FPS
             ((SolidColorBrush)e.Stroke).BeginAnimation(SolidColorBrush.ColorProperty, ca_changesm);
         }
 
@@ -267,7 +264,6 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
                 {
                     case State.Back:
                         da_alignTopButtons = new DoubleAnimation(0, 50, new Duration(TimeSpan.FromSeconds(time)));
-                        Timeline.SetDesiredFrameRate(da_alignTopButtons, 60); // 60 FPS
                         tt_alignTopButtons = new TranslateTransform();
                         da_alignTopButtons.EasingFunction = new ElasticEase();
                         ((ElasticEase)da_alignTopButtons.EasingFunction).EasingMode = EasingMode.EaseOut;
@@ -277,8 +273,6 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
                         tt_alignTopButtons.BeginAnimation(TranslateTransform.XProperty, da_alignTopButtons);
                         DoubleAnimation da_HideOptionsBut = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(time)));
                         DoubleAnimation da_ShowBackBut = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(time)));
-                        Timeline.SetDesiredFrameRate(da_HideOptionsBut, 60); // 60 FPS
-                        Timeline.SetDesiredFrameRate(da_ShowBackBut, 60); // 60 FPS
                         da_HideOptionsBut.RepeatBehavior = new RepeatBehavior(1);
                         da_ShowBackBut.RepeatBehavior = new RepeatBehavior(1);
                         BackButton.Visibility = System.Windows.Visibility.Visible;
@@ -289,7 +283,6 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
                             da_RotateBackImage = new DoubleAnimation(90, 0, Duration.Automatic);
                         else
                             da_RotateBackImage = img_optionsButton.Tag as DoubleAnimation;
-                        Timeline.SetDesiredFrameRate(da_RotateBackImage, 60); // 60 FPS
                         da_RotateBackImage.RepeatBehavior = new RepeatBehavior(1);
                         da_RotateBackImage.Duration = new Duration(TimeSpan.FromSeconds(time));
                         rt = img_backButton.RenderTransform as RotateTransform;
@@ -299,8 +292,6 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
                     default:
                         DoubleAnimation da_ShowOptionsBut = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(time)));
                         DoubleAnimation da_HideBackBut = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(time)));
-                        Timeline.SetDesiredFrameRate(da_ShowOptionsBut, 60); // 60 FPS
-                        Timeline.SetDesiredFrameRate(da_HideBackBut, 60); // 60 FPS
                         da_ShowOptionsBut.RepeatBehavior = new RepeatBehavior(1);
                         da_HideBackBut.RepeatBehavior = new RepeatBehavior(1);
                         OptionButton.Visibility = System.Windows.Visibility.Visible;
@@ -311,7 +302,6 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
                             da_RotateBackImage = new DoubleAnimation(0, 90, Duration.Automatic);
                         else
                             da_RotateBackImage = img_optionsButton.Tag as DoubleAnimation;
-                        Timeline.SetDesiredFrameRate(da_RotateBackImage, 60); // 60 FPS
                         da_RotateBackImage.RepeatBehavior = new RepeatBehavior(1);
                         da_RotateBackImage.Duration = new Duration(TimeSpan.FromSeconds(time));
                         rt = img_backButton.RenderTransform as RotateTransform;
@@ -319,7 +309,6 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
 
 
                         da_alignTopButtons = new DoubleAnimation(50, 0, new Duration(TimeSpan.FromSeconds(time * 0.5)));
-                        Timeline.SetDesiredFrameRate(da_alignTopButtons, 60); // 60 FPS
                         tt_alignTopButtons = new TranslateTransform();
                         da_alignTopButtons.EasingFunction = new PowerEase();
                         ((PowerEase)da_alignTopButtons.EasingFunction).EasingMode = EasingMode.EaseOut;

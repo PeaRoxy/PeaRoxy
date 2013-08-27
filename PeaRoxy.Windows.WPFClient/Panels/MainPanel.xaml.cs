@@ -98,7 +98,6 @@ namespace PeaRoxy.Windows.WPFClient
                 return;
 
             DoubleAnimation da = new DoubleAnimation(25, ((Grid)ex.Content).Height + 25, new Duration(TimeSpan.FromSeconds(0.4)));
-            Timeline.SetDesiredFrameRate(da, 60); // 60 FPS
             ex.BeginAnimation(Button.HeightProperty, da);
 
             SaveSettings();
@@ -130,7 +129,6 @@ namespace PeaRoxy.Windows.WPFClient
                 return;
 
             DoubleAnimation da = new DoubleAnimation(((Grid)ex.Content).Height + 25, 25, new Duration(TimeSpan.FromSeconds(0.2)));
-            Timeline.SetDesiredFrameRate(da, 60); // 60 FPS
             ex.BeginAnimation(Button.HeightProperty, da);
 
         }
@@ -403,7 +401,6 @@ namespace PeaRoxy.Windows.WPFClient
             set
             {
                 DoubleAnimation da_Loading = new DoubleAnimation((!value).GetHashCode(), value.GetHashCode(), new Duration(TimeSpan.FromSeconds(0.5)));
-                Timeline.SetDesiredFrameRate(da_Loading, 60); // 60 FPS
                 loadingBox.BeginAnimation(UIElement.OpacityProperty, da_Loading);
             }
         }
@@ -414,8 +411,6 @@ namespace PeaRoxy.Windows.WPFClient
             {
                 DoubleAnimation da_ShowImage = new DoubleAnimation((!value).GetHashCode(), value.GetHashCode(), new Duration(TimeSpan.FromSeconds(0.5)));
                 DoubleAnimation da_HideImage = new DoubleAnimation(value.GetHashCode(), (!value).GetHashCode(), TimeSpan.FromSeconds(0.5));
-                Timeline.SetDesiredFrameRate(da_ShowImage, 60); // 60 FPS
-                Timeline.SetDesiredFrameRate(da_HideImage, 60); // 60 FPS
                 if (img_Connected.Opacity != value.GetHashCode())
                     img_Connected.BeginAnimation(Image.OpacityProperty, da_ShowImage);
                 if (img_Disconnected.Opacity != (!value).GetHashCode())

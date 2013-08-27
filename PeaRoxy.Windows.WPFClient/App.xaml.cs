@@ -6,6 +6,7 @@ using LukeSw.Windows.Forms;
 using System.Text;
 using System.Windows.Shell;
 using Microsoft.WindowsAPICodePack.ApplicationServices;
+using System.Windows.Media.Animation;
 
 namespace PeaRoxy.Windows.WPFClient
 {
@@ -35,6 +36,10 @@ namespace PeaRoxy.Windows.WPFClient
                 App.isExecutedByUser = true;
                 if (App.Args.Contains("/autorun"))
                     App.isExecutedByUser = false;
+                Timeline.DesiredFrameRateProperty.OverrideMetadata(
+                    typeof(Timeline),
+                    new FrameworkPropertyMetadata { DefaultValue = 60 }
+                );
                 App.RunApp();
             }
             catch (Exception) { }

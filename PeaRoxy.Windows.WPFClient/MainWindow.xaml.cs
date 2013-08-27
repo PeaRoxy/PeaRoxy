@@ -151,7 +151,6 @@ namespace PeaRoxy.Windows.WPFClient
             this.Focusable = true;
             this.isHidden = false;
             DoubleAnimation da_ShowWindow = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.5)));
-            Timeline.SetDesiredFrameRate(da_ShowWindow, 60); // 60 FPS
             this.BeginAnimation(MainWindow.OpacityProperty, da_ShowWindow);
 
             IndfferentForm();
@@ -177,7 +176,6 @@ namespace PeaRoxy.Windows.WPFClient
             RefreshStatus();
             Controls.CurrentStatus = UserControls.StartStopButton.Status.Hide;
             DoubleAnimation da_HideWindow = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(0.6)));
-            Timeline.SetDesiredFrameRate(da_HideWindow, 60); // 60 FPS
             this.BeginAnimation(MainWindow.OpacityProperty, da_HideWindow);
 
 
@@ -205,10 +203,6 @@ namespace PeaRoxy.Windows.WPFClient
             DoubleAnimation da_HideConnectedImage = new DoubleAnimation(1, 0, TimeSpan.FromSeconds(0.5));
             DoubleAnimation da_ShowDisconnectedImage = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.5)));
             DoubleAnimation da_HideDisconnectedImage = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(0.5)));
-            Timeline.SetDesiredFrameRate(da_ShowConnectedImage, 60); // 60 FPS
-            Timeline.SetDesiredFrameRate(da_HideConnectedImage, 60); // 60 FPS
-            Timeline.SetDesiredFrameRate(da_ShowDisconnectedImage, 60); // 60 FPS
-            Timeline.SetDesiredFrameRate(da_HideDisconnectedImage, 60); // 60 FPS
             switch (this.Status)
             {
                 case CurrentStatus.Disconnected:
@@ -290,7 +284,6 @@ namespace PeaRoxy.Windows.WPFClient
             Toolbar.NavigatorState = UserControls.ToolbarButtons.State.Option;
 
             DoubleAnimation da_alignLogoImageButtons = new DoubleAnimation(MainGrid.RenderSize.Width - 55, 0, new Duration(TimeSpan.FromSeconds(time * 0.8)));
-            Timeline.SetDesiredFrameRate(da_alignLogoImageButtons, 60); // 60 FPS
             TranslateTransform tt_alignLogoImageButtons = new TranslateTransform();
             da_alignLogoImageButtons.EasingFunction = new PowerEase();
             ((PowerEase)da_alignLogoImageButtons.EasingFunction).EasingMode = EasingMode.EaseIn;
@@ -298,7 +291,6 @@ namespace PeaRoxy.Windows.WPFClient
             tt_alignLogoImageButtons.BeginAnimation(TranslateTransform.XProperty, da_alignLogoImageButtons);
 
             DoubleAnimation da_HideMainGrid = new DoubleAnimation(-(MainGrid.RenderSize.Width - 50), 0, new Duration(TimeSpan.FromSeconds(time)));
-            Timeline.SetDesiredFrameRate(da_HideMainGrid, 60); // 60 FPS
             TranslateTransform tt_HideMainGrid = MainGrid.RenderTransform as TranslateTransform;
             TranslateTransform tt_ShowOptionsGrid = Options.RenderTransform as TranslateTransform;
             da_HideMainGrid.EasingFunction = new PowerEase();
@@ -334,7 +326,6 @@ namespace PeaRoxy.Windows.WPFClient
             Toolbar.NavigatorState = UserControls.ToolbarButtons.State.Back;
 
             DoubleAnimation da_alignLogoImageButtons = new DoubleAnimation(0, MainGrid.RenderSize.Width - 55, new Duration(TimeSpan.FromSeconds(time * 1.33)));
-            Timeline.SetDesiredFrameRate(da_alignLogoImageButtons, 60); // 60 FPS
             TranslateTransform tt_alignLogoImageButtons = new TranslateTransform();
             da_alignLogoImageButtons.EasingFunction = new PowerEase();
             ((PowerEase)da_alignLogoImageButtons.EasingFunction).EasingMode = EasingMode.EaseInOut;
@@ -342,7 +333,6 @@ namespace PeaRoxy.Windows.WPFClient
             tt_alignLogoImageButtons.BeginAnimation(TranslateTransform.XProperty, da_alignLogoImageButtons);
 
             DoubleAnimation da_HideMainGrid = new DoubleAnimation(0, -(MainGrid.RenderSize.Width - 50), new Duration(TimeSpan.FromSeconds(time)));
-            Timeline.SetDesiredFrameRate(da_HideMainGrid, 60); // 60 FPS
             TranslateTransform tt_HideMainGrid = MainGrid.RenderTransform as TranslateTransform;
             TranslateTransform tt_ShowOptionsGrid = Options.RenderTransform as TranslateTransform;
             da_HideMainGrid.EasingFunction = new PowerEase();

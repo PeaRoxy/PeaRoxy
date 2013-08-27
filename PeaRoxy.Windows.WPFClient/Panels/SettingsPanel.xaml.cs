@@ -75,7 +75,6 @@ namespace PeaRoxy.Windows.WPFClient
                 }
                 UIElement lastPage = cc_Options.Content as UIElement;
                 DoubleAnimation da_HideLastPage = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(0.10)));
-                Timeline.SetDesiredFrameRate(da_HideLastPage, 60); // 60 FPS
                 lastPage.BeginAnimation(UIElement.OpacityProperty, da_HideLastPage);
                 new System.Threading.Thread(delegate()
                 {
@@ -83,7 +82,6 @@ namespace PeaRoxy.Windows.WPFClient
                     this.Dispatcher.Invoke((App.SimpleVoid_Delegate)delegate()
                     {
                         DoubleAnimation da_ShowPage = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.10)));
-                        Timeline.SetDesiredFrameRate(da_ShowPage, 60); // 60 FPS
                         page.SettingsPage.BeginAnimation(UIElement.OpacityProperty, da_ShowPage);
                         cc_Options.Content = page.SettingsPage;
                     }, new object[] { });

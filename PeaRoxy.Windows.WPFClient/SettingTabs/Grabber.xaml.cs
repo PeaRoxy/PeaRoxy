@@ -141,7 +141,6 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
         {
             grid_optionsdialog.IsEnabled = false;
             DoubleAnimation da_ShowS = new DoubleAnimation(0, -250, new Duration(TimeSpan.FromSeconds(0.5)));
-            Timeline.SetDesiredFrameRate(da_ShowS, 60); // 60 FPS
             da_ShowS.EasingFunction = new ElasticEase();
             ((ElasticEase)da_ShowS.EasingFunction).EasingMode = EasingMode.EaseIn;
             ((ElasticEase)da_ShowS.EasingFunction).Oscillations = 1;
@@ -168,7 +167,6 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
             ActiveGrabber.IsEditable =
             lbl_grabber_active.IsEnabled = false;
             DoubleAnimation da_ShowS = new DoubleAnimation(-250, 0, new Duration(TimeSpan.FromSeconds(0.5)));
-            Timeline.SetDesiredFrameRate(da_ShowS, 60); // 60 FPS
             da_ShowS.EasingFunction = new ElasticEase();
             ((ElasticEase)da_ShowS.EasingFunction).EasingMode = EasingMode.EaseOut;
             ((ElasticEase)da_ShowS.EasingFunction).Oscillations = 50;

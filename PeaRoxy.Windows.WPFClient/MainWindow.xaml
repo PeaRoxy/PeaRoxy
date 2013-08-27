@@ -17,6 +17,9 @@
         Height="354"
         BorderThickness="0" Closing="Window_Closing" StateChanged="Window_StateChanged" ContentRendered="Window_ContentRendered" Activated="Window_Activated" Deactivated="Window_Deactivated">
     <Canvas Height="334" Width="560">
+        <Canvas.CacheMode>
+            <BitmapCache />
+        </Canvas.CacheMode>
         <Canvas.Effect>
             <DropShadowEffect x:Name="DropShadow" Direction="0" ShadowDepth="0" BlurRadius="12" Color="#7F000000"/>
         </Canvas.Effect>
