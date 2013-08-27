@@ -264,7 +264,7 @@ namespace PeaRoxy.CoreProtocol
             return false;
         }
 
-        public void Write(byte[] bytes, bool async)
+        public void Write(byte[] bytes, bool async, bool enc = true)
         {
             try
             {
@@ -284,7 +284,7 @@ namespace PeaRoxy.CoreProtocol
                         framingHeader[1] = (byte)compressionType;
                         framingBody = Compressor.Compress(framingBody);
 
-                        if (encryptionType != Common.Encryption_Type.None) // If encryption is enable
+                        if (enc && encryptionType != Common.Encryption_Type.None) // If encryption is enable
                         {
                             byte[] encryptionSalt = new byte[4];
                             rnd.GetNonZeroBytes(encryptionSalt);

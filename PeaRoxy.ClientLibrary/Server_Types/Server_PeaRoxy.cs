@@ -141,7 +141,7 @@ namespace PeaRoxy.ClientLibrary.Server_Types
                         client_request[client_request.GetUpperBound(0)] = (byte)(port % 256);
                         Array.Resize(ref client_request_pre, client_request.Length + client_request_pre.Length);
                         Array.Copy(client_request, 0, client_request_pre, client_request_pre.Length - client_request.Length, client_request.Length);
-                        Protocol.Write(client_request_pre, false);
+                        Protocol.Write(client_request_pre, false, false);
                         CoreProtocol.HTTPForger Forger = new CoreProtocol.HTTPForger(UnderlyingSocket);
                         if (!Forger.ReceiveResponse())
                         {
