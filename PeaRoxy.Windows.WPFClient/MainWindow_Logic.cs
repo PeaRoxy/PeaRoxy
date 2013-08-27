@@ -416,7 +416,7 @@ namespace PeaRoxy.Windows.WPFClient
                 }
 
                 if (WindowsProxy.Windows_DisableProxy())
-                    App.Notify.ShowBalloonTip(2000, "PeaRoxy Client", "Ask Windows to ingore PeaRoxy settings: Done", System.Windows.Forms.ToolTipIcon.Info);
+                    App.Notify.ShowBalloonTip(2000, "PeaRoxy Client", "Ask Windows to ignore PeaRoxy settings: Done", System.Windows.Forms.ToolTipIcon.Info);
                 else
                     if (!silent && VDialog.Show(this, "Failed, You need to logoff and relogin to your account and try again or configure your system manually.\r\nDo want us to logoff your user account?!", "Auto Config", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Yes)
                         Windows.Common.LogOffUser();
