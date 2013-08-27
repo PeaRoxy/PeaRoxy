@@ -206,6 +206,7 @@ namespace PeaRoxy.ClientLibrary.Proxy_Types
                             "Server: PeaRoxy Auto Config Script Generator" + ctrl +
                             "Content-Length: " + script.Length.ToString() + ctrl +
                             "Connection: close" + ctrl +
+                            "Cache-Control: max-age=1, public" + ctrl +
                             "Content-Type: " + ((client.Controller.AutoConfigMime == Proxy_Controller.AutoConfigMimeType.Javascript) ? "application/x-javascript-config" : "application/x-ns-proxy-autoconfig") + ";" + ctrl + ctrl;
             return System.Text.Encoding.ASCII.GetBytes(header + script);
         }
