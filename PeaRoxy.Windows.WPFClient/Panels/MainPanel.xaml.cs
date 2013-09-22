@@ -396,13 +396,9 @@ namespace PeaRoxy.Windows.WPFClient
             }
         }
 
-        public bool Loading
+        public bool isLoading
         {
-            set
-            {
-                DoubleAnimation da_Loading = new DoubleAnimation((!value).GetHashCode(), value.GetHashCode(), new Duration(TimeSpan.FromSeconds(0.5)));
-                loadingBox.BeginAnimation(UIElement.OpacityProperty, da_Loading);
-            }
+            set { loadingBox.IsVisible = value; }
         }
 
         public bool Connecetd

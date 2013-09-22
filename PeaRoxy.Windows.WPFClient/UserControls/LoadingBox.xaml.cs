@@ -8,6 +8,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -19,16 +20,29 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
     /// </summary>
     public partial class LoadingBox : UserControl
     {
-        public bool isVisible { get; private set; }
+        bool _isVisible = false;
         public LoadingBox()
         {
             InitializeComponent();
         }
-        public void Hide()
-        {
-            if (isVisible)
-            {
 
+        public new bool IsVisible
+        {
+            get
+            {
+                return _isVisible;
+            }
+            set
+            {
+                if (_isVisible != value)
+                {
+                    DoubleAnimation da_Loading = new DoubleAnimation((!value).GetHashCode(), value.GetHashCode(), new Duration(TimeSpan.FromSeconds(0.5)));
+                    this.BeginAnimation(UIElement.OpacityProperty, da_Loading);
+                    foreach (UIElement item in LoadingItemsGrid.Children)
+                        if (item is LoadingItem)
+                            ((LoadingItem)item).IsPlaying = value;
+                    _isVisible = value;
+                }
             }
         }
     }

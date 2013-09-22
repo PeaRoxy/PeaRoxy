@@ -19,43 +19,42 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
     /// </summary>
     public partial class LoadingItem : UserControl
     {
+        Storyboard story = new Storyboard() { RepeatBehavior = RepeatBehavior.Forever};
+        public double Delay { get; set; }
+        public bool IsPlaying
+        {
+            set
+            {
+                if (value)
+                    story.Begin(rect, true);
+                else
+                {
+                    story.Stop(rect);
+                    rect.Opacity = 0;
+                    rect.Margin = new Thickness(-5, 0, 0, 0);
+                }
+            }
+        }
+
         public LoadingItem()
         {
             InitializeComponent();
         }
 
-        public double Delay { get; set; }
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            Storyboard story = new Storyboard();
             story.BeginTime = TimeSpan.FromSeconds(Delay);
-            PowerEase ease = new PowerEase();
-            ease.Power = 0.3;
-            ease.EasingMode = EasingMode.EaseInOut;
-            story.RepeatBehavior = RepeatBehavior.Forever;
-            DoubleAnimation dbOpacity = new DoubleAnimation();
-            dbOpacity.AutoReverse = true;
-            dbOpacity.EasingFunction = ease;
-            dbOpacity.From = 0.0;
-            dbOpacity.To = 1;
-            dbOpacity.Duration = new Duration(TimeSpan.FromSeconds(0.8));
-
-            ThicknessAnimation dbxPos = new ThicknessAnimation();
-            dbxPos.EasingFunction = ease;
-            dbxPos.AutoReverse = true;
-            dbxPos.From = rect.Margin;
-            dbxPos.To = new Thickness(this.ActualWidth, 0, 0, 0);
-            dbxPos.Duration = new Duration(TimeSpan.FromSeconds(1.6));
-
-
-
+            PowerEase ease = new PowerEase() { Power = 0.3, EasingMode = EasingMode.EaseInOut};
+            DoubleAnimation dbOpacity = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.8))) 
+                                        { EasingFunction = ease, AutoReverse = true };
+            ThicknessAnimation dbxPos = new ThicknessAnimation(new Thickness(0, 0, 0, 0), new Thickness(this.ActualWidth, 0, 0, 0), new Duration(TimeSpan.FromSeconds(1.6))) 
+                                        { EasingFunction = ease, AutoReverse = true };
             story.Children.Add(dbOpacity);
             story.Children.Add(dbxPos);
-            Storyboard.SetTargetName(dbOpacity, rect.Name);
+            Storyboard.SetTarget(dbOpacity, rect);
+            Storyboard.SetTarget(dbxPos, rect);
             Storyboard.SetTargetProperty(dbOpacity, new PropertyPath(MediaElement.OpacityProperty));
-            Storyboard.SetTargetName(dbxPos, rect.Name);
             Storyboard.SetTargetProperty(dbxPos, new PropertyPath(MediaElement.MarginProperty));
-            story.Begin(this);
         }
     }
 }

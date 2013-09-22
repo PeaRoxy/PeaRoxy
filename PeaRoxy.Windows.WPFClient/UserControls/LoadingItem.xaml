@@ -6,6 +6,6 @@
              mc:Ignorable="d" 
              d:DesignHeight="5" d:DesignWidth="505" Loaded="UserControl_Loaded">
     <Grid>
-        <Rectangle Height="4" HorizontalAlignment="Left" Margin="0,0,0,0" Name="rect" VerticalAlignment="Top" Width="4" Fill="#FF0059AD" Stroke="white" />
+        <Rectangle Height="4" HorizontalAlignment="Left" Margin="-5,0,0,0" Name="rect" VerticalAlignment="Top" Width="4" Fill="#FF0059AD" Stroke="white" Opacity="0" />
     </Grid>
 </UserControl>
