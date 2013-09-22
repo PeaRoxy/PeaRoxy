@@ -27,7 +27,7 @@ SetCompressor /SOLID lzma
 
   !include LogicLib.nsh
 
-  BrandingText "S. Falahati"
+  BrandingText "PeaRoxy"
 
 ;--------------------------------
 ;Interface Configuration
@@ -62,12 +62,13 @@ SetCompressor /SOLID lzma
 
 Section "Main Application" SecMain
   ${nsProcess::FindProcess} "PeaRoxy.Windows.WPFClient.exe" $R0
-  StrCmp $R0 0 0 +6
+  StrCmp $R0 0 0 +7
      ExecWait '"$INSTDIR\PeaRoxy.Windows.WPFClient.exe" /quit'
-     Sleep 10000
+     Sleep 20000
      ${nsProcess::FindProcess} "PeaRoxy.Windows.WPFClient.exe" $R0
-     StrCmp $R0 0 0 +2
+     StrCmp $R0 0 0 +3
         ${nsProcess::KillProcess} "PeaRoxy.Windows.WPFClient.exe" $R0
+        Sleep 5000
   ${nsProcess::Unload}
 
   SectionIn RO
