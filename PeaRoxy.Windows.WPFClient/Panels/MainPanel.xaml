@@ -45,7 +45,7 @@
                 </LinearGradientBrush>
             </Rectangle.Fill>
         </Rectangle>
-        <uc:LoadingBox Margin="141,0,189,24" x:Name="loadingBox" VerticalAlignment="Bottom" Opacity="0"/>
+        <uc:LoadingBox Margin="141,0,189,24" x:Name="loadingBox" VerticalAlignment="Bottom"/>
         <WrapPanel HorizontalAlignment="Left" Margin="40,79,0,0" Name="wp_Servers" Width="249" Orientation="Horizontal" Height="239" VerticalAlignment="Top">
             <Expander Width="249" Foreground="Black" Expanded="AnimatedExpender_Expanded" Background="#FFF8F8F8" Collapsed="AnimatedExpender_Collapsed" Name="ex_server" Height="25" BorderThickness="1" ClipToBounds="False">
                 <Grid Height="76">

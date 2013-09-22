@@ -33,9 +33,7 @@ namespace PeaRoxy.Windows.WPFClient
                 }
                 SingleInstance.WpfSingleInstance.SecondInstanceCallback +=
                     new SingleInstance.WpfSingleInstance.SecondInstanceDelegate(SecondInstanceExecuted);
-                App.isExecutedByUser = true;
-                if (App.Args.Contains("/autorun"))
-                    App.isExecutedByUser = false;
+                App.isExecutedByUser = !App.Args.Contains("/autorun");
                 Timeline.DesiredFrameRateProperty.OverrideMetadata(
                     typeof(Timeline),
                     new FrameworkPropertyMetadata { DefaultValue = 60 }

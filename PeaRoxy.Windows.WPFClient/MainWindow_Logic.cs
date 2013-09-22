@@ -120,10 +120,15 @@ namespace PeaRoxy.Windows.WPFClient
                     Thread.Sleep(1000);
                     this.Dispatcher.Invoke((SimpleVoid_Delegate)delegate()
                     {
-                        tt.InvalidatePreview();
+                        try
+                        {
+                            tt.InvalidatePreview();
+                        }
+                        catch (Exception) { }
                     }, new object[] { });
                 });
                 e.Handled = true;
+                return;
             }
             catch (Exception) { }
             e.Handled = false;
@@ -361,8 +366,7 @@ namespace PeaRoxy.Windows.WPFClient
                                 st.Close();
                                 st.Dispose();
                                 Status = CurrentStatus.Connected;
-                                DfferentForm();
-                                RefreshStatus();
+                                RefreshStatus(true);
                             }
                             else
                             {
@@ -375,8 +379,7 @@ namespace PeaRoxy.Windows.WPFClient
                             if (Listener != null)
                                 Listener.Stop();
                             MainPage.IsEnabled = true;
-                            DfferentForm();
-                            RefreshStatus();
+                            RefreshStatus(true);
                         }
                     }, new object[] { });
                 });
@@ -389,8 +392,7 @@ namespace PeaRoxy.Windows.WPFClient
                 if (Listener != null)
                     Listener.Stop();
                 MainPage.IsEnabled = true;
-                DfferentForm();
-                RefreshStatus();
+                RefreshStatus(true);
             }
             return false;
         }
@@ -464,7 +466,7 @@ namespace PeaRoxy.Windows.WPFClient
             {
                 VDialog.Show(this, "Connection to the server interrupted.", "PeaRoxy Client", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Stop);
                 App.Notify.ShowBalloonTip(1000, "PeaRoxy Client", "Connection to the server interrupted.", System.Windows.Forms.ToolTipIcon.Error);
-                btn_dissconnect_Click(null, null);
+                Controls_StopClick(null, null);
             }, new object[] { });
         }
 

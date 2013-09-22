@@ -105,7 +105,7 @@ namespace PeaRoxy.Windows.WPFClient
             this.IsFormDfferent = false;
             App.Notify.DoubleClick -= Notify_DoubleClick;
             App.Notify.Click -= Notify_Click;
-            MainPage.Loading = true;
+            MainPage.isLoading = true;
             Controls.IsEnabled = false;
             Header.IsEnabled = false;
             Toolbar.IsEnabled = false;
@@ -119,7 +119,7 @@ namespace PeaRoxy.Windows.WPFClient
             this.IsEnabled = true;
             App.Notify.DoubleClick += Notify_DoubleClick;
             App.Notify.Click += Notify_Click;
-            MainPage.Loading = false;
+            MainPage.isLoading = false;
             Controls.IsEnabled = true;
             Header.IsEnabled = true;
             Toolbar.IsEnabled = true;
@@ -162,9 +162,7 @@ namespace PeaRoxy.Windows.WPFClient
                     System.Threading.Thread.Sleep(1000);
                 this.Dispatcher.Invoke((SimpleVoid_Delegate)delegate()
                 {
-                    if (!appstart || !PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Startup_StartServer)
-                        DfferentForm();
-                    RefreshStatus();
+                    RefreshStatus(!appstart || !PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Startup_StartServer);
                 }, new object[] { });
             }) { IsBackground = true }.Start();
             this.Focus();
@@ -177,7 +175,6 @@ namespace PeaRoxy.Windows.WPFClient
             Controls.CurrentStatus = UserControls.StartStopButton.Status.Hide;
             DoubleAnimation da_HideWindow = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(0.6)));
             this.BeginAnimation(MainWindow.OpacityProperty, da_HideWindow);
-
 
             new System.Threading.Thread(delegate()
             {
@@ -194,9 +191,10 @@ namespace PeaRoxy.Windows.WPFClient
                 }, new object[] { });
             }) { IsBackground = true }.Start();
         }
-        private void RefreshStatus()
+        private void RefreshStatus(bool? doDfferent = null)
         {
-            bool needDff = IsFormDfferent;
+            if (!doDfferent.HasValue)
+                doDfferent = IsFormDfferent;
             IndfferentForm();
             bool isConnected = false;
             DoubleAnimation da_ShowConnectedImage = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.5)));
@@ -224,7 +222,7 @@ namespace PeaRoxy.Windows.WPFClient
                 default:
                     break;
             }
-            if (needDff)
+            if (doDfferent.Value)
                 new System.Threading.Thread(delegate()
                 {
                     System.Threading.Thread.Sleep((int)(1200));
@@ -238,22 +236,11 @@ namespace PeaRoxy.Windows.WPFClient
                 }) { IsBackground = true }.Start();
         }
 
-        private void btn_connect_Click(object sender, RoutedEventArgs e)
-        {
-            this.StartServer();
-        }
-        private void btn_dissconnect_Click(object sender, RoutedEventArgs e)
-        {
-            if (!this.StopServer())
-                DfferentForm();
-            RefreshStatus();
-        }
-
         private void Notify_Click(object sender, EventArgs e)
         {
             System.Windows.Forms.MouseEventArgs p = e as System.Windows.Forms.MouseEventArgs;
             if (p != null && p.Button == System.Windows.Forms.MouseButtons.Left)
-                if (!this.isHidden) //this.WindowState != System.Windows.WindowState.Minimized)//this.Visibility == System.Windows.Visibility.Visible)
+                if (!this.isHidden)
                     this.Activate();
                 else
                     ShowForm();
@@ -261,7 +248,7 @@ namespace PeaRoxy.Windows.WPFClient
 
         private void Notify_DoubleClick(object sender, EventArgs e)
         {
-            if (!this.isHidden) //this.WindowState != System.Windows.WindowState.Minimized)//this.Visibility == System.Windows.Visibility.Visible)
+            if (!this.isHidden)
                 HideForm();
             else
                 ShowForm();
@@ -405,9 +392,7 @@ namespace PeaRoxy.Windows.WPFClient
 
         private void Controls_StopClick(object sender, RoutedEventArgs e)
         {
-            if (!this.StopServer())
-                DfferentForm();
-            RefreshStatus();
+            RefreshStatus(!this.StopServer());
         }
 
         private void Exit_MinimizeClick(object sender, RoutedEventArgs e)
@@ -419,14 +404,12 @@ namespace PeaRoxy.Windows.WPFClient
         {
             reConfig();
         }
+
         private void Toolbar_SmartPearSelectedChanged(object sender, RoutedEventArgs e)
         {
             MenuItem mi = ((UserControls.ToolbarButtons.MenuItemEventArgs)e).SenderMenuItem;
             if (!mi.IsChecked)
                 mi.IsChecked = true;
-
-            //if (!mi_smartpear_disable.IsChecked || !mi_smartpear_enable.IsChecked)
-            //return;
             
             Toolbar.SmartPearEnableMenuItem.IsChecked = false;
             Toolbar.SmartPearDisableMenuItem.IsChecked = false;
