@@ -45,7 +45,7 @@ namespace PeaRoxy.Windows.Network
                 Tun2SocksProcess = Common.CreateProcess(
                     "TAPDriver\\tun2socks.exe",
                     "--tundev \"" + network.ServiceName + ":" + network.NetConnectionID + ":" + ipAddress.ToString() + ":" + CommonLibrary.Common.MergeIPIntoIPSubnet(ipAddress, ipSubnet, IPAddress.Parse("10.0.0.0")).ToString() + ":" + ipSubnet.ToString() + "\" --netif-ipaddr " + ipServer.ToString() + " --netif-netmask " + ipSubnet.ToString() + " --socks-server-addr " + SocksProxy.Address.ToString() + ":" + SocksProxy.Port.ToString());
-                int timeout = 30;
+                int timeout = 120;
                 timeout = timeout * 10;
                 while (!network.NetEnabled)
                 {
