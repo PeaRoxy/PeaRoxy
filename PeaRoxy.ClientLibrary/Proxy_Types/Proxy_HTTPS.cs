@@ -29,7 +29,7 @@ namespace PeaRoxy.ClientLibrary.Proxy_Types
             string client_connectionAddress = null;
             ushort client_connectionPort = 0;
             string[] parts = textData.Split('\n')[0].Split(' ');
-            Uri url = new Uri("https://" + parts[1]);
+            Uri url = new Uri("https://" + parts[1].Trim());
             client_connectionAddress = url.Host;
             client_connectionPort = (ushort)url.Port;
             byte[] server_response = System.Text.Encoding.ASCII.GetBytes("HTTP/1.1 200 OK\r\n\r\n");
