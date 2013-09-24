@@ -13,7 +13,7 @@ namespace PeaRoxy.ClientLibrary.Proxy_Types
             string textData = System.Text.Encoding.ASCII.GetString(firstresponde);
             if (textData.IndexOf("\r\n\r\n") == -1)
                 return false;
-            if (textData.ToUpper().IndexOf("CONNECT ") != 0)
+            if (textData.ToUpper().IndexOf("CONNECT ") != 0 && textData.ToUpper().IndexOf("FASTCONNECT ") != 0)
                 return false;
             return true;
         }
@@ -32,19 +32,24 @@ namespace PeaRoxy.ClientLibrary.Proxy_Types
             Uri url = new Uri("https://" + parts[1].Trim());
             client_connectionAddress = url.Host;
             client_connectionPort = (ushort)url.Port;
-            byte[] server_response = System.Text.Encoding.ASCII.GetBytes("HTTP/1.1 200 OK\r\n\r\n");
             client.RequestAddress = "https://" + client_connectionAddress + ":" + client_connectionPort.ToString();
-            client.Write(server_response);
-            client.IsReceivingStarted = false;
-            if (client.Controller.Status == Proxy_Controller.ControllerStatus.OnlyProxy || client.Controller.Status == Proxy_Controller.ControllerStatus.Both)
+            if (textData.ToUpper().IndexOf("FASTCONNECT ") != 0)
             {
+                byte[] server_response = System.Text.Encoding.ASCII.GetBytes("HTTP/1.1 200 OK\r\n\r\n");
+                client.Write(server_response);
                 firstResponde = new byte[0];
-                DirectHandle(client, client_connectionAddress, client_connectionPort, firstResponde);
             }
             else
             {
-                client.Close("Currently we only serve AutoConfig files. Try restarting your browser.", null, ErrorRenderer.HTTPHeaderCode.C_417_EXPECTATION_FAILED);
+                int endLine = textData.IndexOf("\r\n\r\n") + 4;
+                Array.Copy(firstResponde, endLine, firstResponde, 0, firstResponde.Length - endLine);
+                Array.Resize(ref firstResponde, firstResponde.Length - endLine);
             }
+            client.IsReceivingStarted = false;
+            if (client.Controller.Status == Proxy_Controller.ControllerStatus.OnlyProxy || client.Controller.Status == Proxy_Controller.ControllerStatus.Both)
+                DirectHandle(client, client_connectionAddress, client_connectionPort, firstResponde);
+            else
+                client.Close("Currently we only serve AutoConfig files. Try restarting your browser.", null, ErrorRenderer.HTTPHeaderCode.C_417_EXPECTATION_FAILED);
         }
         public static void DirectHandle(Proxy_Client client, string client_connectionAddress, ushort client_connectionPort, byte[] firstResponde)
         {
