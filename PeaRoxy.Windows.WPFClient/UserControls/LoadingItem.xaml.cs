@@ -26,13 +26,13 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
             set
             {
                 if (value)
-                    story.Begin(rect, true);
-                else
                 {
-                    story.Stop(rect);
                     rect.Opacity = 0;
                     rect.Margin = new Thickness(-5, 0, 0, 0);
+                    story.Begin(rect, true);
                 }
+                else
+                    story.Stop(rect);
             }
         }
 
