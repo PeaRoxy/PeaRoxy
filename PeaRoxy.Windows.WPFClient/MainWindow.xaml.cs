@@ -392,7 +392,7 @@ namespace PeaRoxy.Windows.WPFClient
 
         private void Controls_StopClick(object sender, RoutedEventArgs e)
         {
-            RefreshStatus(!this.StopServer());
+            RefreshStatus(this.StopServer());
         }
 
         private void Exit_MinimizeClick(object sender, RoutedEventArgs e)
