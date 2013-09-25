@@ -13,8 +13,8 @@ SetCompressor /SOLID lzma
 ;General
   !include "x64.nsh"
   ;Name and file
-  Name "PeaRoxy Client for Windows v0.9.5.0"
-  OutFile "..\Packages\PeaRoxyClient-Win-v0.9.5.exe"
+  Name "PeaRoxy Client for Windows v${VERSION}"
+  OutFile "..\Packages\PeaRoxyClient-Win-v${VERSION}.exe"
 
   ;Default installation folder
   InstallDir "$PROGRAMFILES\PeaRoxy"
@@ -88,15 +88,15 @@ Section "Main Application" SecMain
 
   ;Store installation folder
   WriteRegStr HKLM "Software\PeaRoxy" "InstallDir" $INSTDIR
-  WriteRegStr HKLM "Software\PeaRoxy" "Version" "0.9.0"
+  WriteRegStr HKLM "Software\PeaRoxy" "Version" ${VERSION}
 
   CreateShortCut "$SMPROGRAMS\PeaRoxy Client.lnk" "$INSTDIR\PeaRoxy.Windows.WPFClient.exe"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "PeaRoxy Client" '"$INSTDIR\PeaRoxy.Windows.WPFClient.exe" /autoRun'
 
   ;Create uninstaller
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\PeaRoxy Client 0.9.5 for Windows" "DisplayName" "PeaRoxy Client 0.9.5 for Windows (remove only)"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\PeaRoxy Client 0.9.5 for Windows" "UninstallString" "$INSTDIR\Uninstall PeaRoxy.exe"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\PeaRoxy Client 0.9.5 for Windows" "Publisher" "PeaRoxy (pearoxy.com)"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\PeaRoxy Client for Windows" "DisplayName" "PeaRoxy Client ${VERSION} for Windows (remove only)"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\PeaRoxy Client for Windows" "UninstallString" "$INSTDIR\Uninstall PeaRoxy.exe"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\PeaRoxy Client for Windows" "Publisher" "PeaRoxy (pearoxy.com)"
 
   WriteUninstaller "$INSTDIR\Uninstall PeaRoxy.exe"
 
@@ -133,7 +133,7 @@ Section "Uninstall"
 
   DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "PeaRoxy Client"
   DeleteRegKey /ifempty HKLM "Software\PeaRoxy"
-  DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PeaRoxy Client 0.9.5 for Windows"
+  DeleteRegKey HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\PeaRoxy Client for Windows"
 SectionEnd
 Function un.onInit
 	SetRebootFlag true 

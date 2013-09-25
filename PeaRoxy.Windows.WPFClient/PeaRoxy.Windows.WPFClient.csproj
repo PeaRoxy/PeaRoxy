@@ -410,9 +410,10 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>"$(ProjectDir)TPTools\InsertIcons.exe" "$(TargetPath)" "$(ProjectDir)Images\Icons\Close.ico"
+    <PostBuildEvent>for /f %25%25i in ('"$(SolutionDir)Solution Items\VersionExtractor.exe" $(TargetPath)') do set version=%25%25i
+"$(ProjectDir)TPTools\InsertIcons.exe" "$(TargetPath)" "$(ProjectDir)Images\Icons\Close.ico"
 if $(ConfigurationName) == Release (
-"$(ProgramFiles)\NSIS\makensis.exe" "$(SolutionDir)Setup\PeaRoxy WPF Client.nsi"
+"$(ProgramFiles)\NSIS\makensis.exe" /DVERSION=%25version%25 "$(SolutionDir)Setup\PeaRoxy WPF Client.nsi"
 )</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
