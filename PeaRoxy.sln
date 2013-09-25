@@ -30,7 +30,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeaRoxy.Windows.Updater", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D9C5BEAD-DF76-4B9F-A83E-E02624C3802D}"
 	ProjectSection(SolutionItems) = preProject
+		Solution Items\7za.exe = Solution Items\7za.exe
 		README.md = README.md
+		Solution Items\VersionExtractor.exe = Solution Items\VersionExtractor.exe
 	EndProjectSection
 EndProject
 Global
