@@ -56,6 +56,9 @@
     <AssemblyOriginatorKeyFile>
     </AssemblyOriginatorKeyFile>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Server.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
   </ItemGroup>
@@ -68,6 +71,7 @@
     <Compile Include="Screen.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Server.ico" />
     <Content Include="ZipExcludeList.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
