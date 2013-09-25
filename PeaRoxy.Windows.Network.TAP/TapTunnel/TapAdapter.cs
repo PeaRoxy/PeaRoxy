@@ -5,7 +5,7 @@ using System.Text;
 using System.Net;
 using PeaRoxy.Windows.Network.Win32_WMI;
 
-namespace PeaRoxy.Windows.Network
+namespace PeaRoxy.Windows.Network.TAP
 {
     public partial class TapTunnel
     {

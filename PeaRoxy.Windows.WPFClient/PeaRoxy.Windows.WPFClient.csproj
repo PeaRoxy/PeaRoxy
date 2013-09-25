@@ -354,9 +354,9 @@
       <Project>{511CA971-9FAD-4BFA-9841-105CF644CF77}</Project>
       <Name>PeaRoxy.Platform</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PeaRoxy.Windows.Network\PeaRoxy.Windows.Network.csproj">
+    <ProjectReference Include="..\PeaRoxy.Windows.Network.TAP\PeaRoxy.Windows.Network.TAP.csproj">
       <Project>{3A0F7A2E-216F-47F1-A31F-2A9A29949931}</Project>
-      <Name>PeaRoxy.Windows.Network</Name>
+      <Name>PeaRoxy.Windows.Network.TAP</Name>
     </ProjectReference>
     <ProjectReference Include="..\PeaRoxy.Windows.Updater\PeaRoxy.Windows.Updater.csproj">
       <Project>{51A9F6FA-3D62-4F59-8E0A-CEB7B37FDC0A}</Project>

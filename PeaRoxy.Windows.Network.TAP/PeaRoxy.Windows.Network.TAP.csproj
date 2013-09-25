@@ -8,8 +8,8 @@
     <ProjectGuid>{3A0F7A2E-216F-47F1-A31F-2A9A29949931}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PeaRoxy.Windows.Network</RootNamespace>
-    <AssemblyName>PeaRoxy.Windows.Network</AssemblyName>
+    <RootNamespace>PeaRoxy.Windows.Network.TAP</RootNamespace>
+    <AssemblyName>PeaRoxy.Windows.Network.TAP</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>

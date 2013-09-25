@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace PeaRoxy.Windows.Network
+namespace PeaRoxy.Windows.Network.TAP
 {
     public partial class TapTunnel
     {

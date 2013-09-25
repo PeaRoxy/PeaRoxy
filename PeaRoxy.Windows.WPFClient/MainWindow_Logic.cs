@@ -29,7 +29,7 @@ namespace PeaRoxy.Windows.WPFClient
             Sleep,
         }
         private Proxy_Controller Listener;
-        private Network.TapTunnel tapTunnel;
+        private Network.TAP.TapTunnel tapTunnel;
 
         System.Drawing.Icon connectedIcon;
         public CurrentStatus Status { get; set; }
@@ -327,7 +327,7 @@ namespace PeaRoxy.Windows.WPFClient
                                             hostIps.Add(System.Net.IPAddress.Parse(ServerAddress));
                                         else
                                             hostIps.AddRange(System.Net.Dns.GetHostEntry(ServerAddress).AddressList);
-                                        tapTunnel = new Network.TapTunnel();
+                                        tapTunnel = new Network.TAP.TapTunnel();
                                         tapTunnel.AdapterAddressRange = System.Net.IPAddress.Parse(PeaRoxy.Windows.WPFClient.Properties.Settings.Default.TAP_IPRange);
                                         try
                                         {

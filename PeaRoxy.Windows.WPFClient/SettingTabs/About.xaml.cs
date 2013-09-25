@@ -33,12 +33,12 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
                                     "Thriple.dll (3D Controls) \r\n" +
                                     "VDialog.dll (Win7 Dialogs) \r\n" +
                                     "EasyHook.dll";
-            lbl_versions.Content = "v" + System.Reflection.Assembly.GetAssembly(typeof(PeaRoxy.ClientLibrary.Proxy_Controller)).GetName().Version.ToString(3) + "\r\n" +
-                                   "v" + System.Reflection.Assembly.GetAssembly(typeof(PeaRoxy.CoreProtocol.PeaRoxyProtocol)).GetName().Version.ToString(3) + "\r\n" +
-                                   "v" + System.Reflection.Assembly.GetAssembly(typeof(PeaRoxy.Platform.ClassRegistry)).GetName().Version.ToString(3) + "\r\n" +
-                                   "v" + System.Reflection.Assembly.GetAssembly(typeof(PeaRoxy.Windows.WindowsModule)).GetName().Version.ToString(3) + "\r\n" +
-                                   "v" + System.Reflection.Assembly.GetAssembly(typeof(PeaRoxy.Windows.Network.TapTunnel)).GetName().Version.ToString(3) + "\r\n" +
-                                   "v" + System.Reflection.Assembly.GetAssembly(typeof(PeaRoxy.CommonLibrary.Common)).GetName().Version.ToString(3) + "\r\n" +
+            lbl_versions.Content = "v" + System.Reflection.Assembly.GetAssembly(typeof(ClientLibrary.Proxy_Controller)).GetName().Version.ToString(3) + "\r\n" +
+                                   "v" + System.Reflection.Assembly.GetAssembly(typeof(CoreProtocol.PeaRoxyProtocol)).GetName().Version.ToString(3) + "\r\n" +
+                                   "v" + System.Reflection.Assembly.GetAssembly(typeof(Platform.ClassRegistry)).GetName().Version.ToString(3) + "\r\n" +
+                                   "v" + System.Reflection.Assembly.GetAssembly(typeof(Windows.WindowsModule)).GetName().Version.ToString(3) + "\r\n" +
+                                   "v" + System.Reflection.Assembly.GetAssembly(typeof(Windows.Network.TAP.TapTunnel)).GetName().Version.ToString(3) + "\r\n" +
+                                   "v" + System.Reflection.Assembly.GetAssembly(typeof(CommonLibrary.Common)).GetName().Version.ToString(3) + "\r\n" +
                                    "v" + System.Reflection.Assembly.GetAssembly(typeof(Thriple.Panels.Panel3D)).GetName().Version.ToString(3) + " © Josh Smith\r\n" +
                                    "v" + System.Reflection.Assembly.GetAssembly(typeof(VDialog)).GetName().Version.ToString(3) + " © Łukasz Świątkowski\r\n" +
                                    "v" + System.Reflection.Assembly.GetAssembly(typeof(EasyHook.RemoteHooking)).GetName().Version.ToString(3) + " © EasyHook Team"; ;
