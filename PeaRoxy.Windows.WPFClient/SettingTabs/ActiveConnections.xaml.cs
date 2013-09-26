@@ -36,9 +36,23 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
                 {
                     TreeViewItem sel = (TreeViewItem)connectionContextMenu.PlacementTarget;
                     if (sel.Tag != null && sel.Tag.GetType().Equals(typeof(Proxy_Client)))
-                    {
                         ((Proxy_Client)sel.Tag).Close("Closed By User");
+                }
+            };
+            connectionContextMenu.Items.Add(cItem);
+            cItem = new MenuItem();
+            cItem.Header = "Copy";
+            cItem.Click += (RoutedEventHandler)delegate(object sender, RoutedEventArgs e)
+            {
+                if (connectionContextMenu.PlacementTarget.GetType().Equals(typeof(TreeViewItem)))
+                {
+                    try
+                    {
+                        TreeViewItem sel = (TreeViewItem)connectionContextMenu.PlacementTarget;
+                        if (sel.Tag != null && sel.Tag.GetType().Equals(typeof(Proxy_Client)))
+                            System.Windows.Clipboard.SetText(((Proxy_Client)sel.Tag).RequestAddress);
                     }
+                    catch (Exception) { }
                 }
             };
             connectionContextMenu.Items.Add(cItem);
