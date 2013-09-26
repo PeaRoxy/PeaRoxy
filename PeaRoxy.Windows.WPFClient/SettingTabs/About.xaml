@@ -7,10 +7,10 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="360">
     <Grid>
-        <Image Height="100" Stretch="Fill" VerticalAlignment="Top" Source="/PeaRoxy.Windows.WPFClient;component/Images/Icons/Pear.ico" HorizontalAlignment="Center" Width="100" Margin="130,10,130,0" />
-        <Label Name="lbl_MainVersion" Content="PeaRoxy Client, v%version Beta By PeaRoxy.com" HorizontalAlignment="Center" Margin="0,112,0,0" VerticalAlignment="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
-        <Label Name="lbl_versions" Content="" Height="400" HorizontalAlignment="Right" Margin="0,140,30,0" VerticalAlignment="Top" HorizontalContentAlignment="Left" FontSize="10" />
-        <Label Name="lbl_libraries" Content="" Height="400" HorizontalAlignment="Left" Margin="50,140,0,0" VerticalAlignment="Top" HorizontalContentAlignment="Left" FontSize="10" />
+        <Image Height="100" Stretch="Fill" VerticalAlignment="Top" Source="/PeaRoxy.Windows.WPFClient;component/Images/Icons/Pear.ico" HorizontalAlignment="Center" Width="100" Margin="130,0,130,0" />
+        <Label Name="lbl_MainVersion" Content="PeaRoxy Client, v%version Beta By PeaRoxy.com" HorizontalAlignment="Center" Margin="0,100,0,0" VerticalAlignment="Top" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+        <Label Name="lbl_versions" Content="" Height="400" HorizontalAlignment="Right" Margin="0,120,30,0" VerticalAlignment="Top" HorizontalContentAlignment="Left" FontSize="10" />
+        <Label Name="lbl_libraries" Content="" Height="400" HorizontalAlignment="Left" Margin="50,120,0,0" VerticalAlignment="Top" HorizontalContentAlignment="Left" FontSize="10" />
         <Button Name="ResetSettingsButton" Content="Reset Settings" HorizontalAlignment="Left" Margin="275,271,0,0" VerticalAlignment="Top" Width="75" Click="btn_resetsettings_Click" />
     </Grid>
 </st:Base>
