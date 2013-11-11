@@ -31,16 +31,16 @@ SetCompressor /SOLID lzma
 
 ;--------------------------------
 ;Interface Configuration
-  !define MUI_ICON "Setup.ico"
+  !define MUI_ICON "PeaRoxy Setup.ico"
   !define MUI_HEADERIMAGE
-  !define MUI_HEADERIMAGE_BITMAP "Header.bmp" ; optional
-  !define MUI_WELCOMEFINISHPAGE_BITMAP "Left.bmp"
+  !define MUI_HEADERIMAGE_BITMAP "PeaRoxy Header.bmp" ; optional
+  !define MUI_WELCOMEFINISHPAGE_BITMAP "PeaRoxy Left.bmp"
   !define MUI_ABORTWARNING
 
 ;--------------------------------
 ;Pages
 
-  ;!insertmacro MUI_PAGE_LICENSE "GPL.txt"
+  !insertmacro MUI_PAGE_LICENSE "PeaRoxy LICENSE.txt"
   !insertmacro MUI_PAGE_COMPONENTS
   !insertmacro MUI_PAGE_DIRECTORY
   !insertmacro MUI_PAGE_INSTFILES
@@ -83,6 +83,14 @@ Section "Main Application" SecMain
   CreateDirectory "$INSTDIR\TAPDriver"
   SetOutPath "$INSTDIR\TAPDriver"
   File "..\bin\WPFClient\TAPDriver\*"
+  
+  CreateDirectory "$INSTDIR\TAPDriver\x64"
+  SetOutPath "$INSTDIR\TAPDriver\x64"
+  File "..\bin\WPFClient\TAPDriver\x64\*"
+  
+  CreateDirectory "$INSTDIR\TAPDriver\x86"
+  SetOutPath "$INSTDIR\TAPDriver\x86"
+  File "..\bin\WPFClient\TAPDriver\x86\*"
 
   SetOutPath "$INSTDIR"
 
@@ -106,10 +114,12 @@ Function .onInit
 	UserInfo::GetAccountType
 	pop $0
 	${If} $0 != "admin" ;Require admin rights on NT4+
-		MessageBox mb_iconstop "Administrator rights required!"
+		MessageBox MB_ICONSTOP "Administrator rights required! Try running this file as Admin."
 		SetErrorLevel 740 ;ERROR_ELEVATION_REQUIRED
 		Quit
 	${EndIf}
+	CALL CheckVC2010Redist
+	CALL CheckNetFramework4Client
 FunctionEnd
 ;--------------------------------
 ;Descriptions
@@ -140,8 +150,47 @@ Function un.onInit
 	UserInfo::GetAccountType
 	pop $0
 	${If} $0 != "admin" ;Require admin rights on NT4+
-		MessageBox mb_iconstop "Administrator rights required!"
+		MessageBox MB_ICONSTOP "Administrator rights required! Try running this file as Admin."
 		SetErrorLevel 740 ;ERROR_ELEVATION_REQUIRED
 		Quit
 	${EndIf}
+FunctionEnd
+
+Function CheckVC2010Redist
+    ClearErrors
+    ${If} ${RunningX64}
+          ReadRegDWORD $0 HKLM "SOFTWARE\Wow6432Node\Microsoft\VisualStudio\10.0\VC\VCRedist\x86" "Installed"
+    ${Else}
+          ReadRegDWORD $0 HKLM "SOFTWARE\Microsoft\VisualStudio\10.0\VC\VCRedist\x86" "Installed"
+    ${EndIf}
+    IfErrors NotDetected
+    ${If} $0 == 1
+        Return
+    ${Else}
+    NotDetected:
+        MessageBox MB_ICONSTOP "Microsoft Visual C++ 2010 Redistributable Package is not installed, we will now redirect you to the Microsoft Website to download it."
+        ExecShell open "http://www.microsoft.com/en-us/download/details.aspx?id=5555"
+        Quit
+    ${EndIf}
+FunctionEnd
+
+Function CheckNetFramework4Client
+    ClearErrors
+    ReadRegDWORD $0 HKLM "SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Client" "Install"
+    IfErrors NotDetected
+    ${If} $0 == 1
+        Return
+    ${Else}
+        ClearErrors
+        ReadRegDWORD $0 HKLM "SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full" "Install"
+        IfErrors NotDetected
+        ${If} $0 == 1
+              Return
+        ${Else}
+        NotDetected:
+            MessageBox MB_ICONSTOP "Microsoft .NET Framework 4 is not installed, we will now redirect you to the Microsoft Website to download it."
+            ExecShell open "http://www.microsoft.com/en-us/download/details.aspx?id=24872"
+            Quit
+        ${EndIf}
+    ${EndIf}
 FunctionEnd
