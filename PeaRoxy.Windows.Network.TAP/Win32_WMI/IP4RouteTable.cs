@@ -31,7 +31,7 @@ namespace PeaRoxy.Windows.Network.Win32_WMI
         public string Status { get; private set; }
         public uint Type { get; private set; }
         private ManagementObject ManagementSource;
-
+        private bool isLegacy = false;
         public static List<IP4RouteTable> GetCurrentTable()
         {
             List<IP4RouteTable> nas = new List<IP4RouteTable>();
@@ -58,8 +58,27 @@ namespace PeaRoxy.Windows.Network.Win32_WMI
 
         public void SetMetric1(int value)
         {
-            ManagementSource.SetPropertyValue("Metric1", value);
-            ManagementSource.Put();
+            if (!isLegacy)
+            {
+                try
+                {
+                    ManagementSource.SetPropertyValue("Metric1", value);
+                    ManagementSource.Put();
+                }
+                catch (Exception)
+                {
+                    isLegacy = true;
+                }
+            }
+            if (isLegacy)
+            {
+                AddChangeRouteRule( IPAddress.Parse(this.Destination), 
+                                    IPAddress.Parse(this.NextHop), 
+                                    value, 
+                                    IPAddress.Parse(this.Mask), 
+                                    this.InterfaceIndex, true);
+            }
+
             RefreshProperties();
         }
 
