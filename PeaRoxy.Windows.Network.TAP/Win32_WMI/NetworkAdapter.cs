@@ -80,14 +80,23 @@ namespace PeaRoxy.Windows.Network.Win32_WMI
         {
             ManagementSource = mo;
             foreach (System.Reflection.PropertyInfo p in this.GetType().GetProperties())
-                p.SetValue(this, ManagementSource[p.Name], null);
+                try
+                {
+                    p.SetValue(this, ManagementSource[p.Name], null);
+                }
+                catch (Exception) { }
+                
         }
 
         public void RefreshProperties()
         {
             ManagementSource.Get();
             foreach (System.Reflection.PropertyInfo p in this.GetType().GetProperties())
-                p.SetValue(this, ManagementSource[p.Name], null);
+                try
+                {
+                    p.SetValue(this, ManagementSource[p.Name], null);
+                }
+                catch (Exception) { }
         }
 
         public void Win6_SetNetConnectionID(string name)
@@ -135,7 +144,7 @@ namespace PeaRoxy.Windows.Network.Win32_WMI
                 if (this.NetConnectionID == NewName)
                     return true;
             }
-            bool res = this.HardRenameAdapter("NewName");
+            bool res = this.HardRenameAdapter(NewName);
             this.RefreshProperties();
             return (res || this.NetConnectionID == NewName);
         }
