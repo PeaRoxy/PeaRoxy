@@ -19,9 +19,10 @@ namespace PeaRoxy.Windows.Network.TAP
                 {
                     if (NetworkAdapter.GetByName(name) != null)
                         return null;
+                    string osBit = Environment.Is64BitOperatingSystem ? "x64" : "x86";
                     Common.CreateProcess(
-                        "TAPDriver\\tapinstall.exe",
-                        "install \"TAPDriver\\OemWin2k.inf\" " + DriverServiceName).WaitForExit();
+                        "TAPDriver\\" + osBit + "\\tapinstall.exe",
+                        "install \"TAPDriver\\" + osBit + "\\OemWin2k.inf\" " + DriverServiceName).WaitForExit();
                 }
                 net = NetworkAdapter.GetByServiceName(DriverServiceName);
                 if (net == null)
@@ -33,8 +34,9 @@ namespace PeaRoxy.Windows.Network.TAP
 
             public static void RemoveAllAdapters()
             {
+                string osBit = Environment.Is64BitOperatingSystem ? "x64" : "x86";
                 Common.CreateProcess(
-                    "TAPDriver\\tapinstall.exe",
+                    "TAPDriver\\" + osBit + "\\tapinstall.exe",
                     "remove " + DriverServiceName).WaitForExit();
             }
         }
