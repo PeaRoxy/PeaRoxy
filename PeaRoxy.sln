@@ -35,6 +35,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Solution Items\VersionExtractor.exe = Solution Items\VersionExtractor.exe
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZARA", "ZARA\ZARA.csproj", "{93EA916C-4F5C-4136-8410-3AA87B474CC3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -116,6 +118,12 @@ Global
 		{51A9F6FA-3D62-4F59-8E0A-CEB7B37FDC0A}.Release|x64.ActiveCfg = Release|x86
 		{51A9F6FA-3D62-4F59-8E0A-CEB7B37FDC0A}.Release|x86.ActiveCfg = Release|x86
 		{51A9F6FA-3D62-4F59-8E0A-CEB7B37FDC0A}.Release|x86.Build.0 = Release|x86
+		{93EA916C-4F5C-4136-8410-3AA87B474CC3}.Debug|x64.ActiveCfg = Debug|x86
+		{93EA916C-4F5C-4136-8410-3AA87B474CC3}.Debug|x86.ActiveCfg = Debug|x86
+		{93EA916C-4F5C-4136-8410-3AA87B474CC3}.Debug|x86.Build.0 = Debug|x86
+		{93EA916C-4F5C-4136-8410-3AA87B474CC3}.Release|x64.ActiveCfg = Release|x86
+		{93EA916C-4F5C-4136-8410-3AA87B474CC3}.Release|x86.ActiveCfg = Release|x86
+		{93EA916C-4F5C-4136-8410-3AA87B474CC3}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
