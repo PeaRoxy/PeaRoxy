@@ -95,7 +95,9 @@ namespace PeaRoxy.Windows
                 if (p.Start())
                         return p;
             }
-            catch (Exception) { }
+            catch (Exception e) {
+                throw e;
+            }
             return null;
         }
     }
