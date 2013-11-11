@@ -23,31 +23,39 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
         public About()
         {
             InitializeComponent();
-            lbl_MainVersion.Content = lbl_MainVersion.Content.ToString().Replace("%version", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
-            lbl_libraries.Content = "ClientLibrary.dll \r\n" +
-                                    "CoreProtocol.dll \r\n" +
-                                    "Windows.dll \r\n" +
-                                    "Windows.Network.TAP.dll \r\n" +
-                                    //"Windows.Network.Hook.exe \r\n" +
-                                    "CommonLibrary.dll \r\n" +
-                                    "Thriple.dll (3D Controls) \r\n" +
-                                    "VDialog.dll (Win7 Dialogs) \r\n" +
-                                    "EasyHook.dll \r\n" +
-                                    "Tun2Socks \r\n" +
-                                    "TAP Adapter \r\n" +
-                                    "Images";
-            lbl_versions.Content = "v" + System.Reflection.Assembly.GetAssembly(typeof(ClientLibrary.Proxy_Controller)).GetName().Version.ToString(3) + "\r\n" +
-                                   "v" + System.Reflection.Assembly.GetAssembly(typeof(CoreProtocol.PeaRoxyProtocol)).GetName().Version.ToString(3) + "\r\n" +
-                                   "v" + System.Reflection.Assembly.GetAssembly(typeof(Windows.WindowsModule)).GetName().Version.ToString(3) + "\r\n" +
-                                   "v" + System.Reflection.Assembly.GetAssembly(typeof(Windows.Network.TAP.TapTunnel)).GetName().Version.ToString(3) + "\r\n" +
-                                   //"v" + System.Reflection.Assembly.GetAssembly(typeof(Windows.Network.Hook.TapTunnel)).GetName().Version.ToString(3) + "\r\n" +
-                                   "v" + System.Reflection.Assembly.GetAssembly(typeof(CommonLibrary.Common)).GetName().Version.ToString(3) + "\r\n" +
-                                   "v" + System.Reflection.Assembly.GetAssembly(typeof(Thriple.Panels.Panel3D)).GetName().Version.ToString(3) + " © Josh Smith\r\n" +
-                                   "v" + System.Reflection.Assembly.GetAssembly(typeof(VDialog)).GetName().Version.ToString(3) + " © Łukasz Świątkowski\r\n" +
-                                   "v" + System.Reflection.Assembly.GetAssembly(typeof(EasyHook.RemoteHooking)).GetName().Version.ToString(3) + " © EasyHook Team\r\n" +
-                                   "© Ambroz Bizjak\r\n" +
-                                   "© OpenVPN.net\r\n" +
-                                   "© Icons8.com";
+            try
+            {
+                lbl_MainVersion.Content = lbl_MainVersion.Content.ToString().Replace("%version", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
+                lbl_libraries.Content = "ClientLibrary.dll \r\n" +
+                                        "CoreProtocol.dll \r\n" +
+                                        "Windows.dll \r\n" +
+                                        "Windows.Network.TAP.dll \r\n" +
+                    //"Windows.Network.Hook.exe \r\n" +
+                                        "CommonLibrary.dll \r\n" +
+                                        "Thriple.dll (3D Controls) \r\n" +
+                                        "VDialog.dll (Win7 Dialogs) \r\n" +
+                                        "EasyHook.dll \r\n" +
+                                        "Tun2Socks \r\n" +
+                                        "TAP Adapter \r\n" +
+                                        "Images";
+                lbl_versions.Content = "v" + System.Reflection.Assembly.GetAssembly(typeof(ClientLibrary.Proxy_Controller)).GetName().Version.ToString(3) + "\r\n" +
+                                       "v" + System.Reflection.Assembly.GetAssembly(typeof(CoreProtocol.PeaRoxyProtocol)).GetName().Version.ToString(3) + "\r\n" +
+                                       "v" + System.Reflection.Assembly.GetAssembly(typeof(Windows.WindowsModule)).GetName().Version.ToString(3) + "\r\n" +
+                                       "v" + System.Reflection.Assembly.GetAssembly(typeof(Windows.Network.TAP.TapTunnel)).GetName().Version.ToString(3) + "\r\n" +
+                    //"v" + System.Reflection.Assembly.GetAssembly(typeof(Windows.Network.Hook.TapTunnel)).GetName().Version.ToString(3) + "\r\n" +
+                                       "v" + System.Reflection.Assembly.GetAssembly(typeof(CommonLibrary.Common)).GetName().Version.ToString(3) + "\r\n" +
+                                       "v" + System.Reflection.Assembly.GetAssembly(typeof(Thriple.Panels.Panel3D)).GetName().Version.ToString(3) + " © Josh Smith\r\n" +
+                                       "v" + System.Reflection.Assembly.GetAssembly(typeof(VDialog)).GetName().Version.ToString(3) + " © Łukasz Świątkowski\r\n" +
+                                       "v" + System.Reflection.Assembly.GetAssembly(typeof(EasyHook.RemoteHooking)).GetName().Version.ToString(3) + " © EasyHook Team\r\n" +
+                                       "© Ambroz Bizjak\r\n" +
+                                       "© OpenVPN.net\r\n" +
+                                       "© Icons8.com";
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+
         }
 
         private void btn_resetsettings_Click(object sender, RoutedEventArgs e)
