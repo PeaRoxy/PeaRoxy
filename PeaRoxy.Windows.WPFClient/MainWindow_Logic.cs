@@ -343,7 +343,7 @@ namespace PeaRoxy.Windows.WPFClient
                                             }.Concat(hostIps).ToArray();
                                         tapTunnel.SocksProxyEndPoint = new System.Net.IPEndPoint(
                                             System.Net.IPAddress.Parse(PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_Address),
-                                            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_Port);
+                                            this.Listener.Port);
                                         tapTunnel.TunnelName = "PeaRoxy Tunnel";
                                         if (!tapTunnel.StartTunnel())
                                         {

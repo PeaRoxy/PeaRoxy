@@ -135,7 +135,7 @@ namespace PeaRoxy.ClientLibrary
             set
             {
                 failAttempts = value;
-                if (AutoDisconnect && this.FailAttempts > 10 && this.Status != ControllerStatus.Stopped)
+                if (AutoDisconnect && this.FailAttempts > 30 && this.Status != ControllerStatus.Stopped)
                 {
                     this.FailAttempts = 0;
                     Stop();
@@ -209,6 +209,8 @@ namespace PeaRoxy.ClientLibrary
                     IPEndPoint ipLocal = new IPEndPoint(this.IP, this.Port);
                     this.ListenerSocket.Bind(ipLocal);
                     this.ListenerSocket.Listen(256);
+                    if (this.Port == 0)
+                        this.Port = (ushort)((IPEndPoint)this.ListenerSocket.LocalEndPoint).Port;
                     DNSResolver.Start();
                     this.AcceptingWorker.RunWorkerAsync();
                     this.RoutingWorker.RunWorkerAsync();
