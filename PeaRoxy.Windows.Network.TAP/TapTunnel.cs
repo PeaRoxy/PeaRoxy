@@ -11,6 +11,7 @@ namespace PeaRoxy.Windows.Network.TAP
     {
         public IPAddress AdapterAddressRange { get; set; }
         public IPAddress DNSResolvingAddress { get; set; }
+        public IPAddress DNSResolvingAddress2 { get; set; }
         public IPEndPoint SocksProxyEndPoint { get; set; }
         public IPAddress[] ExceptionIPs { get; set; }
         public string TunnelName { get; set; }
@@ -20,7 +21,8 @@ namespace PeaRoxy.Windows.Network.TAP
         {
             this.AdapterAddressRange = IPAddress.Parse("10.0.0.0");
             this.DNSResolvingAddress = IPAddress.Parse("8.8.8.8");
-            this.SocksProxyEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1080);
+            this.DNSResolvingAddress2 = null;
+            this.SocksProxyEndPoint = new IPEndPoint(IPAddress.Loopback, 1080);
             this.ExceptionIPs = new IPAddress[] { IPAddress.Parse("8.8.8.8") };
             this.TunnelName = "PeaRoxy";
         }
@@ -52,7 +54,7 @@ namespace PeaRoxy.Windows.Network.TAP
             NetworkAdapter net = TapAdapter.InstallAnAdapter(TunnelName);
             if (net == null)
                 return false;
-            if (!Tun2Socks.StartTun2Socks(net, AdapterAddressRange, ipSubnet, ipAddressGateWay, DNSResolvingAddress, SocksProxyEndPoint))
+            if (!Tun2Socks.StartTun2Socks(net, AdapterAddressRange, ipSubnet, ipAddressGateWay, SocksProxyEndPoint))
                 return false;
             NetworkAdapterConfiguration netconfig = net.GetNetworkConfiguration();
             if (netconfig == null)
@@ -60,9 +62,16 @@ namespace PeaRoxy.Windows.Network.TAP
 
             int timeout = 30;
             timeout = timeout / 3;
+            string dnsString = string.Empty;
+                if (DNSResolvingAddress != null && DNSResolvingAddress2 != null)
+                    dnsString = DNSResolvingAddress.ToString() + "," + DNSResolvingAddress2.ToString();
+                else if (DNSResolvingAddress != null)
+                    dnsString = DNSResolvingAddress.ToString();
+                else if (DNSResolvingAddress2 != null)
+                    dnsString = DNSResolvingAddress2.ToString();
             while (true)
             {
-                if (netconfig.SetIPAddresses(AdapterAddressRange.ToString(), ipSubnet.ToString()) && netconfig.SetDnsSearchOrder(DNSResolvingAddress.ToString()))
+                if (netconfig.SetIPAddresses(AdapterAddressRange.ToString(), ipSubnet.ToString()) && netconfig.SetDnsSearchOrder(dnsString))
                     break;
                 if (timeout == 0)
                     return false;
@@ -132,7 +141,13 @@ namespace PeaRoxy.Windows.Network.TAP
                         //if (IP4RouteTable.GetBestInterfaceIndexForIP(ip) == net.InterfaceIndex)
                             IP4RouteTable.AddChangeRouteRule(ip, IPAddress.Parse(r.NextHop), 1, null, (int)r.InterfaceIndex);
             }
+            FlashDNSCache();
             return true;
+        }
+
+        public void FlashDNSCache()
+        {
+            Common.CreateProcess("ipconfig", "/flushdns").WaitForExit();
         }
     }
 }
