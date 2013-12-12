@@ -391,14 +391,14 @@ namespace PeaRoxy.ClientLibrary
                 int timeout = 25000;
                 while (timeout != 0)
                 {
+                    System.Threading.Thread.Sleep(100);
                     if (ActiveServer.ParentClient.LastError != string.Empty)
                         throw new Exception(ActiveServer.ParentClient.LastError);
                     if (ActiveServer.IsServerValid)
                         return;
                     if (ActiveServer.ParentClient.IsDisconnected)
                         throw new Exception("Connection dropped by server.");
-                    timeout--;
-                    System.Threading.Thread.Sleep(1);
+                    timeout -= 100;
                 }
                 if (ActiveServer.GetType() != typeof(Server_PeaRoxy)) // PeaRoxy problem with Forger and underlying IO
                     throw new Exception("No acceptable response.");
