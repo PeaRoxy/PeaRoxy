@@ -8,6 +8,33 @@ namespace PeaRoxy.CommonLibrary
 {
     public class ConfigReader
     {
+        private static System.Collections.ObjectModel.Collection<String> _blackList = null;
+        public static System.Collections.ObjectModel.Collection<String> GetBlackList(string fileAddress = "blacklist.ini")
+        {
+            if (_blackList != null)
+                return _blackList;
+            _blackList = new System.Collections.ObjectModel.Collection<String>();
+            try
+            {
+                StreamReader st = new StreamReader(fileAddress);
+                while (!st.EndOfStream)
+                {
+                    try
+                    {
+                        string line = st.ReadLine();
+                        if (line.IndexOf('#') > -1)
+                            line = line.Substring(0, line.IndexOf('#'));
+                        if (line.IndexOf(';') > -1)
+                            line = line.Substring(0, line.IndexOf(';'));
+                        _blackList.Add(line.Trim());
+                    }
+                    catch (Exception) { }
+                }
+                st.Close();
+            }
+            catch (Exception) { }
+            return _blackList;
+        }
         private static System.Collections.ObjectModel.Collection<User> _users = null;
         public static System.Collections.ObjectModel.Collection<User> GetUsers(string fileAddress = "users.ini")
         {

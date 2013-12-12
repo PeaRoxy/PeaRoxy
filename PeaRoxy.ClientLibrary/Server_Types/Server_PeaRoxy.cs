@@ -91,7 +91,6 @@ namespace PeaRoxy.ClientLibrary.Server_Types
 
                             Array.Copy(username, 0, client_request_pre, 2, username.Length);
                             Array.Copy(password, 0, client_request_pre, username.Length + 3, password.Length);
-                            Protocol.EncryptionKey = System.Text.Encoding.ASCII.GetBytes(Password);
                         }
                         else
                         {
@@ -169,6 +168,8 @@ namespace PeaRoxy.ClientLibrary.Server_Types
                             Close("Connection failed, Error Code: " + server_response[1].ToString(), null, ErrorRenderer.HTTPHeaderCode.C_502_BAD_GATEWAY);
                             return;
                         }
+                        if (Password != string.Empty)
+                            Protocol.EncryptionKey = System.Text.Encoding.ASCII.GetBytes(Password);
                         this.IsServerValid = true;
                         if (headerData != null && Common.IsSocketConnected(UnderlyingSocket))
                         {

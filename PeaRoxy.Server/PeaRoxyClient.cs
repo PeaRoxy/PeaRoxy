@@ -134,6 +134,7 @@ namespace PeaRoxy.Server
                                     return;
                                 }
 
+                                ConfigReader.User Accepted_User = null;
                                 // Select Auth Type
                                 if (this.SelectedAuthMode != 0 && client_data[0] != this.SelectedAuthMode)
                                     server_Aresponse = 99;
@@ -149,28 +150,24 @@ namespace PeaRoxy.Server
                                     string username = System.Text.Encoding.ASCII.GetString(client_data, 2, client_data[1]); // Read UserName
                                     byte[] passwordHash = new byte[client_data[client_data[1] + 2]]; // Init Password Hash Byte Array
                                     Array.Copy(client_data, client_data[1] + 3, passwordHash, 0, passwordHash.Length); // Read Password Hash
-                                    string user_password = null;
-                                    string user_name = null;
-                                    bool accepted = false;
+                                    
+                                    
                                     // Search out users to find out if we have this user in users.ini
                                     foreach (ConfigReader.User user in ConfigReader.GetUsers())
                                         if (user.Username.ToLower() == username.ToLower() && user.Hash.SequenceEqual(passwordHash)) // Check each user name and password hash
                                         {
-                                            accepted = true;
-                                            user_password = user.Password; // Save real password of user for other usages
-                                            user_name = user.Username; // Save real username of user for other usages
+                                            Accepted_User = user;
                                             break;
                                         }
 
-                                    if (!accepted)// Let check if we have a fail result with auth, If so, Close Connection
+                                    if (Accepted_User == null) // Let check if we have a fail result with auth, If so, Close Connection
                                     {
                                         server_Aresponse = 99;
                                     }
                                     else
                                     {
-                                        Protocol.EncryptionKey = System.Text.Encoding.ASCII.GetBytes(user_password);
-                                        Screen.ChangeUser(this.UserId, user_name, this.Id); // Let inform that user is changed, We are not "Anonymous" anymore
-                                        this.UserId = user_name; // Save user name in userId field for later access to screen
+                                        Screen.ChangeUser(this.UserId, Accepted_User.Username, this.Id); // Let inform that user is changed, We are not "Anonymous" anymore
+                                        this.UserId = Accepted_User.Username; // Save user name in userId field for later access to screen
                                         Array.Copy(client_data, client_data[1] + passwordHash.Length + 3, client_data, 0, client_data.Length - (client_data[1] + passwordHash.Length + 3));
                                     }
                                 }
@@ -219,6 +216,13 @@ namespace PeaRoxy.Server
                                             server_Aresponse = 8; // This type of address is not supported
                                             break;
                                     }
+
+                                    foreach (string blacklist in ConfigReader.GetBlackList())
+                                        if (blacklist.ToLower() == client_connectionAddress.ToLower().Trim())
+                                        {
+                                            Close(" Blacklisted: " + client_connectionAddress);
+                                            return;
+                                        }
                                 }
 
                                 // Init server response to this request
@@ -232,6 +236,9 @@ namespace PeaRoxy.Server
                                     Close("5. " + "response Error, Code: " + server_Aresponse.ToString());
                                     return;
                                 }
+
+                                if (Accepted_User != null)
+                                    Protocol.EncryptionKey = System.Text.Encoding.ASCII.GetBytes(Accepted_User.Password);
 
                                 Screen.SetRequestIPAddress(this.UserId, this.Id, client_connectionAddress + ":" + client_connectionPort); // Inform that we have a request for an address
 
