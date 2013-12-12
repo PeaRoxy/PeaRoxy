@@ -63,12 +63,12 @@ namespace PeaRoxy.Windows.Network.TAP
             int timeout = 30;
             timeout = timeout / 3;
             string dnsString = string.Empty;
-                if (DNSResolvingAddress != null && DNSResolvingAddress2 != null)
-                    dnsString = DNSResolvingAddress.ToString() + "," + DNSResolvingAddress2.ToString();
-                else if (DNSResolvingAddress != null)
-                    dnsString = DNSResolvingAddress.ToString();
-                else if (DNSResolvingAddress2 != null)
-                    dnsString = DNSResolvingAddress2.ToString();
+            if (DNSResolvingAddress != null && DNSResolvingAddress2 != null)
+                dnsString = DNSResolvingAddress.ToString() + "," + DNSResolvingAddress2.ToString();
+            else if (DNSResolvingAddress != null)
+                dnsString = DNSResolvingAddress.ToString();
+            else if (DNSResolvingAddress2 != null)
+                dnsString = DNSResolvingAddress2.ToString();
             while (true)
             {
                 if (netconfig.SetIPAddresses(AdapterAddressRange.ToString(), ipSubnet.ToString()) && netconfig.SetDnsSearchOrder(dnsString))
@@ -86,7 +86,6 @@ namespace PeaRoxy.Windows.Network.TAP
             {
                 if (r.Destination == "0.0.0.0")
                 {
-
                     if (r.InterfaceIndex == net.InterfaceIndex)
                         me = r;
                     else
@@ -107,27 +106,6 @@ namespace PeaRoxy.Windows.Network.TAP
                         ip4.RemoveRouteRule();
                         break;
                     }
-
-            //List<IPAddress> ForwardIPs = new List<IPAddress>(ExceptionIPs);
-            //for (int i = 0; i < ForwardIPs.Count; i++)
-            //{
-            //    int fip = IP4RouteTable.GetBestInterfaceIndexForIP(ForwardIPs[i]);
-            //    if (fip != -1)
-            //    {
-            //        bool isIn = false;
-            //        foreach (IP4RouteTable ir in internetRules)
-            //            if (ir.InterfaceIndex == fip)
-            //            {
-            //                isIn = true;
-            //                break;
-            //            }
-            //        if (isIn)
-            //            continue;
-            //    }
-            //    ForwardIPs.Remove(ForwardIPs[i]);
-            //    i--;
-            //}
-            //ExceptionIPs = ForwardIPs.ToArray();
 
             int des = 0;
             if (me.Metric1 >= lowestMetric)
