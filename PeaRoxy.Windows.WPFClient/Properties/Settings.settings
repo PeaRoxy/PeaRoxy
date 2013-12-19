@@ -166,5 +166,11 @@ steam.exe</Value>
     <Setting Name="Smart_AntiDNSPattern" Type="System.String" Scope="User">
       <Value Profile="(Default)">^(10.10.*.*)$</Value>
     </Setting>
+    <Setting Name="Accepting_Wait" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">10</Value>
+    </Setting>
+    <Setting Name="Routing_Wait" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
