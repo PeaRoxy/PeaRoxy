@@ -52,7 +52,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DNSResolver.cs" />
-    <Compile Include="ForwarderListUpdatedDel.cs" />
     <Compile Include="Proxy_ClientSmartPearExtention.cs" />
     <Compile Include="ErrorRenderer.cs" />
     <Compile Include="SmartPear.cs" />
