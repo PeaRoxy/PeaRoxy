@@ -54,15 +54,15 @@ namespace PeaRoxy.CoreProtocol
                 //if (encryptionType == peerEncryptionType)
                 //    peerCryptor = Cryptor;
                 //else
-                //switch (peerEncryptionType)
-                //{
-                //    case Common.Encryption_Type.TripleDES:
-                //        peerCryptor = new Cryptors.TripleDESCryptor(encryptionKey);
-                //        break;
-                //    case Common.Encryption_Type.SimpleXOR:
-                //        peerCryptor = new Cryptors.SimpleXORCryptor(encryptionKey);
-                //        break;
-                //}
+                switch (peerEncryptionType)
+                {
+                    case Common.Encryption_Type.TripleDES:
+                        peerCryptor = new Cryptors.TripleDESCryptor(encryptionKey);
+                        break;
+                    case Common.Encryption_Type.SimpleXOR:
+                        peerCryptor = new Cryptors.SimpleXORCryptor(encryptionKey);
+                        break;
+                }
             }
         }
         public bool BusyWrite
