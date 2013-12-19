@@ -20,6 +20,8 @@ namespace PeaRoxy.Server
         private int routingCycle;
         private int AcceptingCycleLastTime = 1;
         private int RoutingCycleLastTime = 1;
+        private int AcceptingWait = 1;
+        private int RoutingWait = 1;
         private BackgroundWorker AcceptingWorker;
         private BackgroundWorker RoutingWorker;
         private Socket ListeningServer;
@@ -113,6 +115,16 @@ namespace PeaRoxy.Server
             int usageLog;
             if (!ConfigReader.GetSettings().ContainsKey("LogUsersUsage".ToLower()) || !int.TryParse(ConfigReader.GetSettings()["LogUsersUsage".ToLower()], out usageLog))
                 usageLog = 0;
+
+            if (!ConfigReader.GetSettings().ContainsKey("MaxAcceptingClock".ToLower()) || !int.TryParse(ConfigReader.GetSettings()["MaxAcceptingClock".ToLower()], out AcceptingWait))
+                AcceptingWait = 10;
+            else
+                AcceptingWait = Math.Min(Math.Max(1000 / AcceptingWait, 0), 1000);
+
+            if (!ConfigReader.GetSettings().ContainsKey("MaxRoutingClock".ToLower()) || !int.TryParse(ConfigReader.GetSettings()["MaxRoutingClock".ToLower()], out RoutingWait))
+                RoutingWait = 1;
+            else
+                RoutingWait = Math.Min(Math.Max(1000 / RoutingWait, 0), 1000);
 
             string usageLogAddress;
             if (!ConfigReader.GetSettings().ContainsKey("LogUsersUsageAddress".ToLower()))
@@ -273,7 +285,7 @@ namespace PeaRoxy.Server
                             if (st[i] != null && st[i].CurrentStage != PeaRoxyClient.Client_Stage.Routing)
                                 st[i].Accepting();
                     }
-                    System.Threading.Thread.Sleep(1);
+                    System.Threading.Thread.Sleep(AcceptingWait);
                 }
                 catch (Exception ex)
                 {
@@ -299,7 +311,7 @@ namespace PeaRoxy.Server
                             if (st[i] != null && st[i].CurrentStage == PeaRoxyClient.Client_Stage.Routing)
                                 st[i].DoRoute();
                     }
-                    System.Threading.Thread.Sleep(1);
+                    System.Threading.Thread.Sleep(RoutingWait);
                 }
                 catch (Exception ex)
                 {

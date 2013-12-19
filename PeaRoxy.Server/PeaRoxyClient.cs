@@ -11,6 +11,7 @@ namespace PeaRoxy.Server
 {
     public class PeaRoxyClient : IDisposable
     {
+        const int ServerPeaRoxyVersion = 1;
         public enum Client_Stage
         {
             Connected,
@@ -108,7 +109,7 @@ namespace PeaRoxy.Server
                             }
                             else if (result)
                             {
-                                CoreProtocol.HTTPForger.SendResponse(UnderlyingSocket);
+                                Forger.SendResponse();
                                 Protocol = new CoreProtocol.PeaRoxyProtocol(UnderlyingSocket, UnderlyingClientEncType, UnderlyingClientComType)
                                 {
                                     ReceivePacketSize = UnderlyingClientReceivePacketSize,
@@ -125,10 +126,9 @@ namespace PeaRoxy.Server
                         case Client_Stage.WaitingForWelcomeMessage:
                             if (Protocol.isDataAvailable())
                             {
-                                byte version = 1;
-                                byte server_Aresponse = 0;
-                                byte[] client_data = Protocol.Read(); // Read data from client
-                                if (client_data == null || client_data.Length == 0)
+                                byte server_errorCode = 0;
+                                byte[] client_request = Protocol.Read(); // Read data from client
+                                if (client_request == null || client_request.Length <= 0)
                                 { // Check if data is correct
                                     Close("8. " + "No data received. Connection Timeout.");
                                     return;
@@ -136,20 +136,15 @@ namespace PeaRoxy.Server
 
                                 ConfigReader.User Accepted_User = null;
                                 // Select Auth Type
-                                if (this.SelectedAuthMode != 0 && client_data[0] != this.SelectedAuthMode)
-                                    server_Aresponse = 99;
+                                if (client_request[0] != this.SelectedAuthMode)
+                                    server_errorCode = 99;
                                 else if (this.SelectedAuthMode == 0)// Nothing to auth. Just accept user
-                                {
-                                    if (client_data[0] == 0)
-                                        Array.Copy(client_data, 1, client_data, 0, client_data.Length - 1);
-                                    else if (client_data[0] == 1)
-                                        Array.Copy(client_data, client_data[1] + client_data[client_data[1] + 2] + 3, client_data, 0, client_data.Length - (client_data[1] + client_data[client_data[1] + 2] + 3));
-                                }
+                                    Array.Copy(client_request, 1, client_request, 0, client_request.Length - 1);
                                 else if (this.SelectedAuthMode == 1) // Auth using user name and password hash
                                 {
-                                    string username = System.Text.Encoding.ASCII.GetString(client_data, 2, client_data[1]); // Read UserName
-                                    byte[] passwordHash = new byte[client_data[client_data[1] + 2]]; // Init Password Hash Byte Array
-                                    Array.Copy(client_data, client_data[1] + 3, passwordHash, 0, passwordHash.Length); // Read Password Hash
+                                    string username = System.Text.Encoding.ASCII.GetString(client_request, 2, client_request[1]); // Read UserName
+                                    byte[] passwordHash = new byte[client_request[client_request[1] + 2]]; // Init Password Hash Byte Array
+                                    Array.Copy(client_request, client_request[1] + 3, passwordHash, 0, passwordHash.Length); // Read Password Hash
                                     
                                     
                                     // Search out users to find out if we have this user in users.ini
@@ -161,89 +156,79 @@ namespace PeaRoxy.Server
                                         }
 
                                     if (Accepted_User == null) // Let check if we have a fail result with auth, If so, Close Connection
-                                    {
-                                        server_Aresponse = 99;
-                                    }
+                                        server_errorCode = 99;
                                     else
                                     {
                                         Screen.ChangeUser(this.UserId, Accepted_User.Username, this.Id); // Let inform that user is changed, We are not "Anonymous" anymore
                                         this.UserId = Accepted_User.Username; // Save user name in userId field for later access to screen
-                                        Array.Copy(client_data, client_data[1] + passwordHash.Length + 3, client_data, 0, client_data.Length - (client_data[1] + passwordHash.Length + 3));
+                                        Array.Copy(client_request, client_request[1] + passwordHash.Length + 3, client_request, 0, client_request.Length - (client_request[1] + passwordHash.Length + 3));
                                     }
                                 }
 
-                                string client_connectionAddress = null;
-                                ushort client_connectionPort = 0;
-                                if (server_Aresponse == 0)
+                                if (client_request[0] != ServerPeaRoxyVersion)
+                                { // Check again if client use same version as we are
+                                    Close(); //"6. " + "Unknown version, Expected " + version.ToString());
+                                    return;
+                                }
+
+                                string client_requestedAddress = null;
+                                ushort client_requestedPort = 0;
+                                if (server_errorCode == 0) // Auth ok
                                 {
-                                    // ------------- Establishing connection
-                                    if (client_data == null || client_data.Length <= 3)
-                                    { // If response is acceptable
-                                        Close("7. " + "No request received. Connection Timeout.");
-                                        return;
-                                    }
+                                    byte client_addressType = client_request[3]; // Read address type client want to connect
 
-                                    if (client_data[0] != version)
-                                    { // Check again if client use same version as we are
-                                        Close(); //"6. " + "Unknown version, Expected " + version.ToString());
-                                        return;
-                                    }
-
-                                    byte client_addressType = client_data[3]; // Read address type client want to connect
-
-                                    byte[] client_unformatedConnectionAddress;
+                                    byte[] client_plainRequestedAddress;
                                     switch (client_addressType) // Getting request address and port depending to address type
                                     {
                                         case 1: // IPv4
-                                            client_unformatedConnectionAddress = new byte[4];
-                                            Array.Copy(client_data, 4, client_unformatedConnectionAddress, 0, 4);
-                                            client_connectionAddress = new IPAddress(client_unformatedConnectionAddress).ToString();
-                                            client_connectionPort = (ushort)((ushort)(client_data[8] * 256) + (ushort)client_data[9]);
+                                            client_plainRequestedAddress = new byte[4];
+                                            Array.Copy(client_request, 4, client_plainRequestedAddress, 0, 4);
+                                            client_requestedAddress = new IPAddress(client_plainRequestedAddress).ToString();
+                                            client_requestedPort = (ushort)((ushort)(client_request[8] * 256) + (ushort)client_request[9]);
                                             break;
                                         case 3: // Domain Name
-                                            client_unformatedConnectionAddress = new byte[client_data[4]];
-                                            Array.Copy(client_data, 5, client_unformatedConnectionAddress, 0, client_data[4]);
-                                            client_connectionAddress = System.Text.Encoding.ASCII.GetString(client_unformatedConnectionAddress);
-                                            client_connectionPort = (ushort)((ushort)(client_data[(5 + client_data[4])] * 256) + (ushort)client_data[(5 + client_data[4] + 1)]);
+                                            client_plainRequestedAddress = new byte[client_request[4]];
+                                            Array.Copy(client_request, 5, client_plainRequestedAddress, 0, client_request[4]);
+                                            client_requestedAddress = System.Text.Encoding.ASCII.GetString(client_plainRequestedAddress);
+                                            client_requestedPort = (ushort)((ushort)(client_request[(5 + client_request[4])] * 256) + (ushort)client_request[(5 + client_request[4] + 1)]);
                                             break;
                                         case 4: // IPv6
-                                            client_unformatedConnectionAddress = new byte[16];
-                                            Array.Copy(client_data, 4, client_unformatedConnectionAddress, 0, 16);
-                                            client_connectionAddress = new IPAddress(client_unformatedConnectionAddress).ToString();
-                                            client_connectionPort = (ushort)((ushort)(client_data[20] * 256) + (ushort)client_data[21]);
+                                            client_plainRequestedAddress = new byte[16];
+                                            Array.Copy(client_request, 4, client_plainRequestedAddress, 0, 16);
+                                            client_requestedAddress = new IPAddress(client_plainRequestedAddress).ToString();
+                                            client_requestedPort = (ushort)((ushort)(client_request[20] * 256) + (ushort)client_request[21]);
                                             break;
                                         default:
-                                            server_Aresponse = 8; // This type of address is not supported
+                                            server_errorCode = 8; // This type of address is not supported
                                             break;
                                     }
 
                                     foreach (string blacklist in ConfigReader.GetBlackList())
-                                        if (blacklist.ToLower() == client_connectionAddress.ToLower().Trim())
+                                        if (blacklist.ToLower() == client_requestedAddress.ToLower().Trim())
                                         {
-                                            Close(" Blacklisted: " + client_connectionAddress);
+                                            Close(" Blacklisted: " + client_requestedAddress);
                                             return;
                                         }
                                 }
 
                                 // Init server response to this request
                                 byte[] server_response = new byte[2];
-                                server_response[0] = version;
-                                server_response[1] = server_Aresponse;
+                                server_response[0] = ServerPeaRoxyVersion;
+                                server_response[1] = server_errorCode;
                                 Protocol.Write(server_response, true); // Send response to client
 
-                                if (server_Aresponse != 0) // Check if we have any problem with request
+                                if (server_errorCode != 0) // Check if we have any problem with request
                                 {
-                                    Close("5. " + "response Error, Code: " + server_Aresponse.ToString());
+                                    Close("5. " + "response Error, Code: " + server_errorCode.ToString());
                                     return;
                                 }
 
                                 if (Accepted_User != null)
                                     Protocol.EncryptionKey = System.Text.Encoding.ASCII.GetBytes(Accepted_User.Password);
 
-                                Screen.SetRequestIPAddress(this.UserId, this.Id, client_connectionAddress + ":" + client_connectionPort); // Inform that we have a request for an address
-
+                                Screen.SetRequestIPAddress(this.UserId, this.Id, client_requestedAddress + ":" + client_requestedPort); // Inform that we have a request for an address
                                 destinationSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                                destinationSocket.BeginConnect(client_connectionAddress, (int)client_connectionPort, (AsyncCallback)delegate(IAsyncResult ar)
+                                destinationSocket.BeginConnect(client_requestedAddress, (int)client_requestedPort, (AsyncCallback)delegate(IAsyncResult ar)
                                 {
                                     try
                                     {
