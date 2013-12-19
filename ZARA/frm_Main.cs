@@ -6,9 +6,9 @@ using PeaRoxy.Windows.Network.TAP;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 
@@ -16,26 +16,42 @@ namespace ZARA
 {
     public partial class frm_Main : Form
     {
+        public const int WM_NCLBUTTONDOWN = 0xA1;
+        public const int HT_CAPTION = 0x2;
+
+        [DllImportAttribute("user32.dll")]
+        public static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
+        [DllImportAttribute("user32.dll")]
+        public static extern bool ReleaseCapture();
+
+        
+
         public enum CurrentStatus
         {
             Disconnected,
             Connected,
             Sleep,
         }
+
+        private WinFormAnimation.Animator2D Ani = new WinFormAnimation.Animator2D(WinFormAnimation.Timer.eFPSLimit.FPS60);
         private Proxy_Controller Listener;
         private TapTunnel tapTunnel;
         public CurrentStatus Status { get; set; }
         private delegate void SimpleVoid_Delegate();
+        
         public frm_Main()
         {
             InitializeComponent();
+            this.MaximumSize = this.MinimumSize = this.Size = new Size(496, 316);
+            pnl_main.Location = new Point(-200, 0);
         }
 
         private void frm_Main_Load(object sender, EventArgs e)
         {
             if (ZARA.Properties.Settings.Default.FirstRun)
             {
-                ZARA.Properties.Settings.Default.Upgrade();
+                if (ZARA.Properties.Settings.Default.UpdateSettings)
+                    ZARA.Properties.Settings.Default.Upgrade();
                 ZARA.Properties.Settings.Default.FirstRun = false;
                 ZARA.Properties.Settings.Default.Save();
             }
@@ -62,6 +78,25 @@ namespace ZARA
             catch (Exception) { }
         }
 
+        private void MovePageTo(int pos)
+        {
+            Ani.Stop();
+            if (pos != pnl_main.Location.X)
+            {
+                Ani.SetPaths(new WinFormAnimation.Path2D(pnl_main.Location, new Point(pos, pnl_main.Location.Y), 600, 300, WinFormAnimation.Functions.CubicEaseOut));
+                Ani.Play(pnl_main, x => x.Location);
+            }
+        }
+
+        private void Drag_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                ReleaseCapture();
+                SendMessage(Handle, WM_NCLBUTTONDOWN, HT_CAPTION, 0);
+            }
+        }
+
         private void btn_minimize_Click(object sender, EventArgs e)
         {
             if (this.Visible)
@@ -75,7 +110,6 @@ namespace ZARA
         {
             try
             {
-
                 if (string.IsNullOrEmpty(ZARA.Properties.Settings.Default.UserAndPassword_User))
                     throw new ArgumentException("Invalid value.", "UserName");
 
@@ -120,7 +154,7 @@ namespace ZARA
                 Listener.SmartPear.Forwarder_Direct_List.Clear();
 
                 string ServerAddress = ZARA.Properties.Settings.Default.ServerAddress;
-                ServerType ser = new Server_PeaRoxy(ZARA.Properties.Settings.Default.ServerAddress, 80, "", ZARA.Properties.Settings.Default.UserAndPassword_User, ZARA.Properties.Settings.Default.UserAndPassword_Pass, PeaRoxy.CommonLibrary.Common.Encryption_Type.SimpleXOR, PeaRoxy.CommonLibrary.Common.Compression_Type.None);
+                ServerType ser = new Server_PeaRoxy(ZARA.Properties.Settings.Default.ServerAddress, ZARA.Properties.Settings.Default.ServerPort, "", ZARA.Properties.Settings.Default.UserAndPassword_User, ZARA.Properties.Settings.Default.UserAndPassword_Pass, PeaRoxy.CommonLibrary.Common.Encryption_Type.SimpleXOR, PeaRoxy.CommonLibrary.Common.Compression_Type.None);
 
                 ser.NoDataTimeout = ZARA.Properties.Settings.Default.Connection_NoDataTimeout;
                 Listener.ActiveServer = ser;
@@ -153,7 +187,7 @@ namespace ZARA
                                     tapTunnel.DNSResolvingAddress = System.Net.IPAddress.Loopback;
                                 }
                                 tapTunnel.ExceptionIPs = new System.Net.IPAddress[] {
-                                    System.Net.IPAddress.Parse(ZARA.Properties.Settings.Default.DNS_IPAddress),
+                                    //System.Net.IPAddress.Parse(ZARA.Properties.Settings.Default.DNS_IPAddress),
                                     }.Concat(hostIps).ToArray();
                                 tapTunnel.SocksProxyEndPoint = new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, Listener.Port);
                                 tapTunnel.TunnelName = "ZARA Tunnel";
@@ -233,9 +267,19 @@ namespace ZARA
 
         private void ReloadSettings()
         {
-            txt_server.Text = ZARA.Properties.Settings.Default.ServerAddress;
-            txt_username.Text = ZARA.Properties.Settings.Default.UserAndPassword_User;
-            txt_password.Text = ZARA.Properties.Settings.Default.UserAndPassword_Pass;
+            if (ZARA.Properties.Settings.Default.ServerAddress != string.Empty)
+            {
+                txt_server.Text = ZARA.Properties.Settings.Default.ServerAddress;
+                if (!ZARA.Properties.Settings.Default.ShowHost)
+                    pnl_host.Visible = false;
+            }
+            if (ZARA.Properties.Settings.Default.UserAndPassword_User != string.Empty)
+                txt_username.Text = ZARA.Properties.Settings.Default.UserAndPassword_User;
+            if (ZARA.Properties.Settings.Default.UserAndPassword_Pass != string.Empty)
+            {
+                txt_password.Text = ZARA.Properties.Settings.Default.UserAndPassword_Pass;
+                txt_password.PasswordChar = 'x';
+            }
         }
 
         private void RefreshStatus()
@@ -243,17 +287,25 @@ namespace ZARA
             switch (this.Status)
             {
                 case CurrentStatus.Connected:
-                    gb_connection.Enabled = false;
-                    gb_connection.Visible = false;
-                    gb_general.Visible = true;
-                    btn_control.Text = "&Stop";
+                    btn_login.Enabled = false;
+                    txt_password.Enabled = false;
+                    txt_server.Enabled = false;
+                    txt_username.Enabled = false;
+                    btn_disconnect.Enabled = true;
+                    lbl_status.Text = "CONNECTED";
+                    pb_status.Image = ZARA.Properties.Resources.connected;
+                    MovePageTo(0);
                     break;
                 case CurrentStatus.Disconnected:
                 default:
-                    gb_connection.Enabled = true;
-                    gb_connection.Visible = true;
-                    gb_general.Visible = false;
-                    btn_control.Text = "&Start";
+                    btn_login.Enabled = true;
+                    txt_password.Enabled = true;
+                    txt_server.Enabled = true;
+                    txt_username.Enabled = true;
+                    btn_disconnect.Enabled = false;
+                    lbl_status.Text = "DISCONNECTED";
+                    pb_status.Image = ZARA.Properties.Resources.disconnected;
+                    MovePageTo(-200);
                     break;
             }
             this.Enabled = true;
@@ -276,19 +328,18 @@ namespace ZARA
             VDialog.Show(this, message, title, messageBoxButtons, messageBoxIcon);
         }
 
-        private void btn_control_Click(object sender, EventArgs e)
+        private void btn_disconnect_Click(object sender, EventArgs e)
         {
             SaveSettings();
-            switch (this.Status)
-            {
-                case CurrentStatus.Connected:
-                    StopServer();
-                    break;
-                case CurrentStatus.Disconnected:
-                default:
-                    StartServer();
-                    break;
-            }
+            if (this.Status == CurrentStatus.Connected)
+                StopServer();
+        }
+
+        private void btn_login_Click(object sender, EventArgs e)
+        {
+            SaveSettings();
+            if (this.Status != CurrentStatus.Connected)
+                StartServer();
         }
 
         private void txt_server_Leave(object sender, EventArgs e)
@@ -349,15 +400,48 @@ namespace ZARA
 
                 if (this.Visible)
                 {
-                    lbl_stat_acceptingthreads.Text = Listener.AcceptingCycle.ToString() + " - " + Listener.WaitingAcceptionConnections;
-                    lbl_stat_activeconnections.Text = Listener.RoutingCycle.ToString() + " - " + Listener.RoutingConnections;
-                    lbl_stat_downloaded.Text = PeaRoxy.CommonLibrary.Common.FormatFileSizeAsString(Listener.BytesReceived);
-                    lbl_stat_uploaded.Text = PeaRoxy.CommonLibrary.Common.FormatFileSizeAsString(Listener.BytesSent);
-                    lbl_stat_downloadrate.Text = PeaRoxy.CommonLibrary.Common.FormatFileSizeAsString(DownSpeed);
-                    lbl_stat_uploadrate.Text = PeaRoxy.CommonLibrary.Common.FormatFileSizeAsString(UpSpeed);
+                    lbl_stat_acceptingthreads.Text = Listener.WaitingAcceptionConnections.ToString();
+                    lbl_stat_activeconnections.Text = Listener.RoutingConnections.ToString();
+                    SplitBySpace(PeaRoxy.CommonLibrary.Common.FormatFileSizeAsString(Listener.BytesReceived), lbl_stat_downloaded, lbl_stat_downloaded_v);
+                    SplitBySpace(PeaRoxy.CommonLibrary.Common.FormatFileSizeAsString(Listener.BytesSent), lbl_stat_uploaded, lbl_stat_uploaded_v);
+                    SplitBySpace(PeaRoxy.CommonLibrary.Common.FormatFileSizeAsString(DownSpeed), cpb_stat_downloadrate);
+                    SplitBySpace(PeaRoxy.CommonLibrary.Common.FormatFileSizeAsString(UpSpeed), cpb_stat_uploadrate);
                 }
             }
         }
 
+        private void SplitBySpace(string str, Label a1, Label a2)
+        {
+            if (str.IndexOf(" ") > -1)
+            {
+                a1.Text = str.Split(' ')[0];
+                a2.Text = str.Split(' ')[1] + "ps";
+            }
+            return;
+        }
+
+        private void SplitBySpace(string str, CircularProgressBar.CircularProgressBar a1)
+        {
+            if (str.IndexOf(" ") > -1)
+            {
+                if (str.Split(' ')[0].IndexOf('.') > -1)
+                {
+                    a1.Caption = str.Split(' ')[0].Split('.')[0];
+                    a1.SubText = "." + str.Split(' ')[0].Split('.')[1];
+                }else
+                    a1.Caption = str.Split(' ')[0];
+                a1.SupText = str.Split(' ')[1];
+            }
+            return;
+        }
+
+        private void txt_password_Enter(object sender, EventArgs e)
+        {
+            if (txt_password.PasswordChar == '\0')
+            {
+                txt_password.Text = "";
+                txt_password.PasswordChar = 'x';
+            }
+        }
     }
 }

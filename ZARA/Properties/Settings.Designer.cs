@@ -142,5 +142,41 @@ namespace ZARA.Properties {
                 this["TAP_IPRange"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2080")]
+        public ushort ServerPort {
+            get {
+                return ((ushort)(this["ServerPort"]));
+            }
+            set {
+                this["ServerPort"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool UpdateSettings {
+            get {
+                return ((bool)(this["UpdateSettings"]));
+            }
+            set {
+                this["UpdateSettings"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ShowHost {
+            get {
+                return ((bool)(this["ShowHost"]));
+            }
+            set {
+                this["ShowHost"] = value;
+            }
+        }
     }
 }
