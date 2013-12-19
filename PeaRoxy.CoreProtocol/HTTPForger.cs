@@ -46,7 +46,7 @@ namespace PeaRoxy.CoreProtocol
                 {
                     timeoutCounter = timeout;
                     maxBuffering--;
-                    int i = client.Receive(bytes);
+                    int i = client.Receive(bytes, 1, SocketFlags.None);
                     if (i > 0)
                     {
                         if (bytes[0] == 13 || bytes[0] == 10)
@@ -127,7 +127,7 @@ namespace PeaRoxy.CoreProtocol
             return false;
         }
 
-        public static void SendRequest(Socket client, string hostname = "~", string file = "~", string type = "GET", string version = "HTTP/1.1")
+        public void SendRequest(string hostname = "~", string file = "~", string type = "GET", string version = "HTTP/1.1")
         {
             if (file.IndexOf("~") != -1)
                 file = file.Replace("~", HTTPForger.RandomFilename());
@@ -145,7 +145,7 @@ namespace PeaRoxy.CoreProtocol
             client.Send(byteDateLine, byteDateLine.Length, 0);
         }
 
-        public static void SendResponse(Socket client, string code = "200 OK", string version = "HTTP/1.1")
+        public void SendResponse(string code = "200 OK", string version = "HTTP/1.1")
         {
             string header = version + " " + code + "\r\n" +
                             "Date: " + DateTime.Now.ToString("ddd, dd MMM yyyy hh\\:mm\\:ss \\G\\M\\T") + "\r\n" +
@@ -169,6 +169,7 @@ namespace PeaRoxy.CoreProtocol
             }
             return res;
         }
+
         private static string RandomHostname()
         {
             string[] domainends = { "com", "net", "ir", "org", "info" };
