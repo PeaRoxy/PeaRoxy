@@ -65,7 +65,7 @@ namespace PeaRoxy.Windows
 
         public WindowsConnection(Status StateId, IPEndPoint LocalAddress, IPEndPoint RemoteAddress, int ProcessId)
         {
-            this.ProtocolType = Protocol.TCP;
+            this.ProtocolType = Protocol.Tcp;
             this.State = StateId;
             this.LocalAddress = LocalAddress;
             if (this.LocalAddress.Port != 0 && this.LocalAddress.Address.Equals(new IPAddress(0x0)))
@@ -79,7 +79,7 @@ namespace PeaRoxy.Windows
 
         public WindowsConnection(IPEndPoint LocalAddress, int ProcessId)
         {
-            this.ProtocolType = Protocol.UDP;
+            this.ProtocolType = Protocol.Udp;
             this.LocalAddress = LocalAddress;
             if (this.LocalAddress.Port != 0 && this.LocalAddress.Address.Equals(new IPAddress(0x0)))
                 this.LocalAddress = new IPEndPoint(new IPAddress(0x0000007F), this.LocalAddress.Port);

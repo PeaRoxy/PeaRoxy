@@ -9,7 +9,7 @@ namespace PeaRoxy.ASPear
     public class index : IHttpHandler
     {
         System.Collections.Generic.Dictionary<string, string> Config;
-        System.Collections.ObjectModel.Collection<CommonLibrary.ConfigReader.User> Users;
+        System.Collections.ObjectModel.Collection<CommonLibrary.ConfigUser> Users;
         HttpContext context;
         public void ProcessRequest(HttpContext context)
         {
@@ -18,7 +18,7 @@ namespace PeaRoxy.ASPear
             this.context = context;
             CoreProtocol.Cryptors.Cryptor cryptor = new CoreProtocol.Cryptors.Cryptor();
             CoreProtocol.Cryptors.Cryptor peerCryptor = new CoreProtocol.Cryptors.Cryptor();
-            Common.Encryption_Type encryptionType = Common.Encryption_Type.None;
+            Common.EncryptionType encryptionType = Common.EncryptionType.None;
             byte[] encryptionSalt = new byte[4];
             byte[] requestInfo;
             byte[] encryptedHost = new byte[0];
@@ -28,7 +28,7 @@ namespace PeaRoxy.ASPear
             {
                 requestInfo = Convert.FromBase64String(context.Server.UrlDecode(context.Request.Cookies.Get(0).Value));
                 Array.Copy(requestInfo, encryptionSalt, 4);
-                encryptionType = (Common.Encryption_Type)requestInfo[4];
+                encryptionType = (Common.EncryptionType)requestInfo[4];
                 encryptedHost = new byte[requestInfo.Length - 5];
                 Array.Copy(requestInfo, 5, encryptedHost, 0, requestInfo.Length - 5);
             }
@@ -39,11 +39,11 @@ namespace PeaRoxy.ASPear
 
             switch (encryptionType)
             {
-                case Common.Encryption_Type.None:
+                case Common.EncryptionType.None:
                     if (Config["SupportedEncryptionTypes".ToLower()] != "0" && Config["SupportedEncryptionTypes".ToLower()] != "-1")
                         DoError("Unsupported encryption type.");
                     break;
-                case Common.Encryption_Type.SimpleXOR:
+                case Common.EncryptionType.SimpleXor:
                     if (Config["SupportedEncryptionTypes".ToLower()] != "2" && Config["SupportedEncryptionTypes".ToLower()] != "-1")
                         DoError("Unsupported encryption type.");
                     break;
@@ -58,17 +58,17 @@ namespace PeaRoxy.ASPear
             Array.Resize(ref requestBody, rB);
 
             if (requestBody.Length == 0)
-                DoError("No request to handle.");
+                this.DoError("No request to handle.");
 
             byte[] encryptionKey = (byte[])encryptionSalt.Clone();
-            if (Config["AuthMethod".ToLower()] == "1")
+            if (this.Config["AuthMethod".ToLower()] == "1")
             {
                 string userName = context.Request.ServerVariables["AUTH_USER"];
                 string passWord = context.Request.ServerVariables["AUTH_PASSWORD"];
                 if (userName != null && passWord != null && userName != string.Empty && passWord != string.Empty)
                 {
                     bool isFound = false;
-                    foreach (CommonLibrary.ConfigReader.User user in Users)
+                    foreach (CommonLibrary.ConfigUser user in Users)
                     {
                         if (userName.ToLower() == user.Username.ToLower() && System.Text.Encoding.ASCII.GetBytes(passWord) == user.Hash)
                         {
@@ -86,11 +86,11 @@ namespace PeaRoxy.ASPear
 
             switch (encryptionType)
             {
-                case Common.Encryption_Type.None:
+                case Common.EncryptionType.None:
                     peerCryptor = new CoreProtocol.Cryptors.Cryptor();
                     break;
-                case Common.Encryption_Type.SimpleXOR:
-                    peerCryptor = new CoreProtocol.Cryptors.SimpleXORCryptor(encryptionKey, false);
+                case Common.EncryptionType.SimpleXor:
+                    peerCryptor = new CoreProtocol.Cryptors.SimpleXorCryptor(encryptionKey, false);
                     peerCryptor.SetSalt(encryptionSalt);
                     break;
                 default:
@@ -103,11 +103,11 @@ namespace PeaRoxy.ASPear
 
             if (Config["EncryptionType".ToLower()] == "2")
             {
-                if (encryptionType == Common.Encryption_Type.SimpleXOR)
+                if (encryptionType == Common.EncryptionType.SimpleXor)
                     cryptor = peerCryptor;
                 else
                 {
-                    cryptor = new CoreProtocol.Cryptors.SimpleXORCryptor(encryptionKey, false);
+                    cryptor = new CoreProtocol.Cryptors.SimpleXorCryptor(encryptionKey, false);
                     cryptor.SetSalt(encryptionSalt);
                 }
             }
