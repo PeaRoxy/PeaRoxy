@@ -1,174 +1,329 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using PeaRoxy.CommonLibrary;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Screen.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   The screen.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
 namespace PeaRoxy.Server
 {
-    class Screen
+    #region
+
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Globalization;
+    using System.IO;
+    using System.Linq;
+
+    using PeaRoxy.CommonLibrary;
+
+    #endregion
+
+    /// <summary>
+    /// The screen.
+    /// </summary>
+    internal static class Screen
     {
-        static int lastConnectedClientId = 0;
-        static Dictionary<string,User> usersCollection = new Dictionary<string,User>();
-        static System.IO.StreamWriter ErrorLog = null;
-        static bool LogUsage = false;
-        static string UsageLogAddress = string.Empty;
-        public static void StartScreen(bool LogErrors, bool LogUsage, string UsageLogAddress)
+        #region Static Fields
+
+        /// <summary>
+        /// The users collection.
+        /// </summary>
+        private static readonly Dictionary<string, User> UsersCollection = new Dictionary<string, User>();
+
+        /// <summary>
+        /// The error log.
+        /// </summary>
+        private static StreamWriter errorLog;
+
+        /// <summary>
+        /// The log usage.
+        /// </summary>
+        private static bool usageLogEnable;
+
+        /// <summary>
+        /// The usage log address.
+        /// </summary>
+        private static string usageLogAddress = string.Empty;
+
+        /// <summary>
+        /// The last connected client id.
+        /// </summary>
+        private static int lastConnectedClientId;
+
+        #endregion
+
+        #region Public Methods and Operators
+
+        /// <summary>
+        /// The change user.
+        /// </summary>
+        /// <param name="lastUserId">
+        /// The last user id.
+        /// </param>
+        /// <param name="newUserId">
+        /// The new user id.
+        /// </param>
+        /// <param name="clientId">
+        /// The client id.
+        /// </param>
+        public static void ChangeUser(string lastUserId, string newUserId, int clientId)
         {
-            if (LogErrors)
-                try
+            if (!UsersCollection.ContainsKey(lastUserId) || !UsersCollection[lastUserId].Clients.ContainsKey(clientId))
+            {
+                return;
+            }
+
+            lock (UsersCollection)
+            {
+                if (!UsersCollection.ContainsKey(newUserId))
                 {
-                    ErrorLog = new System.IO.StreamWriter("errors.log", true);
-                }
-                catch (Exception)
-                {
-                    ErrorLog = null;
+                    UsersCollection.Add(newUserId, new User(usageLogEnable, usageLogAddress, newUserId));
                 }
 
-           
-            if (LogUsage)
-                try
-                {
-                    System.IO.Directory.CreateDirectory(UsageLogAddress);
-                    System.IO.DirectoryInfo di = new System.IO.DirectoryInfo(UsageLogAddress);
-                    di = di.CreateSubdirectory(System.Diagnostics.Process.GetCurrentProcess().Id + "_" + System.IO.Path.GetRandomFileName());
-                    Screen.UsageLogAddress = di.FullName + "/";
-                    Screen.LogUsage = true;
-                }
-                catch (Exception)
-                {
-                    Screen.LogUsage = false;
-                }
+                User.Client client = UsersCollection[lastUserId].Clients[clientId];
+                UsersCollection[lastUserId].Clients.Remove(clientId);
+                UsersCollection[newUserId].Clients.Add(clientId, client);
+            }
         }
 
-        public static int ClientConnected(string UserId, string RemoteIPAddress, string IPAddress = "")
+        /// <summary>
+        /// The client connected.
+        /// </summary>
+        /// <param name="userId">
+        /// The user id.
+        /// </param>
+        /// <param name="remoteIpAddress">
+        /// The remote ip address.
+        /// </param>
+        /// <param name="ipAddress">
+        /// The ip address.
+        /// </param>
+        /// <returns>
+        /// The <see cref="int"/>.
+        /// </returns>
+        public static int ClientConnected(string userId, string remoteIpAddress, string ipAddress = "")
         {
-            lock (usersCollection)
+            lock (UsersCollection)
             {
                 lastConnectedClientId++;
-                if (!usersCollection.ContainsKey(UserId))
-                    usersCollection.Add(UserId, new User(Screen.LogUsage, Screen.UsageLogAddress, UserId));
+                if (!UsersCollection.ContainsKey(userId))
+                {
+                    UsersCollection.Add(userId, new User(usageLogEnable, usageLogAddress, userId));
+                }
 
-                usersCollection[UserId].Clients.Add(lastConnectedClientId, new User.Client() { Id = lastConnectedClientId, RequestAddress = IPAddress, RemoteAddress = RemoteIPAddress });
+                UsersCollection[userId].Clients.Add(
+                    lastConnectedClientId, 
+                    new User.Client
+                        {
+                            Id = lastConnectedClientId, 
+                            RequestAddress = ipAddress, 
+                            RemoteAddress = remoteIpAddress
+                        });
             }
+
             return lastConnectedClientId;
-
         }
 
-        public static void SetRequestIPAddress(string UserId, int ClientId, String IPAddress)
+        /// <summary>
+        /// The client disconnected.
+        /// </summary>
+        /// <param name="userId">
+        /// The user id.
+        /// </param>
+        /// <param name="clientId">
+        /// The client id.
+        /// </param>
+        public static void ClientDisconnected(string userId, int clientId)
         {
-            if (!usersCollection.ContainsKey(UserId) || !usersCollection[UserId].Clients.ContainsKey(ClientId))
+            if (!UsersCollection.ContainsKey(userId) || !UsersCollection[userId].Clients.ContainsKey(clientId))
+            {
                 return;
-            lock (usersCollection)
+            }
+
+            User.Client client = UsersCollection[userId].Clients[clientId];
+            lock (UsersCollection)
             {
-                usersCollection[UserId].Clients[ClientId].RequestAddress = IPAddress;
+                UsersCollection[userId].Clients.Remove(clientId);
+                UsersCollection[userId].ResByteReceived += client.ByteReceived;
+                UsersCollection[userId].ResByteSent += client.ByteSent;
             }
         }
 
-        public static void ClientDisconnected(string UserId, int ClientId)
+        /// <summary>
+        /// The data received.
+        /// </summary>
+        /// <param name="userId">
+        /// The user id.
+        /// </param>
+        /// <param name="clientId">
+        /// The client id.
+        /// </param>
+        /// <param name="bytes">
+        /// The bytes.
+        /// </param>
+        public static void DataReceived(string userId, int clientId, int bytes)
         {
-            if (!usersCollection.ContainsKey(UserId) || !usersCollection[UserId].Clients.ContainsKey(ClientId))
+            if (!UsersCollection.ContainsKey(userId) || !UsersCollection[userId].Clients.ContainsKey(clientId))
+            {
                 return;
+            }
 
-            User.Client client = usersCollection[UserId].Clients[ClientId];
-            lock (usersCollection)
+            lock (UsersCollection)
             {
-                usersCollection[UserId].Clients.Remove(ClientId);
-                usersCollection[UserId].ResByteReceived += client.ByteReceived;
-                usersCollection[UserId].ResByteSent += client.ByteSent;
+                UsersCollection[userId].Clients[clientId].ByteReceived += bytes;
             }
         }
 
-        public static void ChangeUser(string LastUserId, string NewUserId,int ClientId)
+        /// <summary>
+        /// The data sent.
+        /// </summary>
+        /// <param name="userId">
+        /// The user id.
+        /// </param>
+        /// <param name="clientId">
+        /// The client id.
+        /// </param>
+        /// <param name="bytes">
+        /// The bytes.
+        /// </param>
+        public static void DataSent(string userId, int clientId, int bytes)
         {
-            if (!usersCollection.ContainsKey(LastUserId) || !usersCollection[LastUserId].Clients.ContainsKey(ClientId))
+            if (!UsersCollection.ContainsKey(userId) || !UsersCollection[userId].Clients.ContainsKey(clientId))
+            {
                 return;
+            }
 
-            lock (usersCollection)
+            lock (UsersCollection)
             {
-                if (!usersCollection.ContainsKey(NewUserId))
-                    usersCollection.Add(NewUserId, new User(Screen.LogUsage, Screen.UsageLogAddress, NewUserId));
-
-                User.Client client = usersCollection[LastUserId].Clients[ClientId];
-                usersCollection[LastUserId].Clients.Remove(ClientId);
-                usersCollection[NewUserId].Clients.Add(ClientId, client);
+                UsersCollection[userId].Clients[clientId].ByteSent += bytes;
             }
         }
 
-
-        public static void LogMessage(string Message)
+        /// <summary>
+        /// The log message.
+        /// </summary>
+        /// <param name="message">
+        /// The message.
+        /// </param>
+        public static void LogMessage(string message)
         {
-            if (ErrorLog != null)
+            if (errorLog != null)
             {
-                ErrorLog.WriteLine(Message);
-                ErrorLog.Flush();
+                errorLog.WriteLine(message);
+                errorLog.Flush();
             }
         }
 
-        public static void DataReceived(string UserId, int ClientId, int Bytes)
+        /// <summary>
+        /// The set request ip address.
+        /// </summary>
+        /// <param name="userId">
+        /// The user id.
+        /// </param>
+        /// <param name="clientId">
+        /// The client id.
+        /// </param>
+        /// <param name="ipAddress">
+        /// The ip address.
+        /// </param>
+        public static void SetRequestIpAddress(string userId, int clientId, string ipAddress)
         {
-            if (!usersCollection.ContainsKey(UserId) || !usersCollection[UserId].Clients.ContainsKey(ClientId))
+            if (!UsersCollection.ContainsKey(userId) || !UsersCollection[userId].Clients.ContainsKey(clientId))
+            {
                 return;
+            }
 
-            lock (usersCollection)
+            lock (UsersCollection)
             {
-                usersCollection[UserId].Clients[ClientId].ByteReceived += Bytes;
+                UsersCollection[userId].Clients[clientId].RequestAddress = ipAddress;
             }
         }
 
-        public static void DataSent(string UserId, int ClientId, int Bytes)
+        /// <summary>
+        /// The start screen.
+        /// </summary>
+        /// <param name="logErrors">
+        /// The log errors.
+        /// </param>
+        /// <param name="logUsage">
+        /// The log usage.
+        /// </param>
+        /// <param name="logUsageAddress">
+        /// The usage log address.
+        /// </param>
+        public static void StartScreen(bool logErrors, bool logUsage, string logUsageAddress)
         {
-            if (!usersCollection.ContainsKey(UserId) || !usersCollection[UserId].Clients.ContainsKey(ClientId))
-                return;
-
-            lock (usersCollection)
+            if (logErrors)
             {
-                usersCollection[UserId].Clients[ClientId].ByteSent += Bytes;
+                try
+                {
+                    errorLog = new StreamWriter("errors.log", true);
+                }
+                catch (Exception)
+                {
+                    errorLog = null;
+                }
+            }
+
+            if (logUsage)
+            {
+                try
+                {
+                    Directory.CreateDirectory(logUsageAddress);
+                    DirectoryInfo di = new DirectoryInfo(logUsageAddress);
+                    di = di.CreateSubdirectory(Process.GetCurrentProcess().Id + "_" + Path.GetRandomFileName());
+                    usageLogAddress = di.FullName + "/";
+                    usageLogEnable = true;
+                }
+                catch (Exception)
+                {
+                    usageLogEnable = false;
+                }
             }
         }
 
-        private static string PrintWithSpaceAfter(string text, int afterSpaces = 10)
-        {
-            afterSpaces = afterSpaces - text.Length;
-            for (int i = 0; i < afterSpaces; i++)
-                text += " ";
-            return text;
-        }
-
-        private static void WriteHR(char chr = '-')
-        {
-            string st = string.Empty;
-            for (int i = 0; i < Console.BufferWidth; i++)
-                st += chr;
-
-            Console.WriteLine(st);
-        }
-        private static void ClearConsole()
-        {
-                Console.Clear();
-        }
-
-        public static void reDraw(Controller ctrl,bool show = true)
+        /// <summary>
+        /// The re draw.
+        /// </summary>
+        /// <param name="ctrl">
+        /// The ctrl.
+        /// </param>
+        /// <param name="show">
+        /// The show.
+        /// </param>
+        public static void ReDraw(Controller ctrl, bool show = true)
         {
             ClearConsole();
             try
             {
-                long ByteReceived = 0;
-                long ByteSent = 0;
-                long DownSpeed = 0;
-                long UpSpeed = 0;
-                lock (usersCollection)
+                long byteReceived = 0;
+                long byteSent = 0;
+                long downSpeed = 0;
+                long upSpeed = 0;
+                lock (UsersCollection)
                 {
-                    for (int i = 0; i < usersCollection.Values.Count; i++)
+                    for (int i = 0; i < UsersCollection.Values.Count; i++)
                     {
-                        User user = usersCollection.Values.ElementAt(i);
+                        User user = UsersCollection.Values.ElementAt(i);
                         user.Update(show);
                         if (show && user.Clients.Count > 0)
                         {
-                            Console.WriteLine("     " + PrintWithSpaceAfter(user.Id) + "Active Connections: " + PrintWithSpaceAfter(user.Clients.Count.ToString(), 4) + PrintWithSpaceAfter(Common.FormatFileSizeAsString(user.ByteReceived).ToString()) +
-                                                            PrintWithSpaceAfter(Common.FormatFileSizeAsString(user.ByteSent).ToString()) + PrintWithSpaceAfter(Common.FormatFileSizeAsString(user.DownSpeed).ToString()) +
-                                                            PrintWithSpaceAfter(Common.FormatFileSizeAsString(user.UpSpeed).ToString()));
-                            Console.WriteLine(PrintWithSpaceAfter("IP", 19) + PrintWithSpaceAfter("REQ", 20) + PrintWithSpaceAfter("DOWN") +
-                                                            PrintWithSpaceAfter("UP") + PrintWithSpaceAfter("DOWN PS") + PrintWithSpaceAfter("UP PS"));
+                            Console.WriteLine(
+                                "     " + PrintWithSpaceAfter(user.Id) + "Active Connections: "
+                                + PrintWithSpaceAfter(user.Clients.Count.ToString(CultureInfo.InvariantCulture), 4)
+                                + PrintWithSpaceAfter(Common.FormatFileSizeAsString(user.ByteReceived))
+                                + PrintWithSpaceAfter(Common.FormatFileSizeAsString(user.ByteSent))
+                                + PrintWithSpaceAfter(Common.FormatFileSizeAsString(user.DownSpeed))
+                                + PrintWithSpaceAfter(Common.FormatFileSizeAsString(user.UpSpeed)));
+                            Console.WriteLine(
+                                PrintWithSpaceAfter("IP", 19) + PrintWithSpaceAfter("REQ", 20)
+                                + PrintWithSpaceAfter("DOWN") + PrintWithSpaceAfter("UP")
+                                + PrintWithSpaceAfter("DOWN PS") + PrintWithSpaceAfter("UP PS"));
                             try
                             {
                                 for (int j = 0; j < user.Clients.Values.Count; j++)
@@ -176,124 +331,368 @@ namespace PeaRoxy.Server
                                     User.Client client = user.Clients.Values.ElementAt(j);
                                     string remoteAddress = client.RemoteAddress;
                                     if (remoteAddress.Length > 18)
+                                    {
                                         remoteAddress = remoteAddress.Substring(0, 18);
+                                    }
+
                                     string requestAddress = client.RequestAddress;
                                     if (requestAddress.Length > 19)
+                                    {
                                         requestAddress = requestAddress.Substring(0, 19);
-                                    Console.WriteLine(PrintWithSpaceAfter(remoteAddress, 19) + PrintWithSpaceAfter(requestAddress, 20) + PrintWithSpaceAfter(Common.FormatFileSizeAsString(client.ByteReceived).ToString()) +
-                                                                    PrintWithSpaceAfter(Common.FormatFileSizeAsString(client.ByteSent).ToString()) + PrintWithSpaceAfter(Common.FormatFileSizeAsString(client.DownSpeed).ToString()) +
-                                                                    PrintWithSpaceAfter(Common.FormatFileSizeAsString(client.UpSpeed).ToString()));
+                                    }
+
+                                    Console.WriteLine(
+                                        PrintWithSpaceAfter(remoteAddress, 19) + PrintWithSpaceAfter(requestAddress, 20)
+                                        + PrintWithSpaceAfter(Common.FormatFileSizeAsString(client.ByteReceived))
+                                        + PrintWithSpaceAfter(Common.FormatFileSizeAsString(client.ByteSent))
+                                        + PrintWithSpaceAfter(Common.FormatFileSizeAsString(client.DownSpeed))
+                                        + PrintWithSpaceAfter(Common.FormatFileSizeAsString(client.UpSpeed)));
                                 }
                             }
-                            catch (Exception) { }
-                            WriteHR();
-                            WriteHR(' ');
+                            catch (Exception)
+                            {
+                            }
+
+                            WriteHr();
+                            WriteHr(' ');
                         }
-                        ByteReceived += user.ByteReceived;
-                        ByteSent += user.ByteSent;
-                        DownSpeed += user.DownSpeed;
-                        UpSpeed += user.UpSpeed;
+
+                        byteReceived += user.ByteReceived;
+                        byteSent += user.ByteSent;
+                        downSpeed += user.DownSpeed;
+                        upSpeed += user.UpSpeed;
                     }
                 }
-                Console.WriteLine("Downloaded: " + PrintWithSpaceAfter(Common.FormatFileSizeAsString(ByteReceived).ToString()) +
-                "Uploaded: " + PrintWithSpaceAfter(Common.FormatFileSizeAsString(ByteSent).ToString()) +
-                "Down PS: " + PrintWithSpaceAfter(Common.FormatFileSizeAsString(DownSpeed).ToString()) +
-                "Up PS: " + PrintWithSpaceAfter(Common.FormatFileSizeAsString(UpSpeed).ToString()));
-                Console.WriteLine("Accepting Cycle: " + PrintWithSpaceAfter(ctrl.AcceptingCycle.ToString()) +
-                                    "Routing Cycle: " + PrintWithSpaceAfter(ctrl.RoutingCycle.ToString()));
+
+                Console.WriteLine(
+                    "Downloaded: " + PrintWithSpaceAfter(Common.FormatFileSizeAsString(byteReceived)) + "Uploaded: "
+                    + PrintWithSpaceAfter(Common.FormatFileSizeAsString(byteSent)) + "Down PS: "
+                    + PrintWithSpaceAfter(Common.FormatFileSizeAsString(downSpeed)) + "Up PS: "
+                    + PrintWithSpaceAfter(Common.FormatFileSizeAsString(upSpeed)));
+                Console.WriteLine(
+                    "Accepting Cycle: " + PrintWithSpaceAfter(ctrl.AcceptingCycle.ToString(CultureInfo.InvariantCulture)) + "Routing Cycle: "
+                    + PrintWithSpaceAfter(ctrl.RoutingCycle.ToString(CultureInfo.InvariantCulture)));
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+            }
         }
 
-        public class User : IDisposable
-	    {
-            public string Id { get; set; }
-            public Dictionary<int, Client> Clients { get; set; }
-            public long ByteReceived { get; set; }
-            public long ByteSent { get; set; }
-            public long ResByteReceived { get; set; }
-            public long ResByteSent { get; set; }
-            public long DownSpeed { get; set; }
-            public long UpSpeed { get; set; }
-            private System.IO.StreamWriter UsageLog = null;
-            private int lrC = 0;
-            public User(bool LogUsage, string UsageLogAddress, string Id)
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The clear console.
+        /// </summary>
+        private static void ClearConsole()
+        {
+            Console.Clear();
+        }
+
+        /// <summary>
+        /// The print with space after.
+        /// </summary>
+        /// <param name="text">
+        /// The text.
+        /// </param>
+        /// <param name="afterSpaces">
+        /// The after spaces.
+        /// </param>
+        /// <returns>
+        /// The <see cref="string"/>.
+        /// </returns>
+        private static string PrintWithSpaceAfter(string text, int afterSpaces = 10)
+        {
+            afterSpaces = afterSpaces - text.Length;
+            for (int i = 0; i < afterSpaces; i++)
             {
-                this.Id = Id;
-                if (LogUsage)
-                    UsageLog = new System.IO.StreamWriter(UsageLogAddress + Id + ".log", false);
-                Clients = new Dictionary<int, Client>();
+                text += " ";
             }
+
+            return text;
+        }
+
+        /// <summary>
+        /// The write horizontal line.
+        /// </summary>
+        /// <param name="chr">
+        /// The chr.
+        /// </param>
+        private static void WriteHr(char chr = '-')
+        {
+            string st = string.Empty;
+            for (int i = 0; i < Console.BufferWidth; i++)
+            {
+                st += chr;
+            }
+
+            Console.WriteLine(st);
+        }
+
+        #endregion
+
+        /// <summary>
+        /// The user.
+        /// </summary>
+        public class User : IDisposable
+        {
+            #region Fields
+
+            /// <summary>
+            /// The usage log.
+            /// </summary>
+            private readonly StreamWriter usageLog;
+
+            /// <summary>
+            /// The lr c.
+            /// </summary>
+            private int lrC;
+
+            #endregion
+
+            #region Constructors and Destructors
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="User"/> class.
+            /// </summary>
+            /// <param name="logUsage">
+            /// The log usage.
+            /// </param>
+            /// <param name="usageLogAddress">
+            /// The usage log address.
+            /// </param>
+            /// <param name="id">
+            /// The id.
+            /// </param>
+            public User(bool logUsage, string usageLogAddress, string id)
+            {
+                this.Id = id;
+                if (logUsage)
+                {
+                    this.usageLog = new StreamWriter(usageLogAddress + id + ".log", false);
+                }
+
+                this.Clients = new Dictionary<int, Client>();
+            }
+
+            #endregion
+
+            #region Public Properties
+
+            /// <summary>
+            /// Gets or sets the byte received.
+            /// </summary>
+            public long ByteReceived { get; set; }
+
+            /// <summary>
+            /// Gets or sets the byte sent.
+            /// </summary>
+            public long ByteSent { get; set; }
+
+            /// <summary>
+            /// Gets or sets the clients.
+            /// </summary>
+            public Dictionary<int, Client> Clients { get; set; }
+
+            /// <summary>
+            /// Gets or sets the down speed.
+            /// </summary>
+            public long DownSpeed { get; set; }
+
+            /// <summary>
+            /// Gets or sets the id.
+            /// </summary>
+            public string Id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the res byte received.
+            /// </summary>
+            public long ResByteReceived { get; set; }
+
+            /// <summary>
+            /// Gets or sets the res byte sent.
+            /// </summary>
+            public long ResByteSent { get; set; }
+
+            /// <summary>
+            /// Gets or sets the up speed.
+            /// </summary>
+            public long UpSpeed { get; set; }
+
+            #endregion
+
+            #region Public Methods and Operators
+
+            /// <summary>
+            /// The dispose.
+            /// </summary>
+            public void Dispose()
+            {
+                if (this.usageLog != null)
+                {
+                    this.usageLog.Close();
+                    this.usageLog.Dispose();
+                }
+            }
+
+            /// <summary>
+            /// The update.
+            /// </summary>
+            /// <param name="showConnections">
+            /// The show connections.
+            /// </param>
             public void Update(bool showConnections = false)
             {
                 this.ByteReceived = this.ResByteReceived;
                 this.ByteSent = this.ResByteSent;
                 this.DownSpeed = 0;
                 this.UpSpeed = 0;
-                if (UsageLog != null)
+                if (this.usageLog != null)
                 {
-                    UsageLog.BaseStream.SetLength(Math.Max(UsageLog.BaseStream.Length - 76, 0));
-                    UsageLog.BaseStream.Position = UsageLog.BaseStream.Length;
+                    this.usageLog.BaseStream.SetLength(Math.Max(this.usageLog.BaseStream.Length - 76, 0));
+                    this.usageLog.BaseStream.Position = this.usageLog.BaseStream.Length;
                 }
-                foreach (KeyValuePair<int, User.Client> client in this.Clients)
+
+                foreach (KeyValuePair<int, Client> client in this.Clients)
                 {
                     client.Value.Update();
                     if (showConnections)
-                        if (UsageLog != null && client.Value.Id > lrC && client.Value.RequestAddress != string.Empty)
+                    {
+                        if (this.usageLog != null && client.Value.Id > this.lrC
+                            && client.Value.RequestAddress != string.Empty)
                         {
-                            lrC = client.Value.Id;
-                            UsageLog.WriteLine(client.Value.RemoteAddress + " => " + client.Value.RequestAddress);
+                            this.lrC = client.Value.Id;
+                            this.usageLog.WriteLine(client.Value.RemoteAddress + " => " + client.Value.RequestAddress);
                         }
+                    }
+
                     this.ByteReceived += client.Value.ByteReceived;
                     this.ByteSent += client.Value.ByteSent;
                     this.DownSpeed += client.Value.DownSpeed;
                     this.UpSpeed += client.Value.UpSpeed;
                 }
-                if (UsageLog != null)
+
+                if (this.usageLog != null)
                 {
-                    UsageLog.Write("\r\n" + "Downloaded:     " + PrintWithSpaceAfter(Common.FormatFileSizeAsString(this.ByteReceived),20));
-                    UsageLog.Write("\r\n" + "Uploaded:       " + PrintWithSpaceAfter(Common.FormatFileSizeAsString(this.ByteSent),20));
-                    UsageLog.Flush();
+                    this.usageLog.Write(
+                        "\r\n" + "Downloaded:     "
+                        + PrintWithSpaceAfter(Common.FormatFileSizeAsString(this.ByteReceived), 20));
+                    this.usageLog.Write(
+                        "\r\n" + "Uploaded:       "
+                        + PrintWithSpaceAfter(Common.FormatFileSizeAsString(this.ByteSent), 20));
+                    this.usageLog.Flush();
                 }
             }
+
+            #endregion
+
+            /// <summary>
+            /// The client.
+            /// </summary>
             public class Client
             {
-                public int Id { get; set; }
-                public long ByteReceived { get; set; }
-                public long ByteSent { get; set; }
-                public long DownSpeed { get; set; }
-                public long UpSpeed { get; set; }
-                private long lastBytesReceived = 0;
-                private long lastBytesSent = 0;
-                private int lastSpeedUpdate = 0;
-                public List<string> Log { get; set; }
-                public string RemoteAddress { get; set; }
-                public string RequestAddress { get; set; }
+                #region Fields
+
+                /// <summary>
+                /// The last bytes received.
+                /// </summary>
+                private long oldBytesReceived;
+
+                /// <summary>
+                /// The last bytes sent.
+                /// </summary>
+                private long oldBytesSent;
+
+                /// <summary>
+                /// The last speed update.
+                /// </summary>
+                private int oldSpeedUpdate;
+
+                #endregion
+
+                #region Constructors and Destructors
+
+                /// <summary>
+                /// Initializes a new instance of the <see cref="Client"/> class.
+                /// </summary>
                 public Client()
                 {
-                    Log = new List<string>();
-                    lastSpeedUpdate = Environment.TickCount;
+                    this.Log = new List<string>();
+                    this.oldSpeedUpdate = Environment.TickCount;
                 }
+
+                #endregion
+
+                #region Public Properties
+
+                /// <summary>
+                /// Gets or sets the byte received.
+                /// </summary>
+                public long ByteReceived { get; set; }
+
+                /// <summary>
+                /// Gets or sets the byte sent.
+                /// </summary>
+                public long ByteSent { get; set; }
+
+                /// <summary>
+                /// Gets or sets the down speed.
+                /// </summary>
+                public long DownSpeed { get; set; }
+
+                /// <summary>
+                /// Gets or sets the id.
+                /// </summary>
+                public int Id { get; set; }
+
+                /// <summary>
+                /// Gets or sets the log.
+                /// </summary>
+                // ReSharper disable once UnusedAutoPropertyAccessor.Global
+                public List<string> Log { get; set; }
+
+                /// <summary>
+                /// Gets or sets the remote address.
+                /// </summary>
+                public string RemoteAddress { get; set; }
+
+                /// <summary>
+                /// Gets or sets the request address.
+                /// </summary>
+                public string RequestAddress { get; set; }
+
+                /// <summary>
+                /// Gets or sets the up speed.
+                /// </summary>
+                public long UpSpeed { get; set; }
+
+                #endregion
+
+                #region Public Methods and Operators
+
+                /// <summary>
+                /// The update.
+                /// </summary>
                 public void Update()
                 {
-                    long BytesR = this.ByteReceived - this.lastBytesReceived;
-                    long BytesS = this.ByteSent - this.lastBytesSent;
-                    this.lastBytesReceived = this.ByteReceived;
-                    this.lastBytesSent = this.ByteSent;
-                    double timeE = (double)(Environment.TickCount - lastSpeedUpdate) / (double)1000;
+                    long bytesReceived = this.ByteReceived - this.oldBytesReceived;
+                    long bytesSent = this.ByteSent - this.oldBytesSent;
+                    this.oldBytesReceived = this.ByteReceived;
+                    this.oldBytesSent = this.ByteSent;
+                    double timeE = (Environment.TickCount - this.oldSpeedUpdate) / (double)1000;
                     if (timeE <= 0)
+                    {
                         return;
-                    lastSpeedUpdate = Environment.TickCount;
+                    }
 
-                    DownSpeed = ((int)(BytesR / timeE) + DownSpeed) / 2;
-                    UpSpeed = ((int)(BytesS / timeE) + UpSpeed) / 2;
+                    this.oldSpeedUpdate = Environment.TickCount;
+
+                    this.DownSpeed = ((int)(bytesReceived / timeE) + this.DownSpeed) / 2;
+                    this.UpSpeed = ((int)(bytesSent / timeE) + this.UpSpeed) / 2;
                 }
-            }
 
-            public void Dispose()
-            {
-                if (this.UsageLog != null)
-                    this.UsageLog.Close(); this.UsageLog.Dispose();
+                #endregion
             }
         }
     }

@@ -1,29 +1,55 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Program.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   The program.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.Server
 {
-    class Program
+    #region
+
+    using System;
+    using System.Threading;
+
+    #endregion
+
+    /// <summary>
+    /// The program.
+    /// </summary>
+    internal static class Program
     {
-        static void Main(string[] args)
+        #region Methods
+
+        /// <summary>
+        /// The main.
+        /// </summary>
+        private static void Main()
         {
             Controller sController = new Controller();
             sController.Start();
-            bool doReDraw = true;
-            if (Environment.CommandLine.ToLower().IndexOf("silent") != -1)
-                doReDraw = false;
-            Console.WriteLine("PeaRoxy Server Started at " + sController.IP.ToString() + ":" + sController.Port.ToString());
+            bool doReDraw = Environment.CommandLine.ToLower().IndexOf("silent", StringComparison.Ordinal) == -1;
+
+            Console.WriteLine("PeaRoxy Server Started at " + sController.Ip + ":" + sController.Port);
             while (true)
             {
                 if (doReDraw)
-                    Screen.reDraw(sController);
+                {
+                    Screen.ReDraw(sController);
+                }
                 else
-                    Screen.reDraw(sController, false);
+                {
+                    Screen.ReDraw(sController, false);
+                }
 
-                System.Threading.Thread.Sleep(1000);
+                Thread.Sleep(1000);
             }
+            // ReSharper disable once FunctionNeverReturns
         }
+
+        #endregion
     }
 }

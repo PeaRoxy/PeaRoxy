@@ -1,142 +1,193 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Net;
-using System.Net.Sockets;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
-using PeaRoxy.CommonLibrary;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Controller.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   The controller.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
 namespace PeaRoxy.Server
 {
+    #region
+
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Linq;
+    using System.Net;
+    using System.Net.Sockets;
+    using System.Text;
+    using System.Threading;
+
+    using PeaRoxy.CommonLibrary;
+
+    #endregion
+
+    /// <summary>
+    /// The controller.
+    /// </summary>
     public class Controller : IDisposable
     {
-        public enum ControllerStatus
-        {
-            Stopped,
-            Working,
-        }
-        private int acceptingCycle;
-        private int routingCycle;
-        private int AcceptingCycleLastTime = 1;
-        private int RoutingCycleLastTime = 1;
-        private int AcceptingWait = 1;
-        private int RoutingWait = 1;
-        private BackgroundWorker AcceptingWorker;
-        private BackgroundWorker RoutingWorker;
-        private Socket ListeningServer;
-        private List<PeaRoxyClient> ConnectedClients = new List<PeaRoxyClient>();
-        private List<PeaRoxyClient> RoutingClients = new List<PeaRoxyClient>();
-        public ControllerStatus Status { get; private set; }
-        public ushort Port { get; private set; }
-        public ushort HTTPForwardingPort { get; private set; }
-        public string PeaRoxyDomain { get; private set; }
-        public IPAddress HTTPForwardingIP { get; private set; }
-        public IPAddress IP { get; private set; }
-        public int AcceptingCycle
-        {
-            get
-            {
-                int ret = (acceptingCycle * 1000) / (Environment.TickCount - AcceptingCycleLastTime);
-                AcceptingCycleLastTime = Environment.TickCount;
-                acceptingCycle = 0;
-                return ret;
-            }
-            private set
-            {
-                acceptingCycle = value;
-            }
-        }
+        #region Fields
 
-        public int RoutingCycle
-        {
-            get
-            {
-                int ret = (routingCycle * 1000) / (Environment.TickCount - RoutingCycleLastTime);
-                RoutingCycleLastTime = Environment.TickCount;
-                routingCycle = 0;
-                return ret;
-            }
-            private set
-            {
-                routingCycle = value;
-            }
-        }
+        /// <summary>
+        /// The accepting cycle last time.
+        /// </summary>
+        private int acceptingCycleLastTime = 1;
 
-        public int WaitingAcceptionConnections
-        {
-            get
-            {
-                return Math.Max(ConnectedClients.Count - RoutingClients.Count, 0);
-            }
-        }
-        public int RoutingConnections
-        {
-            get
-            {
-                return RoutingClients.Count;
-            }
-        }
+        /// <summary>
+        /// The accepting wait.
+        /// </summary>
+        private readonly int acceptingWait = 1;
+
+        /// <summary>
+        /// The accepting worker.
+        /// </summary>
+        private readonly BackgroundWorker acceptingWorker;
+
+        /// <summary>
+        /// The connected clients.
+        /// </summary>
+        private readonly List<PeaRoxyClient> connectedClients = new List<PeaRoxyClient>();
+
+        /// <summary>
+        /// The listening server.
+        /// </summary>
+        private Socket listeningServer;
+
+        /// <summary>
+        /// The routing clients.
+        /// </summary>
+        private readonly List<PeaRoxyClient> routingClients = new List<PeaRoxyClient>();
+
+        /// <summary>
+        /// The routing cycle last time.
+        /// </summary>
+        private int routingCycleLastTime = 1;
+
+        /// <summary>
+        /// The routing wait.
+        /// </summary>
+        private readonly int routingWait = 1;
+
+        /// <summary>
+        /// The routing worker.
+        /// </summary>
+        private readonly BackgroundWorker routingWorker;
+
+        /// <summary>
+        /// The accepting cycle.
+        /// </summary>
+        private int acceptingClock;
+
+        /// <summary>
+        /// The routing cycle.
+        /// </summary>
+        private int routingClock;
+
+        #endregion
+
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Controller"/> class.
+        /// </summary>
         public Controller()
         {
-            if (!ConfigReader.GetSettings().ContainsKey("PeaRoxyDomain".ToLower()))
-                this.PeaRoxyDomain = string.Empty;
-            else
-                this.PeaRoxyDomain = ConfigReader.GetSettings()["PeaRoxyDomain".ToLower()];
+            this.Domain = !ConfigReader.GetSettings().ContainsKey("PeaRoxyDomain".ToLower()) ? string.Empty : ConfigReader.GetSettings()["PeaRoxyDomain".ToLower()];
 
             IPAddress ipz;
-            if (!ConfigReader.GetSettings().ContainsKey("HTTPForwardingIP".ToLower()) || !IPAddress.TryParse(ConfigReader.GetSettings()["HTTPForwardingIP".ToLower()], out ipz))
-                this.HTTPForwardingIP = IPAddress.Any;
+            if (!ConfigReader.GetSettings().ContainsKey("HTTPForwardingIP".ToLower())
+                || !IPAddress.TryParse(ConfigReader.GetSettings()["HTTPForwardingIP".ToLower()], out ipz))
+            {
+                this.HttpForwardingIp = IPAddress.Any;
+            }
             else
-                this.HTTPForwardingIP = ipz;
+            {
+                this.HttpForwardingIp = ipz;
+            }
 
             ushort fp;
-            if (!ConfigReader.GetSettings().ContainsKey("HTTPForwardingPort".ToLower()) || !ushort.TryParse(ConfigReader.GetSettings()["HTTPForwardingPort".ToLower()], out fp))
-                this.HTTPForwardingPort = 0;
+            if (!ConfigReader.GetSettings().ContainsKey("HTTPForwardingPort".ToLower())
+                || !ushort.TryParse(ConfigReader.GetSettings()["HTTPForwardingPort".ToLower()], out fp))
+            {
+                this.HttpForwardingPort = 0;
+            }
             else
-                this.HTTPForwardingPort = fp;
+            {
+                this.HttpForwardingPort = fp;
+            }
 
             ushort p;
-            if (!ConfigReader.GetSettings().ContainsKey("ServerPort".ToLower()) || !ushort.TryParse(ConfigReader.GetSettings()["ServerPort".ToLower()], out p)) // Read Listening port from config
+            if (!ConfigReader.GetSettings().ContainsKey("ServerPort".ToLower())
+                || !ushort.TryParse(ConfigReader.GetSettings()["ServerPort".ToLower()], out p))
+            {
+                // Read Listening port from config
                 this.Port = 1080;
+            }
             else
+            {
                 this.Port = p;
+            }
 
             IPAddress ip;
-            if (!ConfigReader.GetSettings().ContainsKey("ServerIP".ToLower()) || !IPAddress.TryParse(ConfigReader.GetSettings()["ServerIP".ToLower()], out ip)) // Read Listening IP from config
-                this.IP = IPAddress.Any;
+            if (!ConfigReader.GetSettings().ContainsKey("ServerIP".ToLower())
+                || !IPAddress.TryParse(ConfigReader.GetSettings()["ServerIP".ToLower()], out ip))
+            {
+                // Read Listening IP from config
+                this.Ip = IPAddress.Any;
+            }
             else
-                this.IP = ip;
+            {
+                this.Ip = ip;
+            }
 
-             int errorLog;
-             if (!ConfigReader.GetSettings().ContainsKey("LogErrors".ToLower()) || !int.TryParse(ConfigReader.GetSettings()["LogErrors".ToLower()], out errorLog))
+            int errorLog;
+            if (!ConfigReader.GetSettings().ContainsKey("LogErrors".ToLower())
+                || !int.TryParse(ConfigReader.GetSettings()["LogErrors".ToLower()], out errorLog))
+            {
                 errorLog = 0;
+            }
 
             int usageLog;
-            if (!ConfigReader.GetSettings().ContainsKey("LogUsersUsage".ToLower()) || !int.TryParse(ConfigReader.GetSettings()["LogUsersUsage".ToLower()], out usageLog))
+            if (!ConfigReader.GetSettings().ContainsKey("LogUsersUsage".ToLower())
+                || !int.TryParse(ConfigReader.GetSettings()["LogUsersUsage".ToLower()], out usageLog))
+            {
                 usageLog = 0;
+            }
 
-            if (!ConfigReader.GetSettings().ContainsKey("MaxAcceptingClock".ToLower()) || !int.TryParse(ConfigReader.GetSettings()["MaxAcceptingClock".ToLower()], out AcceptingWait))
-                AcceptingWait = 10;
+            if (!ConfigReader.GetSettings().ContainsKey("MaxAcceptingClock".ToLower())
+                || !int.TryParse(ConfigReader.GetSettings()["MaxAcceptingClock".ToLower()], out this.acceptingWait))
+            {
+                this.acceptingWait = 10;
+            }
             else
-                AcceptingWait = Math.Min(Math.Max(1000 / AcceptingWait, 0), 1000);
+            {
+                this.acceptingWait = Math.Min(Math.Max(1000 / this.acceptingWait, 0), 1000);
+            }
 
-            if (!ConfigReader.GetSettings().ContainsKey("MaxRoutingClock".ToLower()) || !int.TryParse(ConfigReader.GetSettings()["MaxRoutingClock".ToLower()], out RoutingWait))
-                RoutingWait = 1;
+            if (!ConfigReader.GetSettings().ContainsKey("MaxRoutingClock".ToLower())
+                || !int.TryParse(ConfigReader.GetSettings()["MaxRoutingClock".ToLower()], out this.routingWait))
+            {
+                this.routingWait = 1;
+            }
             else
-                RoutingWait = Math.Min(Math.Max(1000 / RoutingWait, 0), 1000);
+            {
+                this.routingWait = Math.Min(Math.Max(1000 / this.routingWait, 0), 1000);
+            }
 
-            string usageLogAddress;
-            if (!ConfigReader.GetSettings().ContainsKey("LogUsersUsageAddress".ToLower()))
-                usageLogAddress = ".";
-            else
-                usageLogAddress = ConfigReader.GetSettings()["LogUsersUsageAddress".ToLower()];
+            string usageLogAddress = !ConfigReader.GetSettings().ContainsKey("LogUsersUsageAddress".ToLower()) ? "." : ConfigReader.GetSettings()["LogUsersUsageAddress".ToLower()];
 
             Screen.StartScreen(errorLog == 1, usageLog == 1, usageLogAddress);
 
             bool pingMasterServer;
-            if (!ConfigReader.GetSettings().ContainsKey("PingMasterServer".ToLower()) || !bool.TryParse(ConfigReader.GetSettings()["PingMasterServer".ToLower()], out pingMasterServer))
+            if (!ConfigReader.GetSettings().ContainsKey("PingMasterServer".ToLower())
+                || !bool.TryParse(ConfigReader.GetSettings()["PingMasterServer".ToLower()], out pingMasterServer))
+            {
                 pingMasterServer = false;
+            }
 
             try
             {
@@ -144,208 +195,443 @@ namespace PeaRoxy.Server
                 {
                     TcpClient pingTcp = new TcpClient();
                     pingTcp.Connect("pearoxy.com", 80);
-                    pingTcp.BeginConnect("pearoxy.com", 80, (AsyncCallback)delegate(IAsyncResult ar)
-                    {
-                        try
-                        {
-                            pingTcp.EndConnect(ar);
-                            NetworkStream pingStream = pingTcp.GetStream();
-                            byte config_SelectedAuth;
-                            if (!ConfigReader.GetSettings().ContainsKey("AuthMethod".ToLower()) || !byte.TryParse(ConfigReader.GetSettings()["AuthMethod".ToLower()], out config_SelectedAuth)) // Read config about how to auth user 
-                                config_SelectedAuth = 255;
-                            string rn = "\r\n";
-                            string pingRequest = "GET /ping.php?do=register&address=" + this.IP.ToString() + "&port=" + this.Port.ToString() + "&authmode=" + config_SelectedAuth.ToString() + " HTTP/1.1" + rn +
-                                                    "Host: www.pearoxy.com" + rn + rn;
-                            byte[] pingRequestBytes = Encoding.ASCII.GetBytes(pingRequest);
-                            pingStream.BeginWrite(pingRequestBytes, 0, pingRequestBytes.Length, (AsyncCallback)delegate(IAsyncResult ar2)
+                    pingTcp.BeginConnect(
+                        "pearoxy.com", 
+                        80, 
+                        delegate(IAsyncResult ar)
                             {
                                 try
                                 {
-                                    pingStream.EndWrite(ar2);
-                                    pingStream.Close();
-                                    pingTcp.Close();
+                                    pingTcp.EndConnect(ar);
+                                    NetworkStream pingStream = pingTcp.GetStream();
+                                    byte configSelectedAuth;
+                                    if (!ConfigReader.GetSettings().ContainsKey("AuthMethod".ToLower())
+                                        || !byte.TryParse(
+                                            ConfigReader.GetSettings()["AuthMethod".ToLower()], 
+                                            out configSelectedAuth))
+                                    {
+                                        // Read config about how to auth user 
+                                        configSelectedAuth = 255;
+                                    }
+
+                                    string rn = "\r\n";
+                                    string pingRequest = "GET /ping.php?do=register&address=" + this.Ip
+                                                         + "&port=" + this.Port + "&authmode="
+                                                         + configSelectedAuth + " HTTP/1.1" + rn
+                                                         + "Host: www.pearoxy.com" + rn + rn;
+                                    byte[] pingRequestBytes = Encoding.ASCII.GetBytes(pingRequest);
+                                    pingStream.BeginWrite(
+                                        pingRequestBytes, 
+                                        0, 
+                                        pingRequestBytes.Length, 
+                                        delegate(IAsyncResult ar2)
+                                            {
+                                                try
+                                                {
+                                                    pingStream.EndWrite(ar2);
+                                                    pingStream.Close();
+                                                    pingTcp.Close();
+                                                }
+                                                catch (Exception)
+                                                {
+                                                }
+                                            }, 
+                                        null);
                                 }
-                                catch (Exception) { }
-                            }, null);
-                        }
-                        catch (Exception) { }
-                    }, null);
+                                catch (Exception)
+                                {
+                                }
+                            }, 
+                        null);
                 }
             }
-            catch (Exception) { }
-            this.AcceptingWorker = new BackgroundWorker(); // Init a thread for listening for incoming requests
-            this.AcceptingWorker.WorkerSupportsCancellation = true; // We may want to cancel it
-            this.AcceptingWorker.DoWork += AcceptingWorker_DoWork; // Add function to run async
-            this.RoutingWorker = new BackgroundWorker();
-            this.RoutingWorker.WorkerSupportsCancellation = true;
-            this.RoutingWorker.DoWork += RoutingWorker_DoWork;
+            catch (Exception)
+            {
+            }
+
+            this.acceptingWorker = new BackgroundWorker { WorkerSupportsCancellation = true }; // Init a thread for listening for incoming requests
+            this.acceptingWorker.DoWork += this.AcceptingWorkerDoWork; // Add function to run async
+            this.routingWorker = new BackgroundWorker { WorkerSupportsCancellation = true };
+            this.routingWorker.DoWork += this.RoutingWorkerDoWork;
         }
 
+        #endregion
+
+        #region Enums
+
+        /// <summary>
+        /// The controller status.
+        /// </summary>
+        public enum ControllerStatus
+        {
+            /// <summary>
+            /// The stopped.
+            /// </summary>
+            Stopped, 
+
+            /// <summary>
+            /// The working.
+            /// </summary>
+            Working, 
+        }
+
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Gets the accepting cycle.
+        /// </summary>
+        public int AcceptingCycle
+        {
+            get
+            {
+                int ret = (this.acceptingClock * 1000) / (Environment.TickCount - this.acceptingCycleLastTime);
+                this.acceptingCycleLastTime = Environment.TickCount;
+                this.acceptingClock = 0;
+                return ret;
+            }
+        }
+
+        /// <summary>
+        /// Gets the http forwarding ip.
+        /// </summary>
+        public IPAddress HttpForwardingIp { get; private set; }
+
+        /// <summary>
+        /// Gets the http forwarding port.
+        /// </summary>
+        public ushort HttpForwardingPort { get; private set; }
+
+        /// <summary>
+        /// Gets the ip.
+        /// </summary>
+        public IPAddress Ip { get; private set; }
+
+        /// <summary>
+        /// Gets the pearoxy domain.
+        /// </summary>
+        public string Domain { get; private set; }
+
+        /// <summary>
+        /// Gets the port.
+        /// </summary>
+        public ushort Port { get; private set; }
+
+        /// <summary>
+        /// Gets the routing cycle.
+        /// </summary>
+        public int RoutingCycle
+        {
+            get
+            {
+                int ret = (this.routingClock * 1000) / (Environment.TickCount - this.routingCycleLastTime);
+                this.routingCycleLastTime = Environment.TickCount;
+                this.routingClock = 0;
+                return ret;
+            }
+        }
+
+        /// <summary>
+        /// Gets the status.
+        /// </summary>
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        public ControllerStatus Status { get; private set; }
+
+        /// <summary>
+        /// Gets the waiting acception connections.
+        /// </summary>
+        public int WaitingAcceptionConnections
+        {
+            get
+            {
+                return Math.Max(this.connectedClients.Count - this.routingClients.Count, 0);
+            }
+        }
+
+        #endregion
+
+        #region Public Methods and Operators
+
+        /// <summary>
+        /// The dispose.
+        /// </summary>
+        public void Dispose()
+        {
+            if (this.acceptingWorker != null)
+            {
+                this.acceptingWorker.Dispose();
+            }
+
+            if (this.listeningServer != null)
+            {
+                this.listeningServer.Dispose();
+            }
+
+            if (this.routingWorker != null)
+            {
+                this.routingWorker.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// The start.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
         public bool Start()
         {
-            if (!this.AcceptingWorker.IsBusy) // If we are not working before
+            if (!this.acceptingWorker.IsBusy)
             {
-                this.ListeningServer = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                IPEndPoint ipLocal = new IPEndPoint(IP, Port);
-                this.ListeningServer.Bind(ipLocal);
-                this.ListeningServer.Listen(256);
+                // If we are not working before
+                this.listeningServer = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                IPEndPoint ipLocal = new IPEndPoint(this.Ip, this.Port);
+                this.listeningServer.Bind(ipLocal);
+                this.listeningServer.Listen(256);
 
-                this.AcceptingWorker.RunWorkerAsync(); // Start client acceptation thread
-                this.RoutingWorker.RunWorkerAsync();
-                int temporary_executer = this.RoutingCycle + this.AcceptingCycle;
-                Status = ControllerStatus.Working;
+                this.acceptingWorker.RunWorkerAsync(); // Start client acceptation thread
+                this.routingWorker.RunWorkerAsync();
+                this.Status = ControllerStatus.Working;
                 return true; // Every thing is good
             }
+
             return false; // We are already running
         }
 
+        /// <summary>
+        /// The stop.
+        /// </summary>
         public void Stop()
         {
-            Status = ControllerStatus.Stopped;
-            if (this.AcceptingWorker.IsBusy) // If we are working
+            this.Status = ControllerStatus.Stopped;
+            if (this.acceptingWorker.IsBusy)
             {
-                this.AcceptingWorker.CancelAsync(); // Sending cancel to acceptation thread
-                this.RoutingWorker.CancelAsync();
+                // If we are working
+                this.acceptingWorker.CancelAsync(); // Sending cancel to acceptation thread
+                this.routingWorker.CancelAsync();
             }
 
             PeaRoxyClient[] cls;
-            lock (ConnectedClients)
+            lock (this.connectedClients)
             {
-                cls = new PeaRoxyClient[ConnectedClients.Count];
-                ConnectedClients.CopyTo(cls);
-                this.ConnectedClients.Clear();
+                cls = new PeaRoxyClient[this.connectedClients.Count];
+                this.connectedClients.CopyTo(cls);
+                this.connectedClients.Clear();
             }
-            foreach (PeaRoxyClient client in cls)
-                client.Close();
 
-            lock (RoutingClients)
-                this.RoutingClients.Clear();
+            foreach (PeaRoxyClient client in cls)
+            {
+                client.Close();
+            }
+
+            lock (this.routingClients) this.routingClients.Clear();
         }
 
-        private void AcceptingWorker_DoWork(object sender, DoWorkEventArgs e)
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The client disconnected callback.
+        /// </summary>
+        /// <param name="client">
+        /// The client.
+        /// </param>
+        internal void Dissconnected(PeaRoxyClient client)
         {
-            int _ti; // Temporary variable
-            if (!(ConfigReader.GetSettings().ContainsKey("NoDataConnectionTimeOut".ToLower()) && int.TryParse(ConfigReader.GetSettings()["NoDataConnectionTimeOut".ToLower()], out _ti))) // Read settings about timeout
-                _ti = 600;
+            lock (this.routingClients)
+                if (this.routingClients.Contains(client))
+                {
+                    this.routingClients.Remove(client);
+                }
 
-            int _sp; // Temporary variable
-            if (!(ConfigReader.GetSettings().ContainsKey("SendPacketSize".ToLower()) && int.TryParse(ConfigReader.GetSettings()["SendPacketSize".ToLower()], out _sp))) // Read Settings about buffer size of connections
-                _sp = 10 * 1024;
+            lock (this.connectedClients)
+                if (this.connectedClients.Contains(client))
+                {
+                    this.connectedClients.Remove(client);
+                }
+        }
 
-            int _rp; // Temporary variable
-            if (!(ConfigReader.GetSettings().ContainsKey("ReceivePacketSize".ToLower()) && int.TryParse(ConfigReader.GetSettings()["ReceivePacketSize".ToLower()], out _rp))) // Read Settings about buffer size of connections
-                _rp = 10 * 1024;
+        /// <summary>
+        /// The client routing ready callback.
+        /// </summary>
+        /// <param name="client">
+        /// The client.
+        /// </param>
+        internal void MoveToQ(PeaRoxyClient client)
+        {
+            lock (this.routingClients) this.routingClients.Add(client);
+        }
+
+        /// <summary>
+        /// The accepting worker_ do work.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        /// <exception cref="Exception">
+        /// </exception>
+        private void AcceptingWorkerDoWork(object sender, DoWorkEventArgs e)
+        {
+            int ti; // Temporary variable
+            if (
+                !(ConfigReader.GetSettings().ContainsKey("NoDataConnectionTimeOut".ToLower())
+                  && int.TryParse(ConfigReader.GetSettings()["NoDataConnectionTimeOut".ToLower()], out ti)))
+            {
+                // Read settings about timeout
+                ti = 600;
+            }
+
+            int sp; // Temporary variable
+            if (
+                !(ConfigReader.GetSettings().ContainsKey("SendPacketSize".ToLower())
+                  && int.TryParse(ConfigReader.GetSettings()["SendPacketSize".ToLower()], out sp)))
+            {
+                // Read Settings about buffer size of connections
+                sp = 10 * 1024;
+            }
+
+            int rp; // Temporary variable
+            if (
+                !(ConfigReader.GetSettings().ContainsKey("ReceivePacketSize".ToLower())
+                  && int.TryParse(ConfigReader.GetSettings()["ReceivePacketSize".ToLower()], out rp)))
+            {
+                // Read Settings about buffer size of connections
+                rp = 10 * 1024;
+            }
 
             byte enc; // Temporary variable
-            if (!(ConfigReader.GetSettings().ContainsKey("EncryptionType".ToLower()) && byte.TryParse(ConfigReader.GetSettings()["EncryptionType".ToLower()], out enc))) // Try to set selected encryption type in settings
+            if (
+                !(ConfigReader.GetSettings().ContainsKey("EncryptionType".ToLower())
+                  && byte.TryParse(ConfigReader.GetSettings()["EncryptionType".ToLower()], out enc)))
+            {
+                // Try to set selected encryption type in settings
                 enc = (byte)Common.EncryptionType.None;
+            }
 
             int clientSupportedEncryptionType;
-            if (!ConfigReader.GetSettings().ContainsKey("SupportedEncryptionTypes".ToLower()) || !int.TryParse(ConfigReader.GetSettings()["SupportedEncryptionTypes".ToLower()], out clientSupportedEncryptionType)) // If we don't have any setting about supported types of encryption set it to def, -1 mean any type
+            if (!ConfigReader.GetSettings().ContainsKey("SupportedEncryptionTypes".ToLower())
+                || !int.TryParse(
+                    ConfigReader.GetSettings()["SupportedEncryptionTypes".ToLower()], 
+                    out clientSupportedEncryptionType))
+            {
+                // If we don't have any setting about supported types of encryption set it to def, -1 mean any type
                 clientSupportedEncryptionType = -1;
+            }
 
             byte com; // Temporary variable
-            if (!(ConfigReader.GetSettings().ContainsKey("CompressionType".ToLower()) && byte.TryParse(ConfigReader.GetSettings()["CompressionType".ToLower()], out com))) // Try to set selected compression type in settings
+            if (
+                !(ConfigReader.GetSettings().ContainsKey("CompressionType".ToLower())
+                  && byte.TryParse(ConfigReader.GetSettings()["CompressionType".ToLower()], out com)))
+            {
+                // Try to set selected compression type in settings
                 com = (byte)Common.CompressionType.None;
+            }
 
             int clientSupportedCompressionType;
-            if (!ConfigReader.GetSettings().ContainsKey("SupportedCompressionTypes".ToLower()) || !int.TryParse(ConfigReader.GetSettings()["SupportedCompressionTypes".ToLower()], out clientSupportedCompressionType)) // If we don't have any setting about supported types of compression set it to def, -1 mean any type
+            if (!ConfigReader.GetSettings().ContainsKey("SupportedCompressionTypes".ToLower())
+                || !int.TryParse(
+                    ConfigReader.GetSettings()["SupportedCompressionTypes".ToLower()], 
+                    out clientSupportedCompressionType))
+            {
+                // If we don't have any setting about supported types of compression set it to def, -1 mean any type
                 clientSupportedCompressionType = -1;
+            }
 
-            byte config_SelectedAuth;
-            if (!ConfigReader.GetSettings().ContainsKey("AuthMethod".ToLower()) || !byte.TryParse(ConfigReader.GetSettings()["AuthMethod".ToLower()], out config_SelectedAuth)) // Read config about how to auth user 
+            byte configSelectedAuth;
+            if (!ConfigReader.GetSettings().ContainsKey("AuthMethod".ToLower())
+                || !byte.TryParse(ConfigReader.GetSettings()["AuthMethod".ToLower()], out configSelectedAuth))
+            {
+                // Read config about how to auth user 
                 throw new Exception("Bad AuthMethod in config file.");
+            }
 
-            while (!this.AcceptingWorker.CancellationPending)
+            while (!this.acceptingWorker.CancellationPending)
             {
                 try
                 {
-                    acceptingCycle++;
-                    if (this.ListeningServer.Poll(0, SelectMode.SelectRead))
+                    this.acceptingClock++;
+                    if (this.listeningServer.Poll(0, SelectMode.SelectRead))
                     {
-                        lock (ConnectedClients)
-                            this.ConnectedClients.Add(new PeaRoxyClient(this.ListeningServer.Accept(),
-                                this,
-                                (Common.EncryptionType)enc,
-                                (Common.CompressionType)com,
-                                _rp,
-                                _sp,
-                                config_SelectedAuth,
-                                _ti,
-                                clientSupportedEncryptionType,
-                                clientSupportedCompressionType
-                                )); // Create a client and send TCPClient to it, Let add this client to list too, So we can close it when needed
+                        lock (this.connectedClients)
+                            this.connectedClients.Add(
+                                new PeaRoxyClient(
+                                    this.listeningServer.Accept(), 
+                                    this, 
+                                    (Common.EncryptionType)enc, 
+                                    (Common.CompressionType)com, 
+                                    rp, 
+                                    sp, 
+                                    configSelectedAuth, 
+                                    ti, 
+                                    clientSupportedEncryptionType, 
+                                    clientSupportedCompressionType));
+                                
+                                // Create a client and send TCPClient to it, Let add this client to list too, So we can close it when needed
                     }
-                    if (ConnectedClients.Count > 0)
+
+                    if (this.connectedClients.Count > 0)
                     {
                         PeaRoxyClient[] st;
-                        lock (ConnectedClients)
-                            st = ConnectedClients.ToArray();
-                        for (int i = 0; i < st.Length; i++)
-                            if (st[i] != null && st[i].CurrentStage != PeaRoxyClient.Client_Stage.Routing)
-                                st[i].Accepting();
+                        lock (this.connectedClients) st = this.connectedClients.ToArray();
+                        foreach (PeaRoxyClient client in st.Where(client => client != null && client.CurrentStage != PeaRoxyClient.ClientStage.Routing))
+                        {
+                            client.Accepting();
+                        }
                     }
-                    System.Threading.Thread.Sleep(AcceptingWait);
+
+                    Thread.Sleep(this.acceptingWait);
                 }
                 catch (Exception ex)
                 {
                     Screen.LogMessage("AcceptingWorker: " + ex.Message + "\r\n" + ex.StackTrace);
                 }
             }
-            this.ListeningServer.Close(); // Not bad to check if we have stopped listening server
+
+            this.listeningServer.Close(); // Not bad to check if we have stopped listening server
         }
 
-        private void RoutingWorker_DoWork(object sender, DoWorkEventArgs e)
+        /// <summary>
+        /// The routing worker process.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void RoutingWorkerDoWork(object sender, DoWorkEventArgs e)
         {
-            while (!this.RoutingWorker.CancellationPending)
+            while (!this.routingWorker.CancellationPending)
             {
                 try
                 {
-                    routingCycle++;
-                    if (RoutingClients.Count > 0)
+                    this.routingClock++;
+                    if (this.routingClients.Count > 0)
                     {
                         PeaRoxyClient[] st;
-                        lock (RoutingClients)
-                            st = RoutingClients.ToArray();
-                        for (int i = 0; i < st.Length; i++)
-                            if (st[i] != null && st[i].CurrentStage == PeaRoxyClient.Client_Stage.Routing)
-                                st[i].DoRoute();
+                        lock (this.routingClients) st = this.routingClients.ToArray();
+                        foreach (PeaRoxyClient client in st.Where(client => client != null && client.CurrentStage == PeaRoxyClient.ClientStage.Routing))
+                        {
+                            client.DoRoute();
+                        }
                     }
-                    System.Threading.Thread.Sleep(RoutingWait);
+
+                    Thread.Sleep(this.routingWait);
                 }
                 catch (Exception ex)
                 {
                     Screen.LogMessage("RoutingWorker: " + ex.Message + "\r\n" + ex.StackTrace);
                 }
             }
-            this.ListeningServer.Close();
+
+            this.listeningServer.Close();
         }
 
-        internal void iMoveToQ(PeaRoxyClient cl)
-        {
-            lock (RoutingClients)
-                RoutingClients.Add(cl);
-        }
-
-        internal void iDissconnected(PeaRoxyClient client)
-        {
-            lock (RoutingClients)
-                if (RoutingClients.Contains(client))
-                    RoutingClients.Remove(client);
-
-            lock (ConnectedClients)
-                if (ConnectedClients.Contains(client))
-                    ConnectedClients.Remove(client);
-        }
-
-        public void Dispose()
-        {
-            if (this.AcceptingWorker != null)
-                this.AcceptingWorker.Dispose();
-            if (this.ListeningServer != null)
-                this.ListeningServer.Dispose();
-            if (this.RoutingWorker != null)
-                this.RoutingWorker.Dispose();
-        }
+        #endregion
     }
 }
