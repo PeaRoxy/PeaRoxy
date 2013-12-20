@@ -1,266 +1,116 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Runtime.InteropServices;
-using Microsoft.Win32;
-using System.IO;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="WindowsProxy.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   The windows proxy.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
-namespace PeaRoxy.Windows.WPFClient
+namespace PeaRoxy.Windows
 {
-    public class WindowsProxy
+    #region
+
+    using System;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Linq;
+    using System.Runtime.InteropServices;
+    using System.Threading;
+
+    using Microsoft.Win32;
+
+    #endregion
+
+    /// <summary>
+    /// The windows proxy.
+    /// </summary>
+    public static class WindowsProxy
     {
-        private struct Struct_INTERNET_PROXY_INFO
-        {
-            public int dwAccessType;
-            public IntPtr proxy;
-            public IntPtr proxyBypass;
-        };
-        [DllImport("wininet.dll")]
-        private static extern bool InternetSetOption(IntPtr hInternet, int dwOption, IntPtr lpBuffer, int dwBufferLength);
-        private const int INTERNET_OPTION_SETTINGS_CHANGED = 39;
-        private const int INTERNET_OPTION_REFRESH = 37;
-        private const int INTERNET_OPTION_PROXY_SETTINGS_CHANGED = 95;
-        private const int INTERNET_OPTION_PROXY = 38;
-        private const int INTERNET_OPEN_TYPE_PROXY = 3;
-        private const int INTERNET_OPEN_TYPE_DIRECT = 1;
-        public static bool Windows_SetActiveProxy(string ip, int port, bool https = false,bool http = false, bool socks = false)
-        {
-            try
-            {
-                if (!http && !https && !socks)
-                    return Windows_DisableProxy();
+        #region Constants
 
-                string proxyString = ip + ":" + port.ToString();
-                proxyString = ((http) ? "http=" + proxyString + ";" : "") + ((https) ? "https=" + proxyString + ";" : "") + ((socks) ? "socks=" + proxyString + ";" : "");
-                if (Windows_IsProxyEnable(proxyString))
-                    return RefreshProxySettings(true);
+        /// <summary>
+        /// The interne t_ ope n_ typ e_ direct.
+        /// </summary>
+        private const int InternetOpenTypeDirect = 1;
 
-                Struct_INTERNET_PROXY_INFO proxyInfo;
-                proxyInfo.dwAccessType = INTERNET_OPEN_TYPE_PROXY;
-                proxyInfo.proxy = Marshal.StringToHGlobalAnsi(proxyString);
-                proxyInfo.proxyBypass = Marshal.StringToHGlobalAnsi("<local>");
-                IntPtr intptrStruct = Marshal.AllocCoTaskMem(Marshal.SizeOf(proxyInfo));
-                Marshal.StructureToPtr(proxyInfo, intptrStruct, true);
+        /// <summary>
+        /// The interne t_ ope n_ typ e_ proxy.
+        /// </summary>
+        private const int InternetOpenTypeProxy = 3;
 
-                if (InternetSetOption(IntPtr.Zero, INTERNET_OPTION_PROXY, intptrStruct, Marshal.SizeOf(proxyInfo)))
-                {
-                    InternetSetOption(IntPtr.Zero, INTERNET_OPTION_PROXY_SETTINGS_CHANGED, IntPtr.Zero, 0);
-                    InternetSetOption(IntPtr.Zero, INTERNET_OPTION_SETTINGS_CHANGED, IntPtr.Zero, 0);
-                    InternetSetOption(IntPtr.Zero, INTERNET_OPTION_REFRESH, IntPtr.Zero, 0);
-                    System.Threading.Thread.Sleep(1000);
-                    if (Windows_IsProxyEnable(proxyString))
-                        return true;
-                }
+        /// <summary>
+        /// The interne t_ optio n_ proxy.
+        /// </summary>
+        private const int InternetOptionProxy = 38;
 
-                RegistryKey registry = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", true);
-                registry.SetValue("ProxyEnable", 1);
-                registry.SetValue("ProxyServer", proxyString);
-                registry.Flush();
-                registry.Close();
-                RefreshProxySettings();
-                if (Windows_IsProxyEnable(proxyString))
-                    return true;
-            }
-            catch (Exception)
-            {
-            }
-            return false;
-        }
+        /// <summary>
+        /// The interne t_ optio n_ prox y_ setting s_ changed.
+        /// </summary>
+        private const int InternetOptionProxySettingsChanged = 95;
 
-        public static bool RefreshProxySettings(bool rV)
-        {
-            RefreshProxySettings();
-            return rV;
-        }
+        /// <summary>
+        /// The interne t_ optio n_ refresh.
+        /// </summary>
+        private const int InternetOptionRefresh = 37;
 
-        public static void RefreshProxySettings()
-        {
-            InternetSetOption(IntPtr.Zero, INTERNET_OPTION_PROXY_SETTINGS_CHANGED, IntPtr.Zero, 0);
-            InternetSetOption(IntPtr.Zero, INTERNET_OPTION_SETTINGS_CHANGED, IntPtr.Zero, 0);
-            InternetSetOption(IntPtr.Zero, INTERNET_OPTION_REFRESH, IntPtr.Zero, 0);
-            System.Threading.Thread.Sleep(1000);
-        }
+        /// <summary>
+        /// The interne t_ optio n_ setting s_ changed.
+        /// </summary>
+        private const int InternetOptionSettingsChanged = 39;
 
-        public static bool Windows_DisableProxy()
-        {
-            try
-            {
-                if (!Windows_IsProxyEnable())
-                    return RefreshProxySettings(true);
+        #endregion
 
-                Struct_INTERNET_PROXY_INFO proxyInfo;
-                proxyInfo.dwAccessType = INTERNET_OPEN_TYPE_DIRECT;
-                proxyInfo.proxy = IntPtr.Zero;
-                proxyInfo.proxyBypass = IntPtr.Zero;
-                IntPtr intptrStruct = Marshal.AllocCoTaskMem(Marshal.SizeOf(proxyInfo));
-                Marshal.StructureToPtr(proxyInfo, intptrStruct, true);
+        #region Public Methods and Operators
 
-                if (InternetSetOption(IntPtr.Zero, INTERNET_OPTION_PROXY, intptrStruct, Marshal.SizeOf(proxyInfo)))
-                {
-                    RefreshProxySettings();
-                    if (!Windows_IsProxyEnable())
-                        return true;
-                }
-
-                RegistryKey registry = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", true);
-                registry.SetValue("ProxyEnable", 0);
-                registry.SetValue("ProxyServer", "");
-                registry.Flush();
-                registry.Close();
-                RefreshProxySettings();
-                if (!Windows_IsProxyEnable())
-                    return true;
-            }
-            catch (Exception)
-            {
-            }
-            return false;
-        }
-
-        public static bool Windows_IsProxyEnable(string proxyString = "")
-        {
-            try
-            {
-                RegistryKey registry = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", false);
-                using (registry)
-                {
-                    if ((int)registry.GetValue("ProxyEnable", 0) != 1)
-                        return false;
-                    //if (proxyString == string.Empty)
-                    //    return false;
-                    if ((string)registry.GetValue("ProxyServer", string.Empty) == proxyString)
-                        return true;
-                }
-            }
-            catch (Exception)
-            {
-            }
-            return false;
-        }
-
-        public static bool Windows_SetActiveProxyAutoConfig(string address)
-        {
-            try
-            {
-                RegistryKey registry;
-                if (address == string.Empty)
-                    return Windows_DisableProxyAutoConfig();
-
-                if (Windows_IsProxyAutoConfigEnable(address))
-                    return RefreshProxySettings(true);
-
-          
-                registry = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", true);
-                registry.SetValue("AutoConfigURL", address);
-                registry.Flush();
-                registry.Close();
-                RefreshProxySettings();
-                if (Windows_IsProxyAutoConfigEnable(address))
-                    return true;
-            }
-            catch (Exception)
-            {
-            }
-            return false;
-        }
-
-        public static bool Windows_DisableProxyAutoConfig()
-        {
-            try
-            {
-                RegistryKey registry;
-
-                if (!Windows_IsProxyAutoConfigEnable())
-                    return RefreshProxySettings(true);
-
-                registry = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", true);
-                registry.DeleteValue("AutoConfigURL", false);
-                registry.Flush();
-                registry.Close();
-                RefreshProxySettings();
-                if (!Windows_IsProxyAutoConfigEnable())
-                    return true;
-            }
-            catch (Exception)
-            {
-            }
-            return false;
-        }
-
-        public static bool Windows_IsProxyAutoConfigEnable(string address = "")
-        {
-            try
-            {
-                RegistryKey registry = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", false);
-                using (registry)
-                {
-                    if (address == string.Empty)
-                        return false;
-                    if (registry.GetValue("AutoConfigURL", string.Empty).Equals(address))
-                        return true;
-                }
-            }
-            catch (Exception)
-            {
-            }
-            return false;
-        }
-
-        public static bool IsFirefoxNeedReconfig()
-        {
-            try
-            {
-                string firefoxProfilesPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Mozilla\\Firefox\\Profiles");
-                if (!Directory.Exists(firefoxProfilesPath))
-                    return true;
-                foreach (string profileAddress in Directory.GetDirectories(firefoxProfilesPath))
-                    if (File.Exists(Path.Combine(profileAddress, "prefs.js")))
-                    {
-                        FileStream fs = File.Open(Path.Combine(profileAddress, "prefs.js"), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                        StreamReader sr = new StreamReader(fs);
-                        while (!sr.EndOfStream)
-                            if (sr.ReadLine().ToLower().Contains("\"network.proxy.type\""))
-                            {
-                                sr.Close();
-                                fs.Close();
-                                return true;
-                            }
-                        sr.Close();
-                        fs.Close();
-                    }
-            }
-            catch (Exception)
-            {
-            }
-            return false;
-        }
-
+        /// <summary>
+        /// The force firefox to use system settings.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
         public static bool ForceFirefoxToUseSystemSettings()
         {
             bool isError = false;
             try
             {
-                if (System.Diagnostics.Process.GetProcessesByName("firefox").Count() > 0)
+                if (Process.GetProcessesByName("firefox").Any())
+                {
                     return false;
-                string firefoxProfilesPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Mozilla\\Firefox\\Profiles");
+                }
+
+                string firefoxProfilesPath =
+                    Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
+                        "Mozilla\\Firefox\\Profiles");
                 if (!Directory.Exists(firefoxProfilesPath))
+                {
                     return true;
+                }
+
                 foreach (string profileAddress in Directory.GetDirectories(firefoxProfilesPath))
                 {
                     try
                     {
                         if (File.Exists(Path.Combine(profileAddress, "prefs.js")))
                         {
-                            string fileKeeper = "";
-                            FileStream fs = File.Open(Path.Combine(profileAddress, "prefs.js"), FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                            string fileKeeper = string.Empty;
+                            FileStream fs = File.Open(
+                                Path.Combine(profileAddress, "prefs.js"), 
+                                FileMode.Open, 
+                                FileAccess.ReadWrite, 
+                                FileShare.None);
                             StreamReader sr = new StreamReader(fs);
                             while (!sr.EndOfStream)
                             {
                                 string data = sr.ReadLine();
-                                if (!data.ToLower().Contains("\"network.proxy.type\""))
+                                if (data != null && !data.ToLower().Contains("\"network.proxy.type\""))
+                                {
                                     fileKeeper += data + Environment.NewLine;
+                                }
                             }
+
                             fs.Position = 0;
                             fs.SetLength(0);
                             StreamWriter sw = new StreamWriter(fs);
@@ -276,12 +126,452 @@ namespace PeaRoxy.Windows.WPFClient
                         isError = true;
                     }
                 }
+
                 return !isError;
             }
             catch (Exception)
             {
             }
+
             return false;
         }
+
+        /// <summary>
+        /// The is firefox need reconfig.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        public static bool IsFirefoxNeedReconfig()
+        {
+            try
+            {
+                string firefoxProfilesPath =
+                    Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
+                        "Mozilla\\Firefox\\Profiles");
+                if (!Directory.Exists(firefoxProfilesPath))
+                {
+                    return true;
+                }
+
+                foreach (string profileAddress in Directory.GetDirectories(firefoxProfilesPath))
+                {
+                    if (File.Exists(Path.Combine(profileAddress, "prefs.js")))
+                    {
+                        FileStream fs = File.Open(
+                            Path.Combine(profileAddress, "prefs.js"), 
+                            FileMode.Open, 
+                            FileAccess.Read, 
+                            FileShare.ReadWrite);
+                        StreamReader sr = new StreamReader(fs);
+                        while (!sr.EndOfStream)
+                        {
+                            string readLine = sr.ReadLine();
+                            if (readLine == null || !readLine.ToLower().Contains("\"network.proxy.type\""))
+                            {
+                                continue;
+                            }
+                            sr.Close();
+                            fs.Close();
+                            return true;
+                        }
+
+                        sr.Close();
+                        fs.Close();
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// The refresh proxy settings.
+        /// </summary>
+        /// <param name="rV">
+        /// The r v.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        public static bool RefreshProxySettings(bool rV)
+        {
+            RefreshProxySettings();
+            return rV;
+        }
+
+        /// <summary>
+        /// The refresh proxy settings.
+        /// </summary>
+        public static void RefreshProxySettings()
+        {
+            InternetSetOption(IntPtr.Zero, InternetOptionProxySettingsChanged, IntPtr.Zero, 0);
+            InternetSetOption(IntPtr.Zero, InternetOptionSettingsChanged, IntPtr.Zero, 0);
+            InternetSetOption(IntPtr.Zero, InternetOptionRefresh, IntPtr.Zero, 0);
+            Thread.Sleep(1000);
+        }
+
+        /// <summary>
+        /// The windows_ disable proxy.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        public static bool WindowsDisableProxy()
+        {
+            try
+            {
+                if (!WindowsIsProxyEnable())
+                {
+                    return RefreshProxySettings(true);
+                }
+
+                StructInternetProxyInfo proxyInfo;
+                proxyInfo.DwAccessType = InternetOpenTypeDirect;
+                proxyInfo.Proxy = IntPtr.Zero;
+                proxyInfo.ProxyBypass = IntPtr.Zero;
+                IntPtr intptrStruct = Marshal.AllocCoTaskMem(Marshal.SizeOf(proxyInfo));
+                Marshal.StructureToPtr(proxyInfo, intptrStruct, true);
+
+                if (InternetSetOption(IntPtr.Zero, InternetOptionProxy, intptrStruct, Marshal.SizeOf(proxyInfo)))
+                {
+                    RefreshProxySettings();
+                    if (!WindowsIsProxyEnable())
+                    {
+                        return true;
+                    }
+                }
+
+                RegistryKey registry =
+                    Registry.CurrentUser.OpenSubKey(
+                        "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", 
+                        true);
+                if (registry != null)
+                {
+                    registry.SetValue("ProxyEnable", 0);
+                    registry.SetValue("ProxyServer", string.Empty);
+                    registry.Flush();
+                    registry.Close();
+                }
+                RefreshProxySettings();
+                if (!WindowsIsProxyEnable())
+                {
+                    return true;
+                }
+            }
+            catch (Exception)
+            {
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// The windows_ disable proxy auto config.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        public static bool WindowsDisableProxyAutoConfig()
+        {
+            try
+            {
+                if (!WindowsIsProxyAutoConfigEnable())
+                {
+                    return RefreshProxySettings(true);
+                }
+
+                RegistryKey registry = Registry.CurrentUser.OpenSubKey(
+                    "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", 
+                    true);
+                if (registry != null)
+                {
+                    registry.DeleteValue("AutoConfigURL", false);
+                    registry.Flush();
+                    registry.Close();
+                }
+                RefreshProxySettings();
+                if (!WindowsIsProxyAutoConfigEnable())
+                {
+                    return true;
+                }
+            }
+            catch (Exception)
+            {
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// The windows_ is proxy auto config enable.
+        /// </summary>
+        /// <param name="address">
+        /// The address.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        public static bool WindowsIsProxyAutoConfigEnable(string address = "")
+        {
+            try
+            {
+                RegistryKey registry =
+                    Registry.CurrentUser.OpenSubKey(
+                        "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", 
+                        false);
+                using (registry)
+                {
+                    if (address == string.Empty)
+                    {
+                        return false;
+                    }
+
+                    if (registry != null && registry.GetValue("AutoConfigURL", string.Empty).Equals(address))
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// The windows_ is proxy enable.
+        /// </summary>
+        /// <param name="proxyString">
+        /// The proxy string.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        public static bool WindowsIsProxyEnable(string proxyString = "")
+        {
+            try
+            {
+                RegistryKey registry =
+                    Registry.CurrentUser.OpenSubKey(
+                        "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", 
+                        false);
+                using (registry)
+                {
+                    if (registry != null && (int)registry.GetValue("ProxyEnable", 0) != 1)
+                    {
+                        return false;
+                    }
+
+                    // if (proxyString == string.Empty)
+                    // return false;
+                    if (registry != null && (string)registry.GetValue("ProxyServer", string.Empty) == proxyString)
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// The windows_ set active proxy.
+        /// </summary>
+        /// <param name="ip">
+        /// The ip.
+        /// </param>
+        /// <param name="port">
+        /// The port.
+        /// </param>
+        /// <param name="https">
+        /// The https.
+        /// </param>
+        /// <param name="http">
+        /// The http.
+        /// </param>
+        /// <param name="socks">
+        /// The socks.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        public static bool WindowsSetActiveProxy(
+            string ip, 
+            int port, 
+            bool https = false, 
+            bool http = false, 
+            bool socks = false)
+        {
+            try
+            {
+                if (!http && !https && !socks)
+                {
+                    return WindowsDisableProxy();
+                }
+
+                string proxyString = ip + ":" + port;
+                proxyString = (http ? "http=" + proxyString + ";" : string.Empty)
+                              + (https ? "https=" + proxyString + ";" : string.Empty)
+                              + (socks ? "socks=" + proxyString + ";" : string.Empty);
+                if (WindowsIsProxyEnable(proxyString))
+                {
+                    return RefreshProxySettings(true);
+                }
+
+                StructInternetProxyInfo proxyInfo;
+                proxyInfo.DwAccessType = InternetOpenTypeProxy;
+                proxyInfo.Proxy = Marshal.StringToHGlobalAnsi(proxyString);
+                proxyInfo.ProxyBypass = Marshal.StringToHGlobalAnsi("<local>");
+                IntPtr intptrStruct = Marshal.AllocCoTaskMem(Marshal.SizeOf(proxyInfo));
+                Marshal.StructureToPtr(proxyInfo, intptrStruct, true);
+
+                if (InternetSetOption(IntPtr.Zero, InternetOptionProxy, intptrStruct, Marshal.SizeOf(proxyInfo)))
+                {
+                    InternetSetOption(IntPtr.Zero, InternetOptionProxySettingsChanged, IntPtr.Zero, 0);
+                    InternetSetOption(IntPtr.Zero, InternetOptionSettingsChanged, IntPtr.Zero, 0);
+                    InternetSetOption(IntPtr.Zero, InternetOptionRefresh, IntPtr.Zero, 0);
+                    Thread.Sleep(1000);
+                    if (WindowsIsProxyEnable(proxyString))
+                    {
+                        return true;
+                    }
+                }
+
+                RegistryKey registry =
+                    Registry.CurrentUser.OpenSubKey(
+                        "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", 
+                        true);
+                if (registry != null)
+                {
+                    registry.SetValue("ProxyEnable", 1);
+                    registry.SetValue("ProxyServer", proxyString);
+                    registry.Flush();
+                    registry.Close();
+                }
+                RefreshProxySettings();
+                if (WindowsIsProxyEnable(proxyString))
+                {
+                    return true;
+                }
+            }
+            catch (Exception)
+            {
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// The windows_ set active proxy auto config.
+        /// </summary>
+        /// <param name="address">
+        /// The address.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        public static bool WindowsSetActiveProxyAutoConfig(string address)
+        {
+            try
+            {
+                if (address == string.Empty)
+                {
+                    return WindowsDisableProxyAutoConfig();
+                }
+
+                if (WindowsIsProxyAutoConfigEnable(address))
+                {
+                    return RefreshProxySettings(true);
+                }
+
+                RegistryKey registry = Registry.CurrentUser.OpenSubKey(
+                    "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", 
+                    true);
+                if (registry != null)
+                {
+                    registry.SetValue("AutoConfigURL", address);
+                    registry.Flush();
+                    registry.Close();
+                }
+                RefreshProxySettings();
+                if (WindowsIsProxyAutoConfigEnable(address))
+                {
+                    return true;
+                }
+            }
+            catch (Exception)
+            {
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The internet set option.
+        /// </summary>
+        /// <param name="hInternet">
+        /// The h internet.
+        /// </param>
+        /// <param name="dwOption">
+        /// The dw option.
+        /// </param>
+        /// <param name="lpBuffer">
+        /// The lp buffer.
+        /// </param>
+        /// <param name="dwBufferLength">
+        /// The dw buffer length.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        [DllImport("wininet.dll")]
+        private static extern bool InternetSetOption(
+            IntPtr hInternet, 
+            int dwOption, 
+            IntPtr lpBuffer, 
+            int dwBufferLength);
+
+        #endregion
+
+        /// <summary>
+        /// The internet proxy info structure
+        /// </summary>
+        private struct StructInternetProxyInfo
+        {
+            #region Fields
+
+            /// <summary>
+            /// The dw access type.
+            /// </summary>
+            // ReSharper disable once NotAccessedField.Local
+            public int DwAccessType;
+
+            /// <summary>
+            /// The proxy.
+            /// </summary>
+            // ReSharper disable once NotAccessedField.Local
+            public IntPtr Proxy;
+
+            /// <summary>
+            /// The proxy bypass.
+            /// </summary>
+            // ReSharper disable once NotAccessedField.Local
+            public IntPtr ProxyBypass;
+
+            #endregion
+        };
     }
 }

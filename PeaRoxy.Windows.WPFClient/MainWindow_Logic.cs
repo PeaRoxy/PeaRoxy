@@ -417,7 +417,7 @@ namespace PeaRoxy.Windows.WPFClient
                     // Nothing to Do
                 }
 
-                if (WindowsProxy.Windows_DisableProxy())
+                if (WindowsProxy.WindowsDisableProxy())
                     App.Notify.ShowBalloonTip(2000, "PeaRoxy Client", "Ask Windows to ignore PeaRoxy settings: Done", System.Windows.Forms.ToolTipIcon.Info);
                 else
                     if (!silent && VDialog.Show(this, "Failed, You need to logoff and relogin to your account and try again or configure your system manually.\r\nDo want us to logoff your user account?!", "Auto Config", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Yes)
@@ -428,7 +428,7 @@ namespace PeaRoxy.Windows.WPFClient
                 if (PeaRoxy.Windows.WPFClient.Properties.Settings.Default.AutoConfig_Enable)
                 {
                     string autoProxyAddress = "http://" + ((PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_Address == "*") ? Environment.MachineName : PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_Address) + ":" + PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_Port.ToString() + "/" + PeaRoxy.Windows.WPFClient.Properties.Settings.Default.AutoConfig_Address;
-                    if (!WindowsProxy.Windows_SetActiveProxyAutoConfig(autoProxyAddress))
+                    if (!WindowsProxy.WindowsSetActiveProxyAutoConfig(autoProxyAddress))
                     {
                         if (!silent && VDialog.Show(this, "Failed, You need to logoff and relogin to your account and try again or configure your system manually.\r\nDo want us to logoff your user account?!", "Auto Config", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Yes)
                             Windows.Common.LogOffUser();
@@ -438,7 +438,7 @@ namespace PeaRoxy.Windows.WPFClient
                     }
                 }
                 bool isDone = false;
-                if (!WindowsProxy.Windows_SetActiveProxy(PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_Address,
+                if (!WindowsProxy.WindowsSetActiveProxy(PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_Address,
                     PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_Port,
                     Listener.IsHttpSupported,
                     Listener.IsHttpsSupported,
