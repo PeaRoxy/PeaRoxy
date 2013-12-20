@@ -1,19 +1,62 @@
-﻿using System;
-using System.Security.Cryptography;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="TripleDesCryptor.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   The triple des cryptor.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.CoreProtocol.Cryptors
 {
-    public class TripleDESCryptor : Cryptor, IDisposable
-    {
-        TripleDESCryptoServiceProvider tdes;
-        ICryptoTransform cTransform_enc;
-        ICryptoTransform cTransform_dec;
+    #region
 
-        [System.Diagnostics.DebuggerStepThrough]
-        public TripleDESCryptor(byte[] key)
+    using System;
+    using System.Diagnostics;
+    using System.Security.Cryptography;
+
+    #endregion
+
+    /// <summary>
+    /// The triple DES cryptor.
+    /// </summary>
+    public class TripleDesCryptor : Cryptor, IDisposable
+    {
+        #region Fields
+
+        /// <summary>
+        /// The tdes.
+        /// </summary>
+        private readonly TripleDESCryptoServiceProvider tdes;
+
+        /// <summary>
+        /// The c transform_dec.
+        /// </summary>
+        private ICryptoTransform cTransformDec;
+
+        /// <summary>
+        /// The c transform_enc.
+        /// </summary>
+        private ICryptoTransform cTransformEnc;
+
+        #endregion
+
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TripleDesCryptor"/> class.
+        /// </summary>
+        /// <param name="key">
+        /// The key.
+        /// </param>
+        [DebuggerStepThrough]
+        public TripleDesCryptor(byte[] key)
         {
             if (key.Length != 24)
+            {
                 Array.Resize(ref key, 24);
+            }
 
             while (TripleDES.IsWeakKey(key))
             {
@@ -21,41 +64,86 @@ namespace PeaRoxy.CoreProtocol.Cryptors
                 Array.Copy(md5, 0, key, 8, key.Length - 8);
             }
 
-            tdes = new TripleDESCryptoServiceProvider();
-            tdes.Key = key;
-            tdes.Mode = CipherMode.CBC;
-            tdes.Padding = PaddingMode.ANSIX923;
-            cTransform_enc = tdes.CreateEncryptor();
-            cTransform_dec = tdes.CreateDecryptor();
+            this.tdes = new TripleDESCryptoServiceProvider
+                            {
+                                Key = key,
+                                Mode = CipherMode.CBC,
+                                Padding = PaddingMode.ANSIX923
+                            };
+            this.cTransformEnc = this.tdes.CreateEncryptor();
+            this.cTransformDec = this.tdes.CreateDecryptor();
         }
 
-        [System.Diagnostics.DebuggerStepThrough]
-        public override void SetSalt(byte[] salt)
-        {
-            if (salt.Length != 8)
-                Array.Resize(ref salt, 8);
+        #endregion
 
-            tdes.IV = salt;
-            cTransform_enc = tdes.CreateEncryptor();
-            cTransform_dec = tdes.CreateDecryptor();
-        }
+        #region Public Methods and Operators
 
-        [System.Diagnostics.DebuggerStepThrough]
-        public override byte[] Encrypt(byte[] toEncrypt)
-        {
-            return cTransform_enc.TransformFinalBlock(toEncrypt, 0, toEncrypt.Length);
-        }
-
-        [System.Diagnostics.DebuggerStepThrough]
+        /// <summary>
+        /// The decrypt.
+        /// </summary>
+        /// <param name="toDecrypt">
+        /// The to decrypt.
+        /// </param>
+        /// <returns>
+        /// The <see>
+        ///         <cref>byte[]</cref>
+        ///     </see>
+        ///     .
+        /// </returns>
+        [DebuggerStepThrough]
         public override byte[] Decrypt(byte[] toDecrypt)
         {
-            return cTransform_dec.TransformFinalBlock(toDecrypt, 0, toDecrypt.Length);
+            return this.cTransformDec.TransformFinalBlock(toDecrypt, 0, toDecrypt.Length);
         }
 
+        /// <summary>
+        /// The dispose.
+        /// </summary>
         public void Dispose()
         {
             if (this.tdes != null)
+            {
                 this.tdes.Dispose();
+            }
         }
+
+        /// <summary>
+        /// The encrypt.
+        /// </summary>
+        /// <param name="toEncrypt">
+        /// The to encrypt.
+        /// </param>
+        /// <returns>
+        /// The <see>
+        ///         <cref>byte[]</cref>
+        ///     </see>
+        ///     .
+        /// </returns>
+        [DebuggerStepThrough]
+        public override byte[] Encrypt(byte[] toEncrypt)
+        {
+            return this.cTransformEnc.TransformFinalBlock(toEncrypt, 0, toEncrypt.Length);
+        }
+
+        /// <summary>
+        /// The set salt.
+        /// </summary>
+        /// <param name="newSalt">
+        /// The newSalt.
+        /// </param>
+        [DebuggerStepThrough]
+        public override void SetSalt(byte[] newSalt)
+        {
+            if (newSalt.Length != 8)
+            {
+                Array.Resize(ref newSalt, 8);
+            }
+
+            this.tdes.IV = newSalt;
+            this.cTransformEnc = this.tdes.CreateEncryptor();
+            this.cTransformDec = this.tdes.CreateDecryptor();
+        }
+
+        #endregion
     }
 }

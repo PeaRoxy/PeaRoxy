@@ -1,226 +1,634 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Net.Sockets;
-using PeaRoxy.CommonLibrary;
-using System.Security.Cryptography;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="PeaRoxyProtocol.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   The pea roxy protocol.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
 namespace PeaRoxy.CoreProtocol
 {
+    #region
+
+    using System;
+    using System.Net.Sockets;
+    using System.Security.Cryptography;
+    using System.Threading;
+
+    using PeaRoxy.CommonLibrary;
+    using PeaRoxy.CoreProtocol.Compressors;
+    using PeaRoxy.CoreProtocol.Cryptors;
+
+    #endregion
+
+    /// <summary>
+    /// The pea roxy protocol.
+    /// </summary>
     public class PeaRoxyProtocol
     {
-        public delegate void CloseDelegate(string message, bool async);
-        private static RNGCryptoServiceProvider rnd = new RNGCryptoServiceProvider();
-        private bool isDC = false;
-        private byte[] pearEncryptionSalt = new byte[4];
+        #region Static Fields
+
+        /// <summary>
+        /// The rnd.
+        /// </summary>
+        private static readonly RNGCryptoServiceProvider Random = new RNGCryptoServiceProvider();
+
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        /// The compressor.
+        /// </summary>
+        private readonly Compressor compressor = new Compressor();
+
+        /// <summary>
+        /// The compression type.
+        /// </summary>
+        private readonly Common.CompressionType compressionType = Common.CompressionType.None;
+
+        /// <summary>
+        /// The encryption type.
+        /// </summary>
+        private readonly Common.EncryptionType encryptionType = Common.EncryptionType.None;
+
+        /// <summary>
+        /// The pear encryption salt.
+        /// </summary>
+        private readonly byte[] pearEncryptionSalt = new byte[4];
+
+        /// <summary>
+        /// The cryptor.
+        /// </summary>
+        private Cryptor cryptor = new Cryptor();
+
+        /// <summary>
+        /// The encryption key.
+        /// </summary>
         private byte[] encryptionKey = new byte[0];
+
+        /// <summary>
+        /// The is disconnected.
+        /// </summary>
+        private bool isDisconnected;
+
+        /// <summary>
+        /// The needed bytes.
+        /// </summary>
+        private int neededBytes;
+
+        /// <summary>
+        /// The peer compression type.
+        /// </summary>
+        private Common.CompressionType peerCompressionType = Common.CompressionType.None;
+
+        /// <summary>
+        /// The peer compressor.
+        /// </summary>
+        private Compressor peerCompressor = new Compressor();
+
+        /// <summary>
+        /// The peer cryptor.
+        /// </summary>
+        private Cryptor peerCryptor = new Cryptor();
+
+        /// <summary>
+        /// The peer encryption type.
+        /// </summary>
+        private Common.EncryptionType peerEncryptionType = Common.EncryptionType.None;
+
+        /// <summary>
+        /// The waiting buffer.
+        /// </summary>
         private byte[] waitingBuffer = new byte[0];
+
+        /// <summary>
+        /// The working buffer.
+        /// </summary>
         private byte[] workingBuffer = new byte[0];
+
+        /// <summary>
+        /// The write buffer.
+        /// </summary>
         private byte[] writeBuffer = new byte[0];
-        private Cryptors.Cryptor Cryptor = new Cryptors.Cryptor();
-        private Cryptors.Cryptor peerCryptor = new Cryptors.Cryptor();
-        private Compressors.Compressor Compressor = new Compressors.Compressor();
-        private Compressors.Compressor peerCompressor = new Compressors.Compressor();
-        private int neededBytes = 0;
-        private Common.Encryption_Type peerEncryptionType = Common.Encryption_Type.None;
-        private Common.Compression_Type peerCompressionType = Common.Compression_Type.None;
-        private Common.Compression_Type compressionType = Common.Compression_Type.None;
-        private Common.Encryption_Type encryptionType = Common.Encryption_Type.None;
-        public Socket UnderlyingSocket { get;private set; }
-        public CloseDelegate CloseCallback { get; set; }
-        public int ReceivePacketSize { get; set; }
-        public int SendPacketSize { get; set; }
-        public Common.Encryption_Type ClientSupportedEncryptionType { get; set; }
-        public Common.Compression_Type ClientSupportedCompressionType { get; set; }
-        public ushort PocketSent { get; private set; }
-        public ushort PocketReceived { get; private set; }
-        public byte[] EncryptionKey
-        {
-            get { return this.encryptionKey; }
-            set
-            {
-                if (this.encryptionKey == value)
-                    return;
-                this.encryptionKey = value;
-                switch (encryptionType)
-                {
-                    case Common.Encryption_Type.TripleDES:
-                        Cryptor = new Cryptors.TripleDESCryptor(encryptionKey);
-                        break;
-                    case Common.Encryption_Type.SimpleXOR:
-                        Cryptor = new Cryptors.SimpleXORCryptor(encryptionKey);
-                        break;
-                }
-                //if (encryptionType == peerEncryptionType)
-                //    peerCryptor = Cryptor;
-                //else
-                switch (peerEncryptionType)
-                {
-                    case Common.Encryption_Type.TripleDES:
-                        peerCryptor = new Cryptors.TripleDESCryptor(encryptionKey);
-                        break;
-                    case Common.Encryption_Type.SimpleXOR:
-                        peerCryptor = new Cryptors.SimpleXORCryptor(encryptionKey);
-                        break;
-                }
-            }
-        }
-        public bool BusyWrite
-        {
-            get
-            {
-                if (writeBuffer.Length > 0)
-                {
-                    this.Write(null, true);
-                }
-                return (writeBuffer.Length > 0);
-            }
-        }
-        public PeaRoxyProtocol(Socket client, Common.Encryption_Type encType = Common.Encryption_Type.None, Common.Compression_Type comType = Common.Compression_Type.None)
+
+        #endregion
+
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PeaRoxyProtocol"/> class.
+        /// </summary>
+        /// <param name="client">
+        /// The client.
+        /// </param>
+        /// <param name="encType">
+        /// The enc type.
+        /// </param>
+        /// <param name="comType">
+        /// The com type.
+        /// </param>
+        public PeaRoxyProtocol(
+            Socket client, 
+            Common.EncryptionType encType = Common.EncryptionType.None, 
+            Common.CompressionType comType = Common.CompressionType.None)
         {
             this.encryptionType = encType;
             this.compressionType = comType;
-            switch (compressionType)
+            switch (this.compressionType)
             {
-                case Common.Compression_Type.gZip:
-                    Compressor = new Compressors.gZipCompressor();
+                case Common.CompressionType.GZip:
+                    this.compressor = new GZipCompressor();
                     break;
-                case Common.Compression_Type.Deflate:
-                    Compressor = new Compressors.DeflateCompressor();
+                case Common.CompressionType.Deflate:
+                    this.compressor = new DeflateCompressor();
                     break;
             }
+
             this.ReceivePacketSize = 8192;
             this.SendPacketSize = 8192;
             this.PocketSent = 0;
             this.PocketReceived = 0;
-            this.ClientSupportedEncryptionType = Common.Encryption_Type.Anything;
-            this.ClientSupportedCompressionType = Common.Compression_Type.Anything;
+            this.ClientSupportedEncryptionType = Common.EncryptionType.Anything;
+            this.ClientSupportedCompressionType = Common.CompressionType.Anything;
             this.UnderlyingSocket = client;
             this.UnderlyingSocket.Blocking = false;
         }
 
-        public bool isDataAvailable(bool SyncWait = false)
+        #endregion
+
+        #region Delegates
+
+        /// <summary>
+        /// The close delegate.
+        /// </summary>
+        /// <param name="message">
+        /// The message.
+        /// </param>
+        /// <param name="async">
+        /// The async.
+        /// </param>
+        public delegate void CloseDelegate(string message, bool async);
+
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Gets a value indicating whether busy write.
+        /// </summary>
+        public bool BusyWrite
+        {
+            get
+            {
+                if (this.writeBuffer.Length > 0)
+                {
+                    this.Write(null, true);
+                }
+
+                return this.writeBuffer.Length > 0;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the client supported compression type.
+        /// </summary>
+        public Common.CompressionType ClientSupportedCompressionType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the client supported encryption type.
+        /// </summary>
+        public Common.EncryptionType ClientSupportedEncryptionType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the close callback.
+        /// </summary>
+        public CloseDelegate CloseCallback { get; set; }
+
+        /// <summary>
+        /// Gets or sets the encryption key.
+        /// </summary>
+        public byte[] EncryptionKey
+        {
+            get
+            {
+                return this.encryptionKey;
+            }
+
+            set
+            {
+                if (this.encryptionKey == value)
+                {
+                    return;
+                }
+
+                this.encryptionKey = value;
+                switch (this.encryptionType)
+                {
+                    case Common.EncryptionType.TripleDes:
+                        this.cryptor = new TripleDesCryptor(this.encryptionKey);
+                        break;
+                    case Common.EncryptionType.SimpleXor:
+                        this.cryptor = new SimpleXorCryptor(this.encryptionKey);
+                        break;
+                }
+
+                // if (encryptionType == peerEncryptionType)
+                // peerCryptor = Cryptor;
+                // else
+                switch (this.peerEncryptionType)
+                {
+                    case Common.EncryptionType.TripleDes:
+                        this.peerCryptor = new TripleDesCryptor(this.encryptionKey);
+                        break;
+                    case Common.EncryptionType.SimpleXor:
+                        this.peerCryptor = new SimpleXorCryptor(this.encryptionKey);
+                        break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the pocket received.
+        /// </summary>
+        public ushort PocketReceived { get; private set; }
+
+        /// <summary>
+        /// Gets the pocket sent.
+        /// </summary>
+        public ushort PocketSent { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the receive packet size.
+        /// </summary>
+        public int ReceivePacketSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets the send packet size.
+        /// </summary>
+        public int SendPacketSize { get; set; }
+
+        /// <summary>
+        /// Gets the underlying socket.
+        /// </summary>
+        public Socket UnderlyingSocket { get; private set; }
+
+        #endregion
+
+        #region Public Methods and Operators
+
+        /// <summary>
+        /// The close.
+        /// </summary>
+        /// <param name="message">
+        /// The message.
+        /// </param>
+        /// <param name="async">
+        /// The async.
+        /// </param>
+        public void Close(string message = null, bool async = false)
         {
             try
             {
-                if ((UnderlyingSocket.Available > 0 || SyncWait) && waitingBuffer.Length == 0)
+                if (this.isDisconnected)
                 {
-                    int i = 10; // Time out by second, This timeout is about the max seconds that we wait for something if we don't have anything
+                    return;
+                }
+
+                this.isDisconnected = true;
+
+                if (this.CloseCallback != null)
+                {
+                    this.CloseCallback(message, async);
+                }
+
+                if (async)
+                {
+                    byte[] db = new byte[0];
+                    if (this.UnderlyingSocket != null)
+                    {
+                        this.UnderlyingSocket.BeginSend(
+                            db, 
+                            0, 
+                            db.Length, 
+                            SocketFlags.None, 
+                            delegate(IAsyncResult ar)
+                                {
+                                    try
+                                    {
+                                        this.UnderlyingSocket.Close(); // Close request connection it-self
+                                        this.UnderlyingSocket.EndSend(ar);
+                                    }
+                                    catch (Exception)
+                                    {
+                                    }
+                                }, 
+                            null);
+                    }
+                }
+                else
+                {
+                    if (this.UnderlyingSocket != null)
+                    {
+                        this.UnderlyingSocket.Close();
+                    }
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        /// <summary>
+        /// The read.
+        /// </summary>
+        /// <returns>
+        /// The <see>
+        ///         <cref>byte[]</cref>
+        ///     </see>
+        ///     .
+        /// </returns>
+        public byte[] Read()
+        {
+            if (this.IsDataAvailable(true))
+            {
+                byte[] cop = (byte[])this.waitingBuffer.Clone();
+                this.waitingBuffer = new byte[0];
+                return cop;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// The write.
+        /// </summary>
+        /// <param name="bytes">
+        /// The bytes.
+        /// </param>
+        /// <param name="async">
+        /// The async.
+        /// </param>
+        /// <param name="enc">
+        /// The enc.
+        /// </param>
+        public void Write(byte[] bytes, bool async, bool enc = true)
+        {
+            try
+            {
+                if (bytes != null)
+                {
+                    int peaces = (int)Math.Ceiling(bytes.Length / (double)this.SendPacketSize);
+                    for (int i = 0; i < peaces; i++)
+                    {
+                        int len = Math.Min(this.SendPacketSize, bytes.Length - (i * this.SendPacketSize));
+                        byte[] framingBody = new byte[len];
+                        Array.Copy(bytes, i * this.SendPacketSize, framingBody, 0, len);
+                        if (this.PocketSent == 65535)
+                        {
+                            this.PocketSent = 0;
+                        }
+
+                        byte[] framingHeader = new byte[10];
+
+                        framingHeader[1] = (byte)this.compressionType;
+                        framingBody = this.compressor.Compress(framingBody);
+
+                        if (enc && this.encryptionType != Common.EncryptionType.None)
+                        {
+                            // If encryption is enable
+                            byte[] encryptionSalt = new byte[4];
+                            Random.GetNonZeroBytes(encryptionSalt);
+                            Array.Copy(encryptionSalt, 0, framingHeader, 6, 4);
+
+                            if (this.EncryptionKey.Length == 0)
+                            {
+                                this.EncryptionKey = encryptionSalt;
+                            }
+
+                            framingHeader[0] = (byte)this.encryptionType;
+                            this.cryptor.SetSalt(encryptionSalt);
+                            framingBody = this.cryptor.Encrypt(framingBody);
+                        }
+
+                        framingHeader[2] = (byte)Math.Floor((double)this.PocketSent / 256);
+                        framingHeader[3] = (byte)(this.PocketSent % 256);
+                        framingHeader[4] = (byte)Math.Floor((double)framingBody.Length / 256);
+                        framingHeader[5] = (byte)(framingBody.Length % 256);
+                        Array.Resize(
+                            ref this.writeBuffer, 
+                            this.writeBuffer.Length + framingHeader.Length + framingBody.Length);
+                        Array.Copy(
+                            framingHeader, 
+                            0, 
+                            this.writeBuffer, 
+                            this.writeBuffer.Length - (framingHeader.Length + framingBody.Length), 
+                            framingHeader.Length);
+                        Array.Copy(
+                            framingBody, 
+                            0, 
+                            this.writeBuffer, 
+                            this.writeBuffer.Length - framingBody.Length, 
+                            framingBody.Length);
+                        this.PocketSent++;
+                    }
+                }
+
+                if (this.writeBuffer.Length > 0 && this.UnderlyingSocket.Poll(0, SelectMode.SelectWrite))
+                {
+                    int bytesWritten = this.UnderlyingSocket.Send(this.writeBuffer, SocketFlags.None);
+                    Array.Copy(
+                        this.writeBuffer, 
+                        bytesWritten, 
+                        this.writeBuffer, 
+                        0, 
+                        this.writeBuffer.Length - bytesWritten);
+                    Array.Resize(ref this.writeBuffer, this.writeBuffer.Length - bytesWritten);
+                    if (!async && this.writeBuffer.Length > 0)
+                    {
+                        this.Write(null, false);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // e)
+                this.Close(); // "Protocol 5. " + e.Message);
+            }
+        }
+
+        /// <summary>
+        /// The is data available.
+        /// </summary>
+        /// <param name="syncWait">
+        /// The sync wait.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        public bool IsDataAvailable(bool syncWait = false)
+        {
+            try
+            {
+                if ((this.UnderlyingSocket.Available > 0 || syncWait) && this.waitingBuffer.Length == 0)
+                {
+                    int i = 10;
+                        
+                        // Time out by second, This timeout is about the max seconds that we wait for something if we don't have anything
                     i = i * 1000;
-                    int _i = i; // Save timeout value
+                    int i2 = i;
                     byte[] buffer = new byte[0];
                     while (i > 0)
                     {
-                        if (!Common.IsSocketConnected(UnderlyingSocket))
+                        if (!Common.IsSocketConnected(this.UnderlyingSocket))
                         {
-                            Close();
+                            this.Close();
                             return false;
                         }
-                        if (UnderlyingSocket.Available > 0)
+
+                        if (this.UnderlyingSocket.Available > 0)
                         {
-                            i = _i;
+                            i = i2;
                             int bufferLastLength = buffer.Length;
-                            Array.Resize(ref buffer, bufferLastLength + ReceivePacketSize);
-                            int bytes = UnderlyingSocket.Receive(buffer, bufferLastLength, buffer.Length - bufferLastLength, SocketFlags.None);
+                            Array.Resize(ref buffer, bufferLastLength + this.ReceivePacketSize);
+                            int bytes = this.UnderlyingSocket.Receive(
+                                buffer, 
+                                bufferLastLength, 
+                                buffer.Length - bufferLastLength, 
+                                SocketFlags.None);
                             if (bytes == 0)
                             {
-                                Close();
+                                this.Close();
                                 return false;
                             }
+
                             Array.Resize(ref buffer, bytes + bufferLastLength);
                             bool doNext = true;
                             while (doNext)
                             {
                                 doNext = false;
-                                if (neededBytes == 0)
+                                if (this.neededBytes == 0)
                                 {
-                                    if (workingBuffer.Length > 0)
+                                    if (this.workingBuffer.Length > 0)
                                     {
-                                        if (ClientSupportedEncryptionType != Common.Encryption_Type.Anything && ClientSupportedEncryptionType != peerEncryptionType) // Check if we support this type of encryption
+                                        if (this.ClientSupportedEncryptionType != Common.EncryptionType.Anything
+                                            && this.ClientSupportedEncryptionType != this.peerEncryptionType)
                                         {
-                                            Close("Protocol 1. Unsupported encryption type.");
-                                            return false; 
-                                        }
-
-                                        if (peerEncryptionType != Common.Encryption_Type.None)
-                                        {
-                                            peerCryptor.SetSalt(pearEncryptionSalt);
-                                            workingBuffer = peerCryptor.Decrypt(workingBuffer);
-                                        }
-
-                                        if (ClientSupportedCompressionType != Common.Compression_Type.Anything && ClientSupportedCompressionType != peerCompressionType) // Check if we support this type of compression
-                                        {
-                                            Close("Protocol 2. Unsupported compression type.");
+                                            // Check if we support this type of encryption
+                                            this.Close("Protocol 1. Unsupported encryption type.");
                                             return false;
                                         }
 
-                                        workingBuffer = peerCompressor.Decompress(workingBuffer);
+                                        if (this.peerEncryptionType != Common.EncryptionType.None)
+                                        {
+                                            this.peerCryptor.SetSalt(this.pearEncryptionSalt);
+                                            this.workingBuffer = this.peerCryptor.Decrypt(this.workingBuffer);
+                                        }
 
-                                        Array.Resize(ref waitingBuffer, waitingBuffer.Length + workingBuffer.Length);
-                                        Array.Copy(workingBuffer, 0, waitingBuffer, waitingBuffer.Length - workingBuffer.Length, workingBuffer.Length);
-                                        workingBuffer = new byte[0];
+                                        if (this.ClientSupportedCompressionType != Common.CompressionType.Anything
+                                            && this.ClientSupportedCompressionType != this.peerCompressionType)
+                                        {
+                                            // Check if we support this type of compression
+                                            this.Close("Protocol 2. Unsupported compression type.");
+                                            return false;
+                                        }
+
+                                        this.workingBuffer = this.peerCompressor.Decompress(this.workingBuffer);
+
+                                        Array.Resize(
+                                            ref this.waitingBuffer, 
+                                            this.waitingBuffer.Length + this.workingBuffer.Length);
+                                        Array.Copy(
+                                            this.workingBuffer, 
+                                            0, 
+                                            this.waitingBuffer, 
+                                            this.waitingBuffer.Length - this.workingBuffer.Length, 
+                                            this.workingBuffer.Length);
+                                        this.workingBuffer = new byte[0];
                                     }
 
                                     if (buffer.Length >= 10)
                                     {
-                                        if (PocketReceived == 65535)
-                                            PocketReceived = 0;
+                                        if (this.PocketReceived == 65535)
+                                        {
+                                            this.PocketReceived = 0;
+                                        }
 
-                                         if ((Common.Compression_Type)buffer[1] != peerCompressionType)
+                                        if ((Common.CompressionType)buffer[1] != this.peerCompressionType)
                                         {
-                                            peerCompressionType = (Common.Compression_Type)buffer[1];
-                                            switch (peerCompressionType)
+                                            this.peerCompressionType = (Common.CompressionType)buffer[1];
+                                            switch (this.peerCompressionType)
                                             {
-                                                case Common.Compression_Type.gZip:
-                                                    peerCompressor = new Compressors.gZipCompressor();
+                                                case Common.CompressionType.GZip:
+                                                    this.peerCompressor = new GZipCompressor();
                                                     break;
-                                                case Common.Compression_Type.Deflate:
-                                                    peerCompressor = new Compressors.DeflateCompressor();
+                                                case Common.CompressionType.Deflate:
+                                                    this.peerCompressor = new DeflateCompressor();
                                                     break;
                                             }
                                         }
+
                                         int receiveCounter = (buffer[2] * 256) + buffer[3];
-                                        neededBytes = (buffer[4] * 256) + buffer[5];
-                                        Array.Copy(buffer, 6, pearEncryptionSalt, 0, 4);
-                                        if ((Common.Encryption_Type)buffer[0] != peerEncryptionType)
+                                        this.neededBytes = (buffer[4] * 256) + buffer[5];
+                                        Array.Copy(buffer, 6, this.pearEncryptionSalt, 0, 4);
+                                        if ((Common.EncryptionType)buffer[0] != this.peerEncryptionType)
                                         {
-                                            peerEncryptionType = (Common.Encryption_Type)buffer[0];
-                                            //if (encryptionType == peerEncryptionType)
-                                            //    peerCryptor = Cryptor;
-                                            //else
-                                            if (EncryptionKey.Length == 0)
-                                                EncryptionKey = pearEncryptionSalt;
-                                            switch (peerEncryptionType)
+                                            this.peerEncryptionType = (Common.EncryptionType)buffer[0];
+
+                                            // if (encryptionType == peerEncryptionType)
+                                            // peerCryptor = Cryptor;
+                                            // else
+                                            if (this.EncryptionKey.Length == 0)
                                             {
-                                                case Common.Encryption_Type.TripleDES:
-                                                    peerCryptor = new Cryptors.TripleDESCryptor(encryptionKey);
+                                                this.EncryptionKey = this.pearEncryptionSalt;
+                                            }
+
+                                            switch (this.peerEncryptionType)
+                                            {
+                                                case Common.EncryptionType.TripleDes:
+                                                    this.peerCryptor = new TripleDesCryptor(this.encryptionKey);
                                                     break;
-                                                case Common.Encryption_Type.SimpleXOR:
-                                                    peerCryptor = new Cryptors.SimpleXORCryptor(encryptionKey);
+                                                case Common.EncryptionType.SimpleXor:
+                                                    this.peerCryptor = new SimpleXorCryptor(this.encryptionKey);
                                                     break;
                                             }
                                         }
-                                        if (receiveCounter != PocketReceived)
+
+                                        if (receiveCounter != this.PocketReceived)
                                         {
-                                            Close("Protocol 3. Packet lost, Last received packet: " + receiveCounter.ToString() + ", Expected: " + PocketReceived.ToString());
+                                            this.Close(
+                                                "Protocol 3. Packet lost, Last received packet: " + receiveCounter
+                                                + ", Expected: " + this.PocketReceived);
                                             return false;
                                         }
-                                        PocketReceived++;
-                                        if (neededBytes <= buffer.Length - 10)
-                                        {
-                                            Array.Resize(ref workingBuffer, workingBuffer.Length + neededBytes);
-                                            Array.Copy(buffer, 10, workingBuffer, 0, neededBytes);
 
-                                            Array.Copy(buffer, 10 + neededBytes, buffer, 0, (buffer.Length - 10) - neededBytes);
-                                            Array.Resize(ref buffer, (buffer.Length - 10) - neededBytes);
-                                            neededBytes = 0;
+                                        this.PocketReceived++;
+                                        if (this.neededBytes <= buffer.Length - 10)
+                                        {
+                                            Array.Resize(
+                                                ref this.workingBuffer, 
+                                                this.workingBuffer.Length + this.neededBytes);
+                                            Array.Copy(buffer, 10, this.workingBuffer, 0, this.neededBytes);
+
+                                            Array.Copy(
+                                                buffer, 
+                                                10 + this.neededBytes, 
+                                                buffer, 
+                                                0, 
+                                                (buffer.Length - 10) - this.neededBytes);
+                                            Array.Resize(ref buffer, (buffer.Length - 10) - this.neededBytes);
+                                            this.neededBytes = 0;
                                             doNext = true;
                                         }
                                         else
                                         {
-                                            Array.Resize(ref workingBuffer, workingBuffer.Length + (buffer.Length - 10));
-                                            Array.Copy(buffer, 10, workingBuffer, 0, buffer.Length - 10);
-                                            neededBytes -= buffer.Length - 10;
+                                            Array.Resize(
+                                                ref this.workingBuffer, 
+                                                this.workingBuffer.Length + (buffer.Length - 10));
+                                            Array.Copy(buffer, 10, this.workingBuffer, 0, buffer.Length - 10);
+                                            this.neededBytes -= buffer.Length - 10;
                                             buffer = new byte[0];
                                         }
                                     }
@@ -228,144 +636,72 @@ namespace PeaRoxy.CoreProtocol
                                 else
                                 {
                                     if (buffer.Length > 0)
-                                        if (neededBytes <= buffer.Length)
+                                    {
+                                        if (this.neededBytes <= buffer.Length)
                                         {
-                                            Array.Resize(ref workingBuffer, workingBuffer.Length + neededBytes);
-                                            Array.Copy(buffer, 0, workingBuffer, workingBuffer.Length - neededBytes, neededBytes);
+                                            Array.Resize(
+                                                ref this.workingBuffer, 
+                                                this.workingBuffer.Length + this.neededBytes);
+                                            Array.Copy(
+                                                buffer, 
+                                                0, 
+                                                this.workingBuffer, 
+                                                this.workingBuffer.Length - this.neededBytes, 
+                                                this.neededBytes);
 
-                                            Array.Copy(buffer, neededBytes, buffer, 0, (buffer.Length) - neededBytes);
-                                            Array.Resize(ref buffer, (buffer.Length) - neededBytes);
-                                            neededBytes = 0;
+                                            Array.Copy(
+                                                buffer, 
+                                                this.neededBytes, 
+                                                buffer, 
+                                                0, 
+                                                buffer.Length - this.neededBytes);
+                                            Array.Resize(ref buffer, buffer.Length - this.neededBytes);
+                                            this.neededBytes = 0;
                                             doNext = true;
                                         }
                                         else
                                         {
-                                            Array.Resize(ref workingBuffer, workingBuffer.Length + buffer.Length);
-                                            Array.Copy(buffer, 0, workingBuffer, workingBuffer.Length - buffer.Length, buffer.Length);
-                                            neededBytes -= buffer.Length;
+                                            Array.Resize(
+                                                ref this.workingBuffer, 
+                                                this.workingBuffer.Length + buffer.Length);
+                                            Array.Copy(
+                                                buffer, 
+                                                0, 
+                                                this.workingBuffer, 
+                                                this.workingBuffer.Length - buffer.Length, 
+                                                buffer.Length);
+                                            this.neededBytes -= buffer.Length;
                                             buffer = new byte[0];
                                         }
+                                    }
                                 }
                             }
                         }
-                        if (buffer.Length == 0 && (waitingBuffer.Length > 0 || !SyncWait))
-                            return (waitingBuffer.Length > 0);
-                        else if (i != _i)
-                            System.Threading.Thread.Sleep(1);
+
+                        if (buffer.Length == 0 && (this.waitingBuffer.Length > 0 || !syncWait))
+                        {
+                            return this.waitingBuffer.Length > 0;
+                        }
+
+                        if (i != i2)
+                        {
+                            Thread.Sleep(1);
+                        }
+
                         i--;
                     }
                 }
-                return (waitingBuffer.Length > 0);
+
+                return this.waitingBuffer.Length > 0;
             }
             catch (Exception e)
             {
-                Close("Protocol 4. " + e.Message);
+                this.Close("Protocol 4. " + e.Message);
             }
+
             return false;
         }
 
-        public void Write(byte[] bytes, bool async, bool enc = true)
-        {
-            try
-            {
-                if (bytes != null)
-                {
-                    int peaces = (int)Math.Ceiling((double)bytes.Length / (double)SendPacketSize);
-                    for (int i = 0; i < peaces; i++)
-                    {
-                        int len = Math.Min(SendPacketSize, bytes.Length - (i * SendPacketSize));
-                        byte[] framingBody = new byte[len];
-                        Array.Copy(bytes, (i * SendPacketSize), framingBody, 0, len);
-                        if (PocketSent == 65535)
-                            PocketSent = 0;
-
-                        byte[] framingHeader = new byte[10];
-
-                        framingHeader[1] = (byte)compressionType;
-                        framingBody = Compressor.Compress(framingBody);
-
-                        if (enc && encryptionType != Common.Encryption_Type.None) // If encryption is enable
-                        {
-                            byte[] encryptionSalt = new byte[4];
-                            rnd.GetNonZeroBytes(encryptionSalt);
-                            Array.Copy(encryptionSalt, 0, framingHeader, 6, 4);
-
-                            if (EncryptionKey.Length == 0)
-                                EncryptionKey = encryptionSalt;
-
-                            framingHeader[0] = (byte)encryptionType;
-                            Cryptor.SetSalt(encryptionSalt);
-                            framingBody = Cryptor.Encrypt(framingBody);
-                        }
-                        framingHeader[2] = (byte)Math.Floor((double)PocketSent / 256);
-                        framingHeader[3] = (byte)(PocketSent % 256);
-                        framingHeader[4] = (byte)Math.Floor((double)framingBody.Length / 256);
-                        framingHeader[5] = (byte)(framingBody.Length % 256);
-                        Array.Resize(ref writeBuffer, writeBuffer.Length + framingHeader.Length + framingBody.Length);
-                        Array.Copy(framingHeader, 0, writeBuffer, writeBuffer.Length - (framingHeader.Length + framingBody.Length), framingHeader.Length);
-                        Array.Copy(framingBody, 0, writeBuffer, writeBuffer.Length - framingBody.Length, framingBody.Length);
-                        PocketSent++;
-                    }
-                }
-                if (writeBuffer.Length > 0 && UnderlyingSocket.Poll(0,SelectMode.SelectWrite))
-                {
-                    int bytesWritten = UnderlyingSocket.Send(writeBuffer, SocketFlags.None);
-                    Array.Copy(writeBuffer, bytesWritten, writeBuffer, 0, writeBuffer.Length - bytesWritten);
-                    Array.Resize(ref writeBuffer, writeBuffer.Length - bytesWritten);
-                    if (!async && writeBuffer.Length > 0)
-                        this.Write(null, false);
-                }
-            }
-            catch (Exception)// e)
-            {
-                Close();//"Protocol 5. " + e.Message);
-            }
-        }
-
-        public byte[] Read()
-        {
-            if (isDataAvailable(true))
-            {
-                byte[] cop = (byte[])waitingBuffer.Clone();
-                waitingBuffer = new byte[0];
-                return cop;
-            }
-            return null;
-        }
-
-        public void Close(string message = null, bool async = false)
-        {
-            try
-            {
-                if (isDC)
-                    return;
-
-                isDC = true;
-
-                if (CloseCallback!=null)
-                    CloseCallback(message, async);
-
-                if (async)
-                {
-                    byte[] db = new byte[0];
-                    if (UnderlyingSocket != null)
-                        UnderlyingSocket.BeginSend(db, 0, db.Length, SocketFlags.None, (AsyncCallback)delegate(IAsyncResult ar)
-                        {
-                            try
-                            {
-                                UnderlyingSocket.Close(); // Close request connection it-self
-                                UnderlyingSocket.EndSend(ar);
-                            }
-                            catch (Exception) { }
-                        }, null);
-                }
-                else
-                {
-                    if (UnderlyingSocket != null)
-                        UnderlyingSocket.Close();
-                }
-            }
-            catch { }
-        }
+        #endregion
     }
 }

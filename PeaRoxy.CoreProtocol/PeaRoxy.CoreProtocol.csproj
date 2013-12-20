@@ -45,13 +45,13 @@
   <ItemGroup>
     <Compile Include="Compressors\Compressor.cs" />
     <Compile Include="Compressors\DeflateCompressor.cs" />
-    <Compile Include="Compressors\gZipCompressor.cs" />
-    <Compile Include="HTTPForger.cs" />
+    <Compile Include="Compressors\GZipCompressor.cs" />
+    <Compile Include="HttpForger.cs" />
     <Compile Include="Cryptors\Cryptor.cs" />
     <Compile Include="PeaRoxyProtocol.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Cryptors\SimpleXORCryptor.cs" />
-    <Compile Include="Cryptors\TripleDESCryptor.cs" />
+    <Compile Include="Cryptors\SimpleXorCryptor.cs" />
+    <Compile Include="Cryptors\TripleDesCryptor.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PeaRoxy.CommonLibrary\PeaRoxy.CommonLibrary.csproj">
