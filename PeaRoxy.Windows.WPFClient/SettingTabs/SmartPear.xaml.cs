@@ -198,10 +198,10 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
         public void FillSmartList()
         {
             lb_smart.Items.Clear();
-            List<string> HTTP_List_Analysed = PeaRoxy.ClientLibrary.SmartPear.Analyse_HTTP_List(
-                new List<string>(PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_HTTP_List.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)));
-            List<string> HTTPS_List_Analysed = PeaRoxy.ClientLibrary.SmartPear.Analyse_Direct_List(
-                new List<string>(PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_Direct_List.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)));
+            IEnumerable<string> HTTP_List_Analysed = ClientLibrary.SmartPear.AnalyzeHttpList(
+                new List<string>(Properties.Settings.Default.Smart_HTTP_List.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)));
+            IEnumerable<string> HTTPS_List_Analysed = ClientLibrary.SmartPear.AnalyzeDirectList(
+                new List<string>(Properties.Settings.Default.Smart_Direct_List.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)));
             foreach (string s in HTTP_List_Analysed)
             {
                 lb_smart.Items.Add("(Http) " + s.ToLower());

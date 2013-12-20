@@ -22,7 +22,7 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
         public Log()
         {
             InitializeComponent();
-            PeaRoxy.ClientLibrary.Proxy_Controller.NewLog += NewLog;
+            PeaRoxy.ClientLibrary.ProxyController.NewLog += NewLog;
         }
 
         private void txt_TextBox_LostFocus(object sender, RoutedEventArgs e)

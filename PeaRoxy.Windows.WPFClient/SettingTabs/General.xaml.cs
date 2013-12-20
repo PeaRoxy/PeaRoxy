@@ -26,12 +26,12 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
             InitializeComponent();
         }
 
-        public void UpdateStats(Proxy_Controller Listener, long currentDownSpeed, long currentUpSpeed)
+        public void UpdateStats(ProxyController Listener, long currentDownSpeed, long currentUpSpeed)
         {
-            lbl_stat_acceptingthreads.Content = Listener.AcceptingCycle.ToString() + " - " + Listener.WaitingAcceptionConnections;
-            lbl_stat_activeconnections.Content = Listener.RoutingCycle.ToString() + " - " + Listener.RoutingConnections;
-            lbl_stat_downloaded.Content = CommonLibrary.Common.FormatFileSizeAsString(Listener.BytesReceived);
-            lbl_stat_uploaded.Content = CommonLibrary.Common.FormatFileSizeAsString(Listener.BytesSent);
+            lbl_stat_acceptingthreads.Content = Listener.AcceptingClock.ToString() + " - " + Listener.AcceptingConnections;
+            lbl_stat_activeconnections.Content = Listener.RoutingClock.ToString() + " - " + Listener.RoutingConnections;
+            lbl_stat_downloaded.Content = CommonLibrary.Common.FormatFileSizeAsString(Listener.ReceivedBytes);
+            lbl_stat_uploaded.Content = CommonLibrary.Common.FormatFileSizeAsString(Listener.SentBytes);
             lbl_stat_downloadrate.Content = CommonLibrary.Common.FormatFileSizeAsString(currentDownSpeed);
             lbl_stat_uploadrate.Content = CommonLibrary.Common.FormatFileSizeAsString(currentUpSpeed);
         }

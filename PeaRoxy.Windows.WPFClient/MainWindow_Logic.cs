@@ -11,7 +11,7 @@ using System.ComponentModel;
 using System.Windows.Threading;
 using PeaRoxy.CommonLibrary;
 using PeaRoxy.ClientLibrary;
-using PeaRoxy.ClientLibrary.Server_Types;
+using PeaRoxy.ClientLibrary.ServerModules;
 using LukeSw.Windows.Forms;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
@@ -28,7 +28,7 @@ namespace PeaRoxy.Windows.WPFClient
             Connected,
             Sleep,
         }
-        private Proxy_Controller Listener;
+        private ProxyController Listener;
         private Network.TAP.TapTunnel tapTunnel;
 
         System.Drawing.Icon connectedIcon;
@@ -147,58 +147,58 @@ namespace PeaRoxy.Windows.WPFClient
                     StopServer();
                 else
                 {
-                    Listener = new ClientLibrary.Proxy_Controller(null, null, 0);
-                    Listener.SmartPear.Forwarder_ListUpdated += Smart_ListUpdated;
+                    Listener = new ClientLibrary.ProxyController(null, null, 0);
+                    Listener.SmartPear.ForwarderListUpdated += Smart_ListUpdated;
                     Listener.FailDisconnected += FailDisconnected;
                 }
 
-                Listener.IP = ((PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_Address == "*") ? System.Net.IPAddress.Any : System.Net.IPAddress.Parse(PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_Address));
+                Listener.Ip = ((PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_Address == "*") ? System.Net.IPAddress.Any : System.Net.IPAddress.Parse(PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_Address));
                 Listener.Port = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_Port;
                 Listener.IsAutoConfigEnable = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.AutoConfig_Enable;
-                Listener.AutoConfigMime = (ClientLibrary.Proxy_Controller.AutoConfigMimeType)PeaRoxy.Windows.WPFClient.Properties.Settings.Default.AutoConfig_Mime;
+                Listener.AutoConfigMime = (ClientLibrary.ProxyController.AutoConfigMimeType)PeaRoxy.Windows.WPFClient.Properties.Settings.Default.AutoConfig_Mime;
                 Listener.AutoConfigPath = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.AutoConfig_Address;
-                Listener.IsHTTP_Supported = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_HTTP;
-                Listener.IsHTTPS_Supported = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_HTTPS;
-                Listener.IsSOCKS_Supported = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_SOCKS;
+                Listener.IsHttpSupported = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_HTTP;
+                Listener.IsHttpsSupported = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_HTTPS;
+                Listener.IsSocksSupported = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_SOCKS;
                 Listener.SendPacketSize = (int)PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_SendPacketSize;
                 Listener.ReceivePacketSize = (int)PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_RecPacketSize;
                 Listener.AutoDisconnect = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_StopOnInterrupt;
 
-                Listener.ErrorRenderer.HTTPErrorRendering = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.ErrorRenderer_EnableHTTP;
-                Listener.ErrorRenderer.DirectErrorRendering_Port80 = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.ErrorRenderer_Enable80;
-                Listener.ErrorRenderer.DirectErrorRendering_Port443 = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.ErrorRenderer_Enable443;
+                Listener.ErrorRenderer.Enable = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.ErrorRenderer_EnableHTTP;
+                Listener.ErrorRenderer.OnPort80Direct = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.ErrorRenderer_Enable80;
+                Listener.ErrorRenderer.OnPort443Direct = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.ErrorRenderer_Enable443;
 
-                Listener.DNSResolver.DNSResolver_Supported = Listener.DNSResolver.DNSResolver_UDPSupported = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.DNS_Enable;
-                Listener.DNSResolver.DNSResolver_ServerIP = System.Net.IPAddress.Parse(PeaRoxy.Windows.WPFClient.Properties.Settings.Default.DNS_IPAddress);
+                Listener.DnsResolver.DnsResolverSupported = Listener.DnsResolver.DnsResolverUdpSupported = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.DNS_Enable;
+                Listener.DnsResolver.DnsResolverServerIp = System.Net.IPAddress.Parse(PeaRoxy.Windows.WPFClient.Properties.Settings.Default.DNS_IPAddress);
 
-                Listener.SmartPear.Detector_Direct_Port80AsHTTP = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_Direct_AutoRoutePort80AsHTTP;
-                Listener.SmartPear.Forwarder_HTTP_Enable = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_HTTP_Enable;
-                Listener.SmartPear.Detector_HTTP_Enable = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_HTTP_AutoRoute_Enable;
-                Listener.SmartPear.Detector_HTTP_Pattern = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_HTTP_AutoRoute_Pattern;
-                Listener.SmartPear.Detector_DNSGrabber_Pattern = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_AntiDNSPattern;
-                Listener.SmartPear.Detector_DNSGrabber_Enable = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_AntiDNS_Enable;
-                Listener.SmartPear.Forwarder_HTTPS_Enable = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_HTTPS_Enable;
-                Listener.SmartPear.Detector_Timeout_Enable = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_Timeout_Enable;
-                Listener.SmartPear.Detector_Timeout = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_Timeout_Value;
-                Listener.SmartPear.Forwarder_Direct_Port80AsHTTP = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_Direct_Port80Router;
-                Listener.SmartPear.Forwarder_SOCKS_Enable = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_SOCKS_Enable;
-                Listener.SmartPear.Forwarder_HTTP_List.Clear();
-                Listener.SmartPear.Forwarder_Direct_List.Clear();
+                Listener.SmartPear.DetectorDirectPort80AsHttp = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_Direct_AutoRoutePort80AsHTTP;
+                Listener.SmartPear.ForwarderHttpEnable = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_HTTP_Enable;
+                Listener.SmartPear.DetectorHttpEnable = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_HTTP_AutoRoute_Enable;
+                Listener.SmartPear.DetectorHttpPattern = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_HTTP_AutoRoute_Pattern;
+                Listener.SmartPear.DetectorDnsGrabberPattern = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_AntiDNSPattern;
+                Listener.SmartPear.DetectorDnsGrabberEnable = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_AntiDNS_Enable;
+                Listener.SmartPear.ForwarderHttpsEnable = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_HTTPS_Enable;
+                Listener.SmartPear.DetectorTimeoutEnable = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_Timeout_Enable;
+                Listener.SmartPear.DetectorTimeout = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_Timeout_Value;
+                Listener.SmartPear.ForwarderDirectPort80AsHttp = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_Direct_Port80Router;
+                Listener.SmartPear.ForwarderSocksEnable = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_SOCKS_Enable;
+                Listener.SmartPear.ForwarderHttpList.Clear();
+                Listener.SmartPear.ForwarderDirectList.Clear();
                 foreach (string s in PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_HTTP_List.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
-                    Listener.SmartPear.Forwarder_HTTP_List.Add(s.ToLower());
+                    Listener.SmartPear.ForwarderHttpList.Add(s.ToLower());
                 foreach (string s in PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_Direct_List.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
-                    Listener.SmartPear.Forwarder_Direct_List.Add(s.ToLower());
+                    Listener.SmartPear.ForwarderDirectList.Add(s.ToLower());
 
                 ServerType ser;
                 string ServerAddress = "";
                 switch (PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Server_Type)
                 {
                     case 0:
-                        ser = new Server_NoServer();
+                        ser = new NoServer();
                         break;
                     case 1:
                         ServerAddress = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.PeaRoxySocks_Address;
-                        ser = new Server_PeaRoxy(
+                        ser = new PeaRoxy.ClientLibrary.ServerModules.PeaRoxy(
                             PeaRoxy.Windows.WPFClient.Properties.Settings.Default.PeaRoxySocks_Address,
                             PeaRoxy.Windows.WPFClient.Properties.Settings.Default.PeaRoxySocks_Port,
                             PeaRoxy.Windows.WPFClient.Properties.Settings.Default.PeaRoxySocks_Domain,
@@ -210,20 +210,20 @@ namespace PeaRoxy.Windows.WPFClient
                         break;
                     case 2:
                         ServerAddress = new Uri(PeaRoxy.Windows.WPFClient.Properties.Settings.Default.PeaRoxyWeb_Address).DnsSafeHost;
-                        ser = new Server_PeaRoxyWeb(
+                        ser = new PeaRoxyWeb(
                             PeaRoxy.Windows.WPFClient.Properties.Settings.Default.PeaRoxyWeb_Address,
                             ((PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Auth_Type == 2) ? PeaRoxy.Windows.WPFClient.Properties.Settings.Default.UserAndPassword_User : string.Empty),
                             ((PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Auth_Type == 2) ? PeaRoxy.Windows.WPFClient.Properties.Settings.Default.UserAndPassword_Pass : string.Empty),
                             (CommonLibrary.Common.Encryption_Type)PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_Encryption
                             );
-                        Listener.SmartPear.Forwarder_HTTPS_Enable = false;
+                        Listener.SmartPear.ForwarderHttpsEnable = false;
                         break;
                     case 3:
                         ServerAddress = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.ProxyServer_Address;
                         switch (WPFClient.Properties.Settings.Default.ProxyServer_Type)
                         {
                             case 0:
-                                ser = new Server_HTTPS(
+                                ser = new Https(
                                     PeaRoxy.Windows.WPFClient.Properties.Settings.Default.ProxyServer_Address,
                                     PeaRoxy.Windows.WPFClient.Properties.Settings.Default.ProxyServer_Port,
                                     ((PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Auth_Type == 2) ? PeaRoxy.Windows.WPFClient.Properties.Settings.Default.UserAndPassword_User : string.Empty),
@@ -231,7 +231,7 @@ namespace PeaRoxy.Windows.WPFClient
                                     );
                                 break;
                             case 1:
-                                ser = new Server_SOCKS5(
+                                ser = new Socks5(
                                     PeaRoxy.Windows.WPFClient.Properties.Settings.Default.ProxyServer_Address,
                                     PeaRoxy.Windows.WPFClient.Properties.Settings.Default.ProxyServer_Port,
                                     ((PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Auth_Type == 2) ? PeaRoxy.Windows.WPFClient.Properties.Settings.Default.UserAndPassword_User : string.Empty),
@@ -261,14 +261,14 @@ namespace PeaRoxy.Windows.WPFClient
                             throw new Exception("You can't select No Server when using TAP Adapter grabber.");
                         if (PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Server_Type == 2)
                             throw new Exception("You can't select PeaRoxyWeb Server when using TAP Adapter grabber.");
-                        Listener.DNSResolver.DNSResolver_Supported = Listener.DNSResolver.DNSResolver_UDPSupported = true;
-                        if (Listener.SmartPear.Forwarder_HTTP_Enable || Listener.SmartPear.Forwarder_HTTPS_Enable || Listener.SmartPear.Forwarder_SOCKS_Enable)
+                        Listener.DnsResolver.DnsResolverSupported = Listener.DnsResolver.DnsResolverUdpSupported = true;
+                        if (Listener.SmartPear.ForwarderHttpEnable || Listener.SmartPear.ForwarderHttpsEnable || Listener.SmartPear.ForwarderSocksEnable)
                         {
                             if (!silent)
                                 VDialog.Show(this, "We have disabled SmartPear functionality because of using TAP Adapter grabber.", "SmartPear", System.Windows.Forms.MessageBoxButtons.OK);
-                            Listener.SmartPear.Forwarder_HTTP_Enable = false;
-                            Listener.SmartPear.Forwarder_HTTPS_Enable = false;
-                            Listener.SmartPear.Forwarder_SOCKS_Enable = false;
+                            Listener.SmartPear.ForwarderHttpEnable = false;
+                            Listener.SmartPear.ForwarderHttpsEnable = false;
+                            Listener.SmartPear.ForwarderSocksEnable = false;
                         }
                         break;
                     case 2:
@@ -277,7 +277,7 @@ namespace PeaRoxy.Windows.WPFClient
                     default:
                         break;
                 }
-                if (!PeaRoxy.Windows.WPFClient.Properties.Settings.Default.DNS_Enable && !typeof(Server_NoServer).Equals(ser) && !typeof(Server_PeaRoxyWeb).Equals(ser))
+                if (!PeaRoxy.Windows.WPFClient.Properties.Settings.Default.DNS_Enable && !typeof(NoServer).Equals(ser) && !typeof(PeaRoxyWeb).Equals(ser))
                 {
                     try
                     {
@@ -286,10 +286,10 @@ namespace PeaRoxy.Windows.WPFClient
                     catch (Exception)
                     {
                         if (silent || VDialog.Show("It seems that your network can't resolve host names. PeaRoxy, PeaRoxyWeb, HTTPS and SOCKS all support requests with host name instead of IP too;\nbut in case that you want to have complete compatibility for all applications, it is recomended to enable DNS Resolver and edit your network adaptor's settings to use 'localhost' as resolving server.\n\nNow, do want us to enable DNS Resolver for you temporary?", "DNS Resolver", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Yes)
-                            Listener.DNSResolver.DNSResolver_Supported = Listener.DNSResolver.DNSResolver_UDPSupported = true;
+                            Listener.DnsResolver.DnsResolverSupported = Listener.DnsResolver.DnsResolverUdpSupported = true;
                     }
                 }
-                Listener.TestServerAsyc((ClientLibrary.Proxy_Controller.OperationWithErrorMessageFinished)delegate(bool suc, string mes)
+                Listener.TestServerAsyc((ClientLibrary.ProxyController.OperationWithErrorMessageFinished)delegate(bool suc, string mes)
                 {
                     this.Dispatcher.Invoke((SimpleVoid_Delegate)delegate()
                     {
@@ -297,19 +297,19 @@ namespace PeaRoxy.Windows.WPFClient
                         {
                             if (suc)
                             {
-                                if (Listener.SmartPear.Forwarder_HTTP_Enable || Listener.SmartPear.Forwarder_HTTPS_Enable || Listener.SmartPear.Forwarder_SOCKS_Enable)
+                                if (Listener.SmartPear.ForwarderHttpEnable || Listener.SmartPear.ForwarderHttpsEnable || Listener.SmartPear.ForwarderSocksEnable)
                                 {
                                     try
                                     {
-                                        Listener.TestServer(new Server_NoServer());
+                                        Listener.TestServer(new NoServer());
                                     }
                                     catch (Exception ex)
                                     {
                                         if (silent || VDialog.Show(this, "It seems you have SmartPear enabled but no direct internet connection, Do you want us to disable SmartPear temporary?! \r\n\r\n" + ex.Message, "Smart Pear", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Yes)
                                         {
-                                            Listener.SmartPear.Forwarder_HTTP_Enable = false;
-                                            Listener.SmartPear.Forwarder_HTTPS_Enable = false;
-                                            Listener.SmartPear.Forwarder_SOCKS_Enable = false;
+                                            Listener.SmartPear.ForwarderHttpEnable = false;
+                                            Listener.SmartPear.ForwarderHttpsEnable = false;
+                                            Listener.SmartPear.ForwarderSocksEnable = false;
                                         }
                                     }
                                 }
@@ -408,7 +408,7 @@ namespace PeaRoxy.Windows.WPFClient
 
         public void reConfig(bool silent = false)
         {
-            if (Listener == null || Listener.Status == Proxy_Controller.ControllerStatus.Stopped || Listener.Status == Proxy_Controller.ControllerStatus.OnlyAutoConfig)
+            if (Listener == null || Listener.Status == ProxyController.ControllerStatus.Stopped || Listener.Status == ProxyController.ControllerStatus.OnlyAutoConfig)
             {
                 if (PeaRoxy.Windows.WPFClient.Properties.Settings.Default.AutoConfig_Enable)
                 {
@@ -440,9 +440,9 @@ namespace PeaRoxy.Windows.WPFClient
                 bool isDone = false;
                 if (!WindowsProxy.Windows_SetActiveProxy(PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_Address,
                     PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_Port,
-                    Listener.IsHTTP_Supported,
-                    Listener.IsHTTPS_Supported,
-                    Listener.IsSOCKS_Supported))
+                    Listener.IsHttpSupported,
+                    Listener.IsHttpsSupported,
+                    Listener.IsSocksSupported))
                     if (!silent && VDialog.Show(this, "Failed, You need to logoff and relogin to your account and try again or configure your system manually.\r\nDo want us to logoff your user account?!", "Auto Config", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Yes)
                         Windows.Common.LogOffUser();
                     else
@@ -476,14 +476,14 @@ namespace PeaRoxy.Windows.WPFClient
             {
                 if (Listener != null)
                 {
-                    if (Listener.Status != ClientLibrary.Proxy_Controller.ControllerStatus.Stopped)
+                    if (Listener.Status != ClientLibrary.ProxyController.ControllerStatus.Stopped)
                     {
                         if (Listener.IsAutoConfigEnable && !PeaRoxy.Windows.WPFClient.Properties.Settings.Default.AutoConfig_KeepRuning)
                             Listener.IsAutoConfigEnable = false;
                         Listener.Stop();
                     }
 
-                    if (Listener.Status == ClientLibrary.Proxy_Controller.ControllerStatus.OnlyAutoConfig || Listener.Status == ClientLibrary.Proxy_Controller.ControllerStatus.Both)
+                    if (Listener.Status == ClientLibrary.ProxyController.ControllerStatus.OnlyAutoConfig || Listener.Status == ClientLibrary.ProxyController.ControllerStatus.Both)
                         Status = CurrentStatus.Sleep;
                     else
                         Status = CurrentStatus.Disconnected;
@@ -528,16 +528,16 @@ namespace PeaRoxy.Windows.WPFClient
         {
             if (Listener != null)
             {
-                DownSpeed = (Listener.AvgReceivingSpeed + DownSpeed) / 2;
-                UpSpeed = (Listener.AvgSendingSpeed + UpSpeed) / 2;
+                DownSpeed = (Listener.AverageReceivingSpeed + DownSpeed) / 2;
+                UpSpeed = (Listener.AverageSendingSpeed + UpSpeed) / 2;
                 downPoints.Add(new chartPoint(DownSpeed / 1024));
                 upPoints.Add(new chartPoint(UpSpeed / 1024));
-                if (Listener != null && (Listener.Status == ClientLibrary.Proxy_Controller.ControllerStatus.OnlyProxy || Listener.Status == ClientLibrary.Proxy_Controller.ControllerStatus.Both))
+                if (Listener != null && (Listener.Status == ClientLibrary.ProxyController.ControllerStatus.OnlyProxy || Listener.Status == ClientLibrary.ProxyController.ControllerStatus.Both))
                     App.Notify.Text = "PeaRoxy Client\r\nCurrent Transfer Rate: " + CommonLibrary.Common.FormatFileSizeAsString(DownSpeed + UpSpeed) + "/s";
                 try
                 {
                     if (TaskbarManager.IsPlatformSupported)
-                        if (Listener.Status == Proxy_Controller.ControllerStatus.OnlyProxy || Listener.Status == Proxy_Controller.ControllerStatus.Both)
+                        if (Listener.Status == ProxyController.ControllerStatus.OnlyProxy || Listener.Status == ProxyController.ControllerStatus.Both)
                             TaskbarManager.Instance.SetOverlayIcon(connectedIcon, "Connected");
                         else
                             TaskbarManager.Instance.SetOverlayIcon(null, "Stopped");

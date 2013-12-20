@@ -20,6 +20,8 @@ using Microsoft.WindowsAPICodePack.Taskbar;
 
 namespace PeaRoxy.Windows.WPFClient
 {
+    using PeaRoxy.ClientLibrary.ServerModules;
+
     /// <summary>
     /// Interaction UI logic for MainWindow.xaml
     /// </summary>
@@ -54,14 +56,14 @@ namespace PeaRoxy.Windows.WPFClient
             ReloadSettings();
             this.inFormLoaded = true;
             ShowForm(true);
-            if (PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Startup_StartServer)
+            if (global::PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Startup_StartServer)
             {
                 MainPage.IsEnabled = false;
             }
 
             if (!App.isExecutedByUser)
             {
-                if (PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Startup_ShowWindow == false)
+                if (global::PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Startup_ShowWindow == false)
                 {
                     this.IndfferentForm();
                     if (TaskbarManager.IsPlatformSupported)
@@ -133,7 +135,7 @@ namespace PeaRoxy.Windows.WPFClient
                 Controls.CurrentStatus = UserControls.StartStopButton.Status.ShowStart;
             MainPage.ShowTitle = true;
 
-            if (appstart && PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Startup_StartServer)
+            if (appstart && global::PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Startup_StartServer)
             {
                 new System.Threading.Thread(delegate()
                 {
@@ -156,13 +158,13 @@ namespace PeaRoxy.Windows.WPFClient
             IndfferentForm();
             new System.Threading.Thread(delegate()
             {
-                if ((appstart && !App.isExecutedByUser) && !PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Startup_ShowWindow)
+                if ((appstart && !App.isExecutedByUser) && !global::PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Startup_ShowWindow)
                     System.Threading.Thread.Sleep(12000);
                 else
                     System.Threading.Thread.Sleep(1000);
                 this.Dispatcher.Invoke((SimpleVoid_Delegate)delegate()
                 {
-                    RefreshStatus(!appstart || !PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Startup_StartServer);
+                    RefreshStatus(!appstart || !global::PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Startup_StartServer);
                 }, new object[] { });
             }) { IsBackground = true }.Start();
             this.Focus();
@@ -420,39 +422,39 @@ namespace PeaRoxy.Windows.WPFClient
                 ((SettingTabs.SmartPear)Options.SmartPear.SettingsPage).HTTPSEnable.IsChecked = false;
                 if (Listener != null)
                 {
-                    Listener.SmartPear.Forwarder_HTTP_Enable = Listener.ActiveServer.GetType().Equals(typeof(ClientLibrary.Server_Types.Server_NoServer));
-                    Listener.SmartPear.Forwarder_HTTPS_Enable = false;
-                    Listener.SmartPear.Detector_DNSGrabber_Enable = false;
+                    Listener.SmartPear.ForwarderHttpEnable = Listener.ActiveServer.GetType().Equals(typeof(ClientLibrary.ServerModules.NoServer));
+                    Listener.SmartPear.ForwarderHttpsEnable = false;
+                    Listener.SmartPear.DetectorDnsGrabberEnable = false;
                 }
-                PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Save();
+                global::PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Save();
                 ReloadSettings();
             }
             else
             {
-                if (PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Grabber == 1)
+                if (global::PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Grabber == 1)
                     Toolbar_SmartPearSelectedChanged(Toolbar.SmartPearDisableMenuItem, e);
                 else
                 {
                     if (Listener != null)
-                        if ((Listener.Status == ClientLibrary.Proxy_Controller.ControllerStatus.Both || Listener.Status == ClientLibrary.Proxy_Controller.ControllerStatus.OnlyProxy) &&
-                            Listener.ActiveServer.GetType().Equals(typeof(ClientLibrary.Server_Types.Server_NoServer)))
+                        if ((Listener.Status == ClientLibrary.ProxyController.ControllerStatus.Both || Listener.Status == ClientLibrary.ProxyController.ControllerStatus.OnlyProxy) &&
+                            this.Listener.ActiveServer is NoServer)
                         {
                             Toolbar.SmartPearEnableMenuItem.IsChecked = true;
                             Toolbar.SmartPearDisableMenuItem.IsChecked = false;
                             return;
                         }
-                        else if ((Listener.Status == ClientLibrary.Proxy_Controller.ControllerStatus.Both || Listener.Status == ClientLibrary.Proxy_Controller.ControllerStatus.OnlyProxy) &&
-                            Listener.ActiveServer.GetType().Equals(typeof(ClientLibrary.Server_Types.Server_PeaRoxyWeb)))
+                        else if ((Listener.Status == ClientLibrary.ProxyController.ControllerStatus.Both || Listener.Status == ClientLibrary.ProxyController.ControllerStatus.OnlyProxy) &&
+                            this.Listener.ActiveServer is PeaRoxyWeb)
                         {
-                            Listener.SmartPear.Forwarder_HTTP_Enable = true;
-                            Listener.SmartPear.Forwarder_HTTPS_Enable = false;
-                            Listener.SmartPear.Detector_DNSGrabber_Enable = true;
+                            Listener.SmartPear.ForwarderHttpEnable = true;
+                            Listener.SmartPear.ForwarderHttpsEnable = false;
+                            Listener.SmartPear.DetectorDnsGrabberEnable = true;
                         }
                         else
                         {
-                            Listener.SmartPear.Forwarder_HTTP_Enable = true;
-                            Listener.SmartPear.Forwarder_HTTPS_Enable = true;
-                            Listener.SmartPear.Detector_DNSGrabber_Enable = true;
+                            Listener.SmartPear.ForwarderHttpEnable = true;
+                            Listener.SmartPear.ForwarderHttpsEnable = true;
+                            Listener.SmartPear.DetectorDnsGrabberEnable = true;
                         }
                     ((SettingTabs.SmartPear)Options.SmartPear.SettingsPage).HTTPEnable.IsChecked = true;
                     ((SettingTabs.SmartPear)Options.SmartPear.SettingsPage).HTTPSEnable.IsChecked = true;
@@ -465,15 +467,15 @@ namespace PeaRoxy.Windows.WPFClient
         private void QuickButtonsRefresh()
         {
 
-            Toolbar.SmartPearIsEnable = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Grabber != 1;
-            Toolbar.ReConfigIsEnable = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Grabber == 0 || Listener == null ||
-                (Listener.Status == ClientLibrary.Proxy_Controller.ControllerStatus.Stopped || Listener.Status == ClientLibrary.Proxy_Controller.ControllerStatus.OnlyAutoConfig);
+            Toolbar.SmartPearIsEnable = global::PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Grabber != 1;
+            Toolbar.ReConfigIsEnable = global::PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Grabber == 0 || Listener == null ||
+                (Listener.Status == ClientLibrary.ProxyController.ControllerStatus.Stopped || Listener.Status == ClientLibrary.ProxyController.ControllerStatus.OnlyAutoConfig);
             Toolbar.SmartPearEnableMenuItem.IsEnabled = true;
             if (!Toolbar.SmartPearIsEnable)
                 Toolbar.SmartPearColor = UserControls.ToolbarButtons.Color.White;
             else if (Listener != null &&
-                    (Listener.Status == ClientLibrary.Proxy_Controller.ControllerStatus.Both || Listener.Status == ClientLibrary.Proxy_Controller.ControllerStatus.OnlyProxy) &&
-                    Listener.ActiveServer.GetType().Equals(typeof(ClientLibrary.Server_Types.Server_NoServer)))
+                    (Listener.Status == ClientLibrary.ProxyController.ControllerStatus.Both || Listener.Status == ClientLibrary.ProxyController.ControllerStatus.OnlyProxy) &&
+                    Listener.ActiveServer.GetType().Equals(typeof(ClientLibrary.ServerModules.NoServer)))
             {
                 Toolbar.SmartPearColor = UserControls.ToolbarButtons.Color.Red;
                 Toolbar.SmartPearEnableMenuItem.IsEnabled = false;
@@ -481,22 +483,22 @@ namespace PeaRoxy.Windows.WPFClient
                 Toolbar.SmartPearDisableMenuItem.IsChecked = true;
             }
             else if (Listener != null &&
-                    (Listener.Status == ClientLibrary.Proxy_Controller.ControllerStatus.Both || Listener.Status == ClientLibrary.Proxy_Controller.ControllerStatus.OnlyProxy) &&
-                    (Listener.SmartPear.Forwarder_HTTP_Enable ^ Listener.SmartPear.Forwarder_HTTPS_Enable))
+                    (Listener.Status == ClientLibrary.ProxyController.ControllerStatus.Both || Listener.Status == ClientLibrary.ProxyController.ControllerStatus.OnlyProxy) &&
+                    (Listener.SmartPear.ForwarderHttpEnable ^ Listener.SmartPear.ForwarderHttpsEnable))
             {
                 Toolbar.SmartPearColor = UserControls.ToolbarButtons.Color.Yellow;
                 Toolbar.SmartPearEnableMenuItem.IsChecked = true;
                 Toolbar.SmartPearDisableMenuItem.IsChecked = false;
             }
-            else if (PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_HTTP_Enable &&
-                    PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_HTTPS_Enable)
+            else if (global::PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_HTTP_Enable &&
+                    global::PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_HTTPS_Enable)
             {
                 Toolbar.SmartPearColor = UserControls.ToolbarButtons.Color.Blue;
                 Toolbar.SmartPearEnableMenuItem.IsChecked = true;
                 Toolbar.SmartPearDisableMenuItem.IsChecked = false;
             }
-            else if (!PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_HTTP_Enable &&
-                    !PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_HTTPS_Enable)
+            else if (!global::PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_HTTP_Enable &&
+                    !global::PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Smart_HTTPS_Enable)
             {
                 Toolbar.SmartPearColor = UserControls.ToolbarButtons.Color.Red;
                 Toolbar.SmartPearEnableMenuItem.IsChecked = false;

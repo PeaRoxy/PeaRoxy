@@ -1,116 +1,263 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Security.Cryptography.X509Certificates;
-using System.Net.Security;
-using System.IO;
-using System.Net.Sockets;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="ErrorRenderer.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   The error renderer.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.ClientLibrary
 {
+    #region
+
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Net.Security;
+    using System.Net.Sockets;
+    using System.Reflection;
+    using System.Security.Cryptography.X509Certificates;
+    using System.Text;
+
+    using PeaRoxy.ClientLibrary.Properties;
+    using PeaRoxy.CommonLibrary;
+    using PeaRoxy.Platform;
+
+    #endregion
+
+    /// <summary>
+    /// The error renderer.
+    /// </summary>
     public class ErrorRenderer
     {
-        public enum HTTPHeaderCode
-        {
-            C_200_OK,
-            C_500_SERVER_ERROR,
-            C_501_NOT_IMPLAMENTED,
-            C_502_BAD_GATEWAY,
-            C_504_GATEWAY_TIMEOUT,
-            C_417_EXPECTATION_FAILED,
-        }
+        #region Constructors and Destructors
 
-        public bool HTTPErrorRendering { get; set; }
-        public bool DirectErrorRendering_Port80 { get; set; }
-        public bool DirectErrorRendering_Port443 { get; set; }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ErrorRenderer"/> class.
+        /// </summary>
         public ErrorRenderer()
         {
-            DirectErrorRendering_Port443 = true;
-            DirectErrorRendering_Port80 = true;
-            HTTPErrorRendering = true;
+            this.OnPort443Direct = true;
+            this.OnPort80Direct = true;
+            this.Enable = true;
 
-            if (Platform.ClassRegistry.GetClass<Platform.CertManager>().CreateAuthority("PeaRoxy Authority", "HTTPSCerts\\PeaRoxy.crt"))
-            {
-                Platform.ClassRegistry.GetClass<Platform.CertManager>().RegisterAuthority("PeaRoxy Authority", "HTTPSCerts\\PeaRoxy.crt");
-            }
+            if (ClassRegistry.GetClass<CertManager>().CreateAuthority("PeaRoxy Authority", "HTTPSCerts\\PeaRoxy.crt"))
+                ClassRegistry.GetClass<CertManager>().RegisterAuthority("PeaRoxy Authority", "HTTPSCerts\\PeaRoxy.crt");
         }
 
+        #endregion
+
+        #region Enums
+
+        /// <summary>
+        /// The http header code.
+        /// </summary>
+        public enum HttpHeaderCode
+        {
+            /// <summary>
+            /// 200 ok.
+            /// </summary>
+            C200Ok, 
+
+            /// <summary>
+            /// 500 server error.
+            /// </summary>
+            C500ServerError, 
+
+            /// <summary>
+            /// 501 not implemented.
+            /// </summary>
+            C501NotImplemented, 
+
+            /// <summary>
+            /// 502 bad gateway.
+            /// </summary>
+            C502BadGateway, 
+
+            /// <summary>
+            /// 504 gateway timeout.
+            /// </summary>
+            C504GatewayTimeout, 
+
+            /// <summary>
+            /// 417 expectation failed.
+            /// </summary>
+            C417ExpectationFailed, 
+        }
+
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Gets or sets a value indicating whether direct error rendering_ port 443.
+        /// </summary>
+        public bool OnPort443Direct { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether direct error rendering_ port 80.
+        /// </summary>
+        public bool OnPort80Direct { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether http error rendering is active
+        /// </summary>
+        public bool Enable { get; set; }
+
+        #endregion
+
+        #region Public Methods and Operators
+
+        /// <summary>
+        /// The get cert for domain.
+        /// </summary>
+        /// <param name="domainName">
+        /// The domain name.
+        /// </param>
+        /// <returns>
+        /// The <see cref="string"/>.
+        /// </returns>
         public static string GetCertForDomain(string domainName)
         {
             domainName = domainName.ToLower().Trim();
-            string md5 = CommonLibrary.Common.MD5(domainName);
-            if (Platform.ClassRegistry.GetClass<Platform.CertManager>().CreateCert(domainName, "HTTPSCerts\\PeaRoxy.crt", "HTTPSCerts\\" + md5 + ".crt"))
+            string md5 = Common.MD5(domainName);
+            if (ClassRegistry.GetClass<CertManager>()
+                .CreateCert(domainName, "HTTPSCerts\\PeaRoxy.crt", "HTTPSCerts\\" + md5 + ".crt"))
             {
                 return "HTTPSCerts\\" + md5 + ".crt";
             }
+
             return null;
         }
 
-        public bool RenderError(Proxy_Client client, string title, string message, ErrorRenderer.HTTPHeaderCode code = ErrorRenderer.HTTPHeaderCode.C_500_SERVER_ERROR, SslStream sslStream = null)
+        /// <summary>
+        /// The render error.
+        /// </summary>
+        /// <param name="client">
+        /// The client.
+        /// </param>
+        /// <param name="title">
+        /// The title.
+        /// </param>
+        /// <param name="message">
+        /// The message.
+        /// </param>
+        /// <param name="code">
+        /// The code.
+        /// </param>
+        /// <param name="sslStream">
+        /// The SSL stream.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        public bool RenderError(
+            ProxyClient client, 
+            string title, 
+            string message, 
+            HttpHeaderCode code = HttpHeaderCode.C500ServerError, 
+            SslStream sslStream = null)
         {
             try
             {
                 if (client.RequestAddress == string.Empty)
+                {
                     return false;
+                }
+
                 Uri url;
                 if (!Uri.TryCreate(client.RequestAddress, UriKind.Absolute, out url))
+                {
                     return false;
+                }
+
                 bool https = false;
                 if (url.Scheme == "http")
                 {
-                    if (!HTTPErrorRendering)
+                    if (!this.Enable)
+                    {
                         return false;
+                    }
                 }
                 else if (url.Scheme == "https" || url.Scheme == "socks")
                 {
-                    if (!((DirectErrorRendering_Port80 && url.Port == 80) || (DirectErrorRendering_Port443 && url.Port == 443)))
+                    if (
+                        !((this.OnPort80Direct && url.Port == 80)
+                          || (this.OnPort443Direct && url.Port == 443)))
+                    {
                         return false;
+                    }
+
                     https = url.Port == 443;
                 }
                 else
+                {
                     return false;
+                }
+
                 if (client.IsReceivingStarted || !client.IsSendingStarted)
+                {
                     return false;
-                string HTML = PeaRoxy.ClientLibrary.Properties.Resources.HTTPErrorTemplate;
-                HTML = HTML.Replace("%VERSION", System.Reflection.Assembly.GetEntryAssembly().GetName().Version.ToString());
-                HTML = HTML.Replace("%TITLE", title);
-                HTML = HTML.Replace("%MESSAGE", CommonLibrary.Common.ConvertToHtmlEntities(message));
+                }
+
+                string html = Resources.HTTPErrorTemplate;
+                html = html.Replace("%VERSION", Assembly.GetEntryAssembly().GetName().Version.ToString());
+                html = html.Replace("%TITLE", title);
+                html = html.Replace("%MESSAGE", Common.ConvertToHtmlEntities(message));
                 string conString = "Not Connected";
                 if (client.Controller.ActiveServer != null)
+                {
                     conString = client.Controller.ActiveServer.ToString();
-                List<string> l_Arg = new List<string>();
-                if (client.Controller.SmartPear.Forwarder_HTTP_Enable)
-                    l_Arg.Add("P:HTTP");
-                if (client.Controller.SmartPear.Forwarder_HTTPS_Enable)
-                    l_Arg.Add("P:HTTPS");
-                if (client.Controller.SmartPear.Forwarder_SOCKS_Enable && client.Controller.SmartPear.Forwarder_HTTPS_Enable)
-                    l_Arg.Add("P:SOCKS");
-                if (l_Arg.Count > 0)
+                }
+
+                List<string> args = new List<string>();
+                if (client.Controller.SmartPear.ForwarderHttpEnable)
+                {
+                    args.Add("P:HTTP");
+                }
+
+                if (client.Controller.SmartPear.ForwarderHttpsEnable)
+                {
+                    args.Add("P:HTTPS");
+                }
+
+                if (client.Controller.SmartPear.ForwarderSocksEnable
+                    && client.Controller.SmartPear.ForwarderHttpsEnable)
+                {
+                    args.Add("P:SOCKS");
+                }
+
+                if (args.Count > 0)
                 {
                     conString += " (";
-                    foreach (string arg in l_Arg)
+                    foreach (string arg in args)
+                    {
                         conString += " " + arg + "; ";
+                    }
+
                     conString += ")";
                 }
-                HTML = HTML.Replace("%CONSTRING", conString);
 
-                string statusCode = string.Empty;
+                html = html.Replace("%CONSTRING", conString);
+
+                string statusCode;
                 switch (code)
                 {
-                    case HTTPHeaderCode.C_200_OK:
+                    case HttpHeaderCode.C200Ok:
                         statusCode = "200 OK";
                         break;
-                    case HTTPHeaderCode.C_501_NOT_IMPLAMENTED:
+                    case HttpHeaderCode.C501NotImplemented:
                         statusCode = "501 Not Implemented";
                         break;
-                    case HTTPHeaderCode.C_502_BAD_GATEWAY:
+                    case HttpHeaderCode.C502BadGateway:
                         statusCode = "502 Bad Gateway";
                         break;
-                    case HTTPHeaderCode.C_504_GATEWAY_TIMEOUT:
+                    case HttpHeaderCode.C504GatewayTimeout:
                         statusCode = "504 Gateway Timeout";
                         break;
-                    case HTTPHeaderCode.C_417_EXPECTATION_FAILED:
+                    case HttpHeaderCode.C417ExpectationFailed:
                         statusCode = "417 Expectation Failed";
                         break;
                     default:
@@ -118,72 +265,94 @@ namespace PeaRoxy.ClientLibrary
                         break;
                 }
 
-                string ctrl = "\r\n";
-                string header = "HTTP/1.1 " + statusCode + ctrl +
-                                "Server: PeaRoxy Error Renderer" + ctrl +
-                                "Content-Length: " + HTML.Length.ToString() + ctrl +
-                                "Connection: close" + ctrl +
-                                "Content-Type: text/html;" + ctrl + ctrl;
-                byte[] db = System.Text.Encoding.ASCII.GetBytes(header + HTML);
+                const string NewLineSep = "\r\n";
+                string header = "HTTP/1.1 " + statusCode + NewLineSep + "Server: PeaRoxy Error Renderer" + NewLineSep
+                                + "Content-Length: " + html.Length + NewLineSep + "Connection: close" + NewLineSep
+                                + "Content-Type: text/html;" + NewLineSep + NewLineSep;
+                byte[] db = Encoding.ASCII.GetBytes(header + html);
 
-                if (!CommonLibrary.Common.IsSocketConnected(client.Client))
+                if (!Common.IsSocketConnected(client.Client))
+                {
                     return false;
+                }
 
                 if (https)
                 {
                     string certAddress = url.DnsSafeHost;
-                    if (!CommonLibrary.Common.IsIPAddress(certAddress))
+                    if (!Common.IsIPAddress(certAddress))
                     {
-                        certAddress = CommonLibrary.Common.GetNextLevelDomain(certAddress);
-                        if (certAddress == null || certAddress == string.Empty)
+                        certAddress = Common.GetNextLevelDomain(certAddress);
+                        if (string.IsNullOrEmpty(certAddress))
+                        {
                             return false;
-                        //if (certAddress != url.DnsSafeHost)
-                        //    certAddress = "*." + certAddress;
+                        }
                     }
+
                     certAddress = GetCertForDomain(certAddress);
-                    if (certAddress == null || certAddress == string.Empty)
+                    if (string.IsNullOrEmpty(certAddress))
+                    {
                         return false;
-                    X509Certificate certificate = new X509Certificate2(certAddress, "");
+                    }
+
+                    X509Certificate certificate = new X509Certificate2(certAddress, string.Empty);
                     if (sslStream == null)
                     {
                         client.Client.Blocking = true;
                         Stream stream = new NetworkStream(client.Client);
-                        sslStream = new SslStream(stream);
-                        sslStream.ReadTimeout = 30 * 1000; // 30 Sec
-                        sslStream.WriteTimeout = 30 * 1000; // 30 Sec
+                        sslStream = new SslStream(stream) { ReadTimeout = 30 * 1000, WriteTimeout = 30 * 1000 };
                         sslStream.AuthenticateAsServer(certificate);
                     }
-                    sslStream.BeginWrite(db, 0, db.Length, (AsyncCallback)delegate(IAsyncResult ar)
-                    {
-                        try
-                        {
-                            sslStream.EndWrite(ar);
-                            sslStream.Flush();
-                            sslStream.Close();
-                            client.Client.Close();
-                        }
-                        catch (Exception) { }
-                    }, null);
+
+                    sslStream.BeginWrite(
+                        db, 
+                        0, 
+                        db.Length, 
+                        delegate(IAsyncResult ar)
+                            {
+                                try
+                                {
+                                    sslStream.EndWrite(ar);
+                                    sslStream.Flush();
+                                    sslStream.Close();
+                                    client.Client.Close();
+                                }
+                                catch (Exception)
+                                {
+                                }
+                            }, 
+                        null);
                 }
                 else
                 {
-                    client.Client.BeginSend(db, 0, db.Length, System.Net.Sockets.SocketFlags.None, (AsyncCallback)delegate(IAsyncResult ar)
-                    {
-                        try
-                        {
-                            client.Client.EndSend(ar);
-                            client.Client.Close();
-                        }
-                        catch (Exception) { }
-                    }, null);
+                    client.Client.BeginSend(
+                        db, 
+                        0, 
+                        db.Length, 
+                        SocketFlags.None, 
+                        delegate(IAsyncResult ar)
+                            {
+                                try
+                                {
+                                    client.Client.EndSend(ar);
+                                    client.Client.Close();
+                                }
+                                catch (Exception)
+                                {
+                                }
+                            }, 
+                        null);
                 }
+
                 return true;
             }
             catch (Exception e)
             {
-                Proxy_Controller.LogIt(e.Message + " - " + e.StackTrace);
+                ProxyController.LogIt(e.Message + " - " + e.StackTrace);
             }
+
             return false;
         }
+
+        #endregion
     }
 }

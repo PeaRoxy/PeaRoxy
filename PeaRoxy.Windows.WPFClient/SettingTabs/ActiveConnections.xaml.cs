@@ -35,8 +35,8 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
                 if (connectionContextMenu.PlacementTarget.GetType().Equals(typeof(TreeViewItem)))
                 {
                     TreeViewItem sel = (TreeViewItem)connectionContextMenu.PlacementTarget;
-                    if (sel.Tag != null && sel.Tag.GetType().Equals(typeof(Proxy_Client)))
-                        ((Proxy_Client)sel.Tag).Close("Closed By User");
+                    if (sel.Tag != null && sel.Tag.GetType().Equals(typeof(ProxyClient)))
+                        ((ProxyClient)sel.Tag).Close("Closed By User");
                 }
             };
             connectionContextMenu.Items.Add(cItem);
@@ -49,8 +49,8 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
                     try
                     {
                         TreeViewItem sel = (TreeViewItem)connectionContextMenu.PlacementTarget;
-                        if (sel.Tag != null && sel.Tag.GetType().Equals(typeof(Proxy_Client)))
-                            System.Windows.Clipboard.SetText(((Proxy_Client)sel.Tag).RequestAddress);
+                        if (sel.Tag != null && sel.Tag.GetType().Equals(typeof(ProxyClient)))
+                            System.Windows.Clipboard.SetText(((ProxyClient)sel.Tag).RequestAddress);
                     }
                     catch (Exception) { }
                 }
@@ -58,11 +58,11 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
             connectionContextMenu.Items.Add(cItem);
         }
 
-        public void UpdateConnections(Proxy_Controller Listener)
+        public void UpdateConnections(ProxyController Listener)
         {
-            List<Proxy_Client> clients = Listener.GetConnectedClients();
-            Dictionary<string, List<Proxy_Client>> processSeperatedConnections = new Dictionary<string, List<Proxy_Client>>();
-            foreach (Proxy_Client client in clients)
+            IEnumerable<ProxyClient> clients = Listener.GetConnectedClients();
+            Dictionary<string, List<ProxyClient>> processSeperatedConnections = new Dictionary<string, List<ProxyClient>>();
+            foreach (ProxyClient client in clients)
             {
                 Platform.ConnectionInfo conInfo = client.GetExtendedInfo();
                 string processName = "(Unknown)";
@@ -101,7 +101,7 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
                         processName = "[PID: " + processName + "] (Unknown)";
                 }
                 if (!processSeperatedConnections.ContainsKey(processName))
-                    processSeperatedConnections.Add(processName, new List<Proxy_Client>());
+                    processSeperatedConnections.Add(processName, new List<ProxyClient>());
                 processSeperatedConnections[processName].Add(client);
             }
             for (int i = 0; i < ConnectionsListView.Items.Count; i++)
@@ -109,20 +109,20 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
                 TreeViewItem processNode = (TreeViewItem)ConnectionsListView.Items[i];
                 if (processSeperatedConnections.ContainsKey((string)processNode.Header))
                 {
-                    List<Proxy_Client> processConnections = processSeperatedConnections[(string)processNode.Header];
+                    List<ProxyClient> processConnections = processSeperatedConnections[(string)processNode.Header];
                     ((UserControls.Tooltip)(processNode.ToolTip)).Text = "Connections: " + processConnections.Count.ToString();
                     for (int i2 = 0; i2 < processNode.Items.Count; i2++)
                     {
                         TreeViewItem connectionNode = (TreeViewItem)processNode.Items[i2];
                         if (processConnections.Contains(connectionNode.Tag))
                         {
-                            connectionNode.Resources["Type"] = ((Proxy_Client)connectionNode.Tag).Type.ToString();
-                            connectionNode.Resources["Status"] = ((Proxy_Client)connectionNode.Tag).Status.ToString();
-                            connectionNode.Resources["Download"] = "D: " + CommonLibrary.Common.FormatFileSizeAsString(((Proxy_Client)connectionNode.Tag).AvgReceivingSpeed) + "/s";
-                            connectionNode.Resources["Upload"] = "U: " + CommonLibrary.Common.FormatFileSizeAsString(((Proxy_Client)connectionNode.Tag).AvgSendingSpeed) + "/s";
-                            connectionNode.Header = (((Proxy_Client)connectionNode.Tag).RequestAddress.Length > 40 ? ((Proxy_Client)connectionNode.Tag).RequestAddress.Substring(0, 40) + "..." : ((Proxy_Client)connectionNode.Tag).RequestAddress);
-                            connectionNode.ToolTip = ((Proxy_Client)connectionNode.Tag).RequestAddress;
-                            processConnections.Remove((Proxy_Client)connectionNode.Tag);
+                            connectionNode.Resources["Type"] = ((ProxyClient)connectionNode.Tag).Type.ToString();
+                            connectionNode.Resources["Status"] = ((ProxyClient)connectionNode.Tag).Status.ToString();
+                            connectionNode.Resources["Download"] = "D: " + CommonLibrary.Common.FormatFileSizeAsString(((ProxyClient)connectionNode.Tag).AverageReceivingSpeed) + "/s";
+                            connectionNode.Resources["Upload"] = "U: " + CommonLibrary.Common.FormatFileSizeAsString(((ProxyClient)connectionNode.Tag).AverageSendingSpeed) + "/s";
+                            connectionNode.Header = (((ProxyClient)connectionNode.Tag).RequestAddress.Length > 40 ? ((ProxyClient)connectionNode.Tag).RequestAddress.Substring(0, 40) + "..." : ((ProxyClient)connectionNode.Tag).RequestAddress);
+                            connectionNode.ToolTip = ((ProxyClient)connectionNode.Tag).RequestAddress;
+                            processConnections.Remove((ProxyClient)connectionNode.Tag);
                         }
                         else
                         {
@@ -136,12 +136,12 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
                         connectionNode.Style = (Style)FindResource("ConnectionNode");
                         connectionNode.Tag = processConnections[i2];
                         connectionNode.ContextMenu = connectionContextMenu;
-                        connectionNode.Resources.Add("Type", ((Proxy_Client)connectionNode.Tag).Type.ToString());
-                        connectionNode.Resources.Add("Status", ((Proxy_Client)connectionNode.Tag).Status.ToString());
-                        connectionNode.Resources.Add("Download", "D: " + CommonLibrary.Common.FormatFileSizeAsString(((Proxy_Client)connectionNode.Tag).AvgReceivingSpeed) + "/s");
-                        connectionNode.Resources.Add("Upload", "U: " + CommonLibrary.Common.FormatFileSizeAsString(((Proxy_Client)connectionNode.Tag).AvgSendingSpeed) + "/s");
-                        connectionNode.Header = (((Proxy_Client)connectionNode.Tag).RequestAddress.Length > 40 ? ((Proxy_Client)connectionNode.Tag).RequestAddress.Substring(0, 40) + "..." : ((Proxy_Client)connectionNode.Tag).RequestAddress);
-                        connectionNode.ToolTip = ((Proxy_Client)connectionNode.Tag).RequestAddress;
+                        connectionNode.Resources.Add("Type", ((ProxyClient)connectionNode.Tag).Type.ToString());
+                        connectionNode.Resources.Add("Status", ((ProxyClient)connectionNode.Tag).Status.ToString());
+                        connectionNode.Resources.Add("Download", "D: " + CommonLibrary.Common.FormatFileSizeAsString(((ProxyClient)connectionNode.Tag).AverageReceivingSpeed) + "/s");
+                        connectionNode.Resources.Add("Upload", "U: " + CommonLibrary.Common.FormatFileSizeAsString(((ProxyClient)connectionNode.Tag).AverageSendingSpeed) + "/s");
+                        connectionNode.Header = (((ProxyClient)connectionNode.Tag).RequestAddress.Length > 40 ? ((ProxyClient)connectionNode.Tag).RequestAddress.Substring(0, 40) + "..." : ((ProxyClient)connectionNode.Tag).RequestAddress);
+                        connectionNode.ToolTip = ((ProxyClient)connectionNode.Tag).RequestAddress;
                         processNode.Items.Add(connectionNode);
                     }
                     processSeperatedConnections.Remove((string)processNode.Header);
@@ -152,7 +152,7 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
                     i--;
                 }
             }
-            foreach (KeyValuePair<string, List<Proxy_Client>> processConnections in processSeperatedConnections)
+            foreach (KeyValuePair<string, List<ProxyClient>> processConnections in processSeperatedConnections)
             {
                 TreeViewItem processNode = new TreeViewItem();
                 processNode.Header = processConnections.Key;

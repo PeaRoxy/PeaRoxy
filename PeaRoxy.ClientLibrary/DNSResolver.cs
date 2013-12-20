@@ -1,148 +1,271 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Net.Sockets;
-using System.Net;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="DnsResolver.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   The dns resolver.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.ClientLibrary
 {
-    public class DNSResolver : IDisposable
+    #region
+
+    using System;
+    using System.Net;
+    using System.Net.Sockets;
+    using System.Threading;
+
+    using PeaRoxy.CommonLibrary;
+
+    #endregion
+
+    /// <summary>
+    /// The DNS resolver controller
+    /// </summary>
+    public class DnsResolver : IDisposable
     {
-        private Socket DNSTCPListenerSocket;
-        private Socket DNSUDPListenerSocket;
-        private Proxy_Controller Parent;
-        private IPEndPoint ipLocalDNS;
-        public bool DNSResolver_Supported { get; set; }
-        public bool DNSResolver_UDPSupported { get; set; }
-        public IPAddress DNSResolver_ServerIP { get; set; }
-        public DNSResolver(Proxy_Controller parent)
+        #region Fields
+
+        /// <summary>
+        /// The parent.
+        /// </summary>
+        private readonly ProxyController parent;
+
+        /// <summary>
+        /// The DNS TCP listener socket
+        /// </summary>
+        private Socket dnsTcpListenerSocket;
+
+        /// <summary>
+        /// The DNS UDP listener socket
+        /// </summary>
+        private Socket dnsUdpListenerSocket;
+
+        /// <summary>
+        /// The local DNS IP.
+        /// </summary>
+        private IPEndPoint localDnsIp;
+
+        #endregion
+
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DnsResolver"/> class.
+        /// </summary>
+        /// <param name="parent">
+        /// The parent.
+        /// </param>
+        public DnsResolver(ProxyController parent)
         {
-            this.Parent = parent;
-            this.DNSResolver_ServerIP = IPAddress.Parse("8.8.4.4");
-            this.DNSResolver_Supported = true;
-            this.DNSResolver_UDPSupported = true;
+            this.parent = parent;
+            this.DnsResolverServerIp = IPAddress.Parse("8.8.4.4");
+            this.DnsResolverSupported = true;
+            this.DnsResolverUdpSupported = true;
         }
 
-        public void Start()
-        {
-            if (DNSResolver_Supported)
-            {
-                this.ipLocalDNS = new IPEndPoint(Parent.IP, 53);
-                this.DNSTCPListenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                this.DNSTCPListenerSocket.Bind(ipLocalDNS);
-                this.DNSTCPListenerSocket.Listen(256);
-            }
-        }
+        #endregion
 
-        public void Stop()
-        {
-            try
-            {
-                if (DNSResolver_Supported)
-                {
-                    this.DNSTCPListenerSocket.Close();
-                    if (DNSResolver_UDPSupported && DNSUDPListenerSocket != null)
-                    {
-                        this.DNSUDPListenerSocket.Close();
-                        this.DNSUDPListenerSocket = null;
-                    }
-                }
-            }
-            catch (Exception)
-            {
-            }
-        }
+        #region Public Properties
 
+        /// <summary>
+        /// Gets or sets the DNS resolver server IP.
+        /// </summary>
+        public IPAddress DnsResolverServerIp { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether TCP DNS resolving supported.
+        /// </summary>
+        public bool DnsResolverSupported { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether UDP DNS resolving supported.
+        /// </summary>
+        public bool DnsResolverUdpSupported { get; set; }
+
+        #endregion
+
+        #region Public Methods and Operators
+
+        /// <summary>
+        /// The accepting.
+        /// </summary>
         public void Accepting()
         {
             try
             {
-                if (DNSResolver_Supported && this.DNSTCPListenerSocket.Poll(0, SelectMode.SelectRead))
+                if (this.DnsResolverSupported && this.dnsTcpListenerSocket.Poll(0, SelectMode.SelectRead))
                 {
-                    Proxy_Client c = new Proxy_Client(this.DNSTCPListenerSocket.Accept(), Parent, true) { ReceivePacketSize = Parent.ReceivePacketSize, SendPacketSize = Parent.SendPacketSize, NoDataTimeOut = 10 };
-                    c.Type = Proxy_Client.eType.DNS;
-                    lock (Parent.ConnectedClients)
-                        Parent.ConnectedClients.Add(c);
-                    Parent.ActiveServer.Clone().Establish(this.DNSResolver_ServerIP.ToString(), 53, c);
+                    ProxyClient c = new ProxyClient(this.dnsTcpListenerSocket.Accept(), this.parent, true)
+                                         {
+                                             ReceivePacketSize
+                                                 =
+                                                 this
+                                                 .parent
+                                                 .ReceivePacketSize, 
+                                             SendPacketSize
+                                                 =
+                                                 this
+                                                 .parent
+                                                 .SendPacketSize, 
+                                             NoDataTimeOut
+                                                 =
+                                                 10
+                                         };
+                    c.Type = ProxyClient.ClientType.Dns;
+                    lock (this.parent.ConnectedClients) this.parent.ConnectedClients.Add(c);
+                    this.parent.ActiveServer.Clone().Establish(this.DnsResolverServerIp.ToString(), 53, c);
                 }
-                if (DNSResolver_Supported && DNSResolver_UDPSupported)
+
+                if (this.DnsResolverSupported && this.DnsResolverUdpSupported)
                 {
-                    if (DNSUDPListenerSocket == null)
+                    if (this.dnsUdpListenerSocket == null)
                     {
-                        this.DNSUDPListenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-                        this.DNSUDPListenerSocket.EnableBroadcast = true;
-                        this.DNSUDPListenerSocket.Bind(ipLocalDNS);
+                        this.dnsUdpListenerSocket = new Socket(
+                            AddressFamily.InterNetwork, 
+                            SocketType.Dgram, 
+                            ProtocolType.Udp);
+                        this.dnsUdpListenerSocket.EnableBroadcast = true;
+                        this.dnsUdpListenerSocket.Bind(this.localDnsIp);
                     }
+
                     try
                     {
-                        if (this.DNSUDPListenerSocket.Poll(0, SelectMode.SelectRead))
+                        if (this.dnsUdpListenerSocket.Poll(0, SelectMode.SelectRead))
                         {
                             byte[] globalBuffer = new byte[500];
-                            EndPoint remoteEP = new IPEndPoint(IPAddress.Any, 0);
-                            int i = DNSUDPListenerSocket.ReceiveFrom(globalBuffer, ref remoteEP);
+                            EndPoint remoteEp = new IPEndPoint(IPAddress.Any, 0);
+                            int i = this.dnsUdpListenerSocket.ReceiveFrom(globalBuffer, ref remoteEp);
                             byte[] buffer = new byte[i + 2];
                             Array.Copy(globalBuffer, 0, buffer, 2, i);
-                            new System.Threading.Thread(delegate()
-                            {
-                                try
-                                {
-                                    buffer[0] = (byte)Math.Floor((double)i / 256);
-                                    buffer[1] = (byte)(i % 256);
-                                    IPAddress ip = Parent.IP; // Connecting to our self on same port, But TCP
-                                    if (ip.Equals(IPAddress.Any))
-                                        ip = IPAddress.Loopback;
-                                    Socket TCPConnector = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                                    TCPConnector.Connect(ip, 53);
-                                    TCPConnector.Send(buffer);
-                                    buffer = new byte[TCPConnector.ReceiveBufferSize];
-                                    i = TCPConnector.Receive(buffer);
-                                    if (i != 0)
+                            new Thread(
+                                delegate()
                                     {
-                                        int neededBytes = (buffer[0] * 256) + buffer[1] + 2;
-                                        Array.Resize(ref buffer, Math.Max(i, neededBytes));
-                                        if (i < neededBytes)
+                                        try
                                         {
-                                            int timeout = 2000;
-                                            int recieved = i;
-                                            while (recieved < neededBytes && timeout > 0 && CommonLibrary.Common.IsSocketConnected(TCPConnector))
+                                            buffer[0] = (byte)Math.Floor((double)i / 256);
+                                            buffer[1] = (byte)(i % 256);
+                                            IPAddress ip = this.parent.Ip;
+                                                
+                                                // Connecting to our self on same port, But TCP
+                                            if (ip.Equals(IPAddress.Any))
                                             {
-                                                i = TCPConnector.Receive(buffer, recieved, buffer.Length - recieved, SocketFlags.None);
-                                                recieved += i;
-                                                if (i == 0)
-                                                    break;
-                                                timeout--;
-                                                System.Threading.Thread.Sleep(1);
+                                                ip = IPAddress.Loopback;
                                             }
+
+                                            Socket tcpConnector = new Socket(
+                                                AddressFamily.InterNetwork, 
+                                                SocketType.Stream, 
+                                                ProtocolType.Tcp);
+                                            tcpConnector.Connect(ip, 53);
+                                            tcpConnector.Send(buffer);
+                                            buffer = new byte[tcpConnector.ReceiveBufferSize];
+                                            i = tcpConnector.Receive(buffer);
+                                            if (i != 0)
+                                            {
+                                                int neededBytes = (buffer[0] * 256) + buffer[1] + 2;
+                                                Array.Resize(ref buffer, Math.Max(i, neededBytes));
+                                                if (i < neededBytes)
+                                                {
+                                                    int timeout = 2000;
+                                                    int received = i;
+                                                    while (received < neededBytes && timeout > 0
+                                                           && Common.IsSocketConnected(tcpConnector))
+                                                    {
+                                                        i = tcpConnector.Receive(
+                                                            buffer, 
+                                                            received, 
+                                                            buffer.Length - received, 
+                                                            SocketFlags.None);
+                                                        received += i;
+                                                        if (i == 0)
+                                                        {
+                                                            break;
+                                                        }
+
+                                                        timeout--;
+                                                        Thread.Sleep(1);
+                                                    }
+                                                }
+                                            }
+
+                                            tcpConnector.Close();
+                                            this.dnsUdpListenerSocket.SendTo(
+                                                buffer, 
+                                                2, 
+                                                buffer.Length - 2, 
+                                                SocketFlags.None, 
+                                                remoteEp);
                                         }
-                                    }
-                                    TCPConnector.Close();
-                                    DNSUDPListenerSocket.SendTo(buffer, 2, buffer.Length - 2, SocketFlags.None, remoteEP);
-                                }
-                                catch (Exception e)
-                                {
-                                    Proxy_Controller.LogIt("DNS Resolver UDP Error: " + e.Message);
-                                }
-                            }) { IsBackground = true }.Start();
+                                        catch (Exception e)
+                                        {
+                                            ProxyController.LogIt("DNS Resolver UDP Error: " + e.Message);
+                                        }
+                                    }) {
+                                          IsBackground = true 
+                                       }.Start();
                         }
                     }
                     catch (Exception)
                     {
-                        DNSUDPListenerSocket.Close();
-                        DNSUDPListenerSocket = null;
+                        this.dnsUdpListenerSocket.Close();
+                        this.dnsUdpListenerSocket = null;
                     }
                 }
             }
             catch (Exception)
             {
-                //Stat.LogIt("DNS Resolver Error: " + e.Message);
+                // Stat.LogIt("DNS Resolver Error: " + e.Message);
             }
         }
 
+        /// <summary>
+        /// The dispose.
+        /// </summary>
         public void Dispose()
         {
-            this.DNSTCPListenerSocket.Dispose();
-            this.DNSUDPListenerSocket.Dispose();
+            this.dnsTcpListenerSocket.Dispose();
+            this.dnsUdpListenerSocket.Dispose();
         }
+
+        /// <summary>
+        /// The start.
+        /// </summary>
+        public void Start()
+        {
+            if (this.DnsResolverSupported)
+            {
+                this.localDnsIp = new IPEndPoint(this.parent.Ip, 53);
+                this.dnsTcpListenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                this.dnsTcpListenerSocket.Bind(this.localDnsIp);
+                this.dnsTcpListenerSocket.Listen(256);
+            }
+        }
+
+        /// <summary>
+        /// The stop.
+        /// </summary>
+        public void Stop()
+        {
+            try
+            {
+                if (this.DnsResolverSupported)
+                {
+                    this.dnsTcpListenerSocket.Close();
+                    if (this.DnsResolverUdpSupported && this.dnsUdpListenerSocket != null)
+                    {
+                        this.dnsUdpListenerSocket.Close();
+                        this.dnsUdpListenerSocket = null;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        #endregion
     }
 }

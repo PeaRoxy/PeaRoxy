@@ -38,7 +38,7 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
                                         "Tun2Socks \r\n" +
                                         "TAP Adapter \r\n" +
                                         "Images";
-                lbl_versions.Content = "v" + System.Reflection.Assembly.GetAssembly(typeof(ClientLibrary.Proxy_Controller)).GetName().Version.ToString(3) + "\r\n" +
+                lbl_versions.Content = "v" + System.Reflection.Assembly.GetAssembly(typeof(ClientLibrary.ProxyController)).GetName().Version.ToString(3) + "\r\n" +
                                        "v" + System.Reflection.Assembly.GetAssembly(typeof(CoreProtocol.PeaRoxyProtocol)).GetName().Version.ToString(3) + "\r\n" +
                                        "v" + System.Reflection.Assembly.GetAssembly(typeof(Windows.WindowsModule)).GetName().Version.ToString(3) + "\r\n" +
                                        "v" + System.Reflection.Assembly.GetAssembly(typeof(Windows.Network.TAP.TapTunnel)).GetName().Version.ToString(3) + "\r\n" +

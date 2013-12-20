@@ -51,22 +51,22 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DNSResolver.cs" />
-    <Compile Include="Proxy_ClientSmartPearExtention.cs" />
+    <Compile Include="DnsResolver.cs" />
+    <Compile Include="ProxyClientSmartPearExtension.cs" />
     <Compile Include="ErrorRenderer.cs" />
     <Compile Include="SmartPear.cs" />
-    <Compile Include="Proxy_Types\Proxy_HTTP.cs" />
-    <Compile Include="Proxy_Types\Proxy_HTTPS.cs" />
-    <Compile Include="Server_Types\Server_HTTPS.cs" />
-    <Compile Include="Server_Types\Server_SOCKS5.cs" />
+    <Compile Include="ProxyModules\Http.cs" />
+    <Compile Include="ProxyModules\Https.cs" />
+    <Compile Include="ServerModules\Https.cs" />
+    <Compile Include="ServerModules\Socks5.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Proxy_Types\Proxy_SOCKS.cs" />
-    <Compile Include="Proxy_Client.cs" />
-    <Compile Include="Proxy_Controller.cs" />
-    <Compile Include="Server_Types\ServerType.cs" />
-    <Compile Include="Server_Types\Server_PeaRoxy.cs" />
-    <Compile Include="Server_Types\Server_PeaRoxyWeb.cs" />
-    <Compile Include="Server_Types\Server_NoServer.cs" />
+    <Compile Include="ProxyModules\Socks5.cs" />
+    <Compile Include="ProxyClient.cs" />
+    <Compile Include="ProxyController.cs" />
+    <Compile Include="ServerModules\ServerType.cs" />
+    <Compile Include="ServerModules\PeaRoxy.cs" />
+    <Compile Include="ServerModules\PeaRoxyWeb.cs" />
+    <Compile Include="ServerModules\NoServer.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

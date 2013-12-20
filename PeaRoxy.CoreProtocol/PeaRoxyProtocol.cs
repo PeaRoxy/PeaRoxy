@@ -33,7 +33,7 @@ namespace PeaRoxy.CoreProtocol
         public Common.Encryption_Type ClientSupportedEncryptionType { get; set; }
         public Common.Compression_Type ClientSupportedCompressionType { get; set; }
         public ushort PocketSent { get; private set; }
-        public ushort PocketRecieved { get; private set; }
+        public ushort PocketReceived { get; private set; }
         public byte[] EncryptionKey
         {
             get { return this.encryptionKey; }
@@ -92,7 +92,7 @@ namespace PeaRoxy.CoreProtocol
             this.ReceivePacketSize = 8192;
             this.SendPacketSize = 8192;
             this.PocketSent = 0;
-            this.PocketRecieved = 0;
+            this.PocketReceived = 0;
             this.ClientSupportedEncryptionType = Common.Encryption_Type.Anything;
             this.ClientSupportedCompressionType = Common.Compression_Type.Anything;
             this.UnderlyingSocket = client;
@@ -163,8 +163,8 @@ namespace PeaRoxy.CoreProtocol
 
                                     if (buffer.Length >= 10)
                                     {
-                                        if (PocketRecieved == 65535)
-                                            PocketRecieved = 0;
+                                        if (PocketReceived == 65535)
+                                            PocketReceived = 0;
 
                                          if ((Common.Compression_Type)buffer[1] != peerCompressionType)
                                         {
@@ -179,7 +179,7 @@ namespace PeaRoxy.CoreProtocol
                                                     break;
                                             }
                                         }
-                                        int recieveCounter = (buffer[2] * 256) + buffer[3];
+                                        int receiveCounter = (buffer[2] * 256) + buffer[3];
                                         neededBytes = (buffer[4] * 256) + buffer[5];
                                         Array.Copy(buffer, 6, pearEncryptionSalt, 0, 4);
                                         if ((Common.Encryption_Type)buffer[0] != peerEncryptionType)
@@ -200,12 +200,12 @@ namespace PeaRoxy.CoreProtocol
                                                     break;
                                             }
                                         }
-                                        if (recieveCounter != PocketRecieved)
+                                        if (receiveCounter != PocketReceived)
                                         {
-                                            Close("Protocol 3. Packet lost, Last received packet: " + recieveCounter.ToString() + ", Expected: " + PocketRecieved.ToString());
+                                            Close("Protocol 3. Packet lost, Last received packet: " + receiveCounter.ToString() + ", Expected: " + PocketReceived.ToString());
                                             return false;
                                         }
-                                        PocketRecieved++;
+                                        PocketReceived++;
                                         if (neededBytes <= buffer.Length - 10)
                                         {
                                             Array.Resize(ref workingBuffer, workingBuffer.Length + neededBytes);

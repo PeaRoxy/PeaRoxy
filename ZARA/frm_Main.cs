@@ -1,6 +1,6 @@
 ﻿using LukeSw.Windows.Forms;
 using PeaRoxy.ClientLibrary;
-using PeaRoxy.ClientLibrary.Server_Types;
+using PeaRoxy.ClientLibrary.ServerModules;
 using PeaRoxy.Windows;
 using PeaRoxy.Windows.Network.TAP;
 using System;
@@ -14,6 +14,7 @@ using System.Windows.Forms;
 
 namespace ZARA
 {
+
     public partial class frm_Main : Form
     {
         public const int WM_NCLBUTTONDOWN = 0xA1;
@@ -34,7 +35,7 @@ namespace ZARA
         }
 
         private WinFormAnimation.Animator2D Ani = new WinFormAnimation.Animator2D(WinFormAnimation.Timer.eFPSLimit.FPS60);
-        private Proxy_Controller Listener;
+        private ProxyController Listener;
         private TapTunnel tapTunnel;
         public CurrentStatus Status { get; set; }
         private delegate void SimpleVoid_Delegate();
@@ -117,49 +118,50 @@ namespace ZARA
                     StopServer();
                 else
                 {
-                    Listener = new Proxy_Controller(null, null, 0);
+                    Listener = new ProxyController(null, null, 0);
                     Listener.FailDisconnected += FailDisconnected;
                 }
                 this.Enabled = false;
 
-                Listener.IP = System.Net.IPAddress.Loopback;
+                Listener.Ip = System.Net.IPAddress.Loopback;
                 Listener.Port = 0;
                 Listener.IsAutoConfigEnable = false;
-                Listener.IsHTTP_Supported = false;
-                Listener.IsHTTPS_Supported = false;
-                Listener.IsSOCKS_Supported = true;
+                Listener.IsHttpSupported = false;
+                Listener.IsHttpsSupported = false;
+                Listener.IsSocksSupported = true;
                 Listener.SendPacketSize = (int)ZARA.Properties.Settings.Default.Connection_SendPacketSize;
                 Listener.ReceivePacketSize = (int)ZARA.Properties.Settings.Default.Connection_RecPacketSize;
                 Listener.AutoDisconnect = ZARA.Properties.Settings.Default.Connection_StopOnInterrupt;
 
-                Listener.ErrorRenderer.HTTPErrorRendering = false;
-                Listener.ErrorRenderer.DirectErrorRendering_Port80 = false;
-                Listener.ErrorRenderer.DirectErrorRendering_Port443 = false;
+                Listener.ErrorRenderer.Enable = false;
+                Listener.ErrorRenderer.OnPort80Direct = false;
+                Listener.ErrorRenderer.OnPort443Direct = false;
 
-                Listener.DNSResolver.DNSResolver_Supported = Listener.DNSResolver.DNSResolver_UDPSupported = true;
-                Listener.DNSResolver.DNSResolver_ServerIP = System.Net.IPAddress.Parse(ZARA.Properties.Settings.Default.DNS_IPAddress);
+                Listener.DnsResolver.DnsResolverSupported = Listener.DnsResolver.DnsResolverUdpSupported = true;
+                Listener.DnsResolver.DnsResolverServerIp = System.Net.IPAddress.Parse(ZARA.Properties.Settings.Default.DNS_IPAddress);
 
-                Listener.SmartPear.Detector_Direct_Port80AsHTTP = false;
-                Listener.SmartPear.Forwarder_HTTP_Enable = false;
-                Listener.SmartPear.Detector_HTTP_Enable = false;
-                Listener.SmartPear.Detector_HTTP_Pattern = "";
-                Listener.SmartPear.Detector_DNSGrabber_Pattern = "";
-                Listener.SmartPear.Detector_DNSGrabber_Enable = false;
-                Listener.SmartPear.Forwarder_HTTPS_Enable = false;
-                Listener.SmartPear.Detector_Timeout_Enable = false;
-                Listener.SmartPear.Detector_Timeout = 0;
-                Listener.SmartPear.Forwarder_Direct_Port80AsHTTP = false;
-                Listener.SmartPear.Forwarder_SOCKS_Enable = false;
-                Listener.SmartPear.Forwarder_HTTP_List.Clear();
-                Listener.SmartPear.Forwarder_Direct_List.Clear();
+                Listener.SmartPear.DetectorDirectPort80AsHttp = false;
+                Listener.SmartPear.ForwarderHttpEnable = false;
+                Listener.SmartPear.DetectorHttpEnable = false;
+                Listener.SmartPear.DetectorHttpPattern = "";
+                Listener.SmartPear.DetectorDnsGrabberPattern = "";
+                Listener.SmartPear.DetectorDnsGrabberEnable = false;
+                Listener.SmartPear.ForwarderHttpsEnable = false;
+                Listener.SmartPear.DetectorTimeoutEnable = false;
+                Listener.SmartPear.DetectorTimeout = 0;
+                Listener.SmartPear.ForwarderDirectPort80AsHttp = false;
+                Listener.SmartPear.ForwarderSocksEnable = false;
+                Listener.SmartPear.ForwarderHttpList.Clear();
+                Listener.SmartPear.ForwarderDirectList.Clear();
 
                 string ServerAddress = ZARA.Properties.Settings.Default.ServerAddress;
-                ServerType ser = new Server_PeaRoxy(ZARA.Properties.Settings.Default.ServerAddress, ZARA.Properties.Settings.Default.ServerPort, "", ZARA.Properties.Settings.Default.UserAndPassword_User, ZARA.Properties.Settings.Default.UserAndPassword_Pass, PeaRoxy.CommonLibrary.Common.Encryption_Type.SimpleXOR, PeaRoxy.CommonLibrary.Common.Compression_Type.None);
+
+                ServerType ser = new PeaRoxy.ClientLibrary.ServerModules.PeaRoxy(ZARA.Properties.Settings.Default.ServerAddress, ZARA.Properties.Settings.Default.ServerPort, "", ZARA.Properties.Settings.Default.UserAndPassword_User, ZARA.Properties.Settings.Default.UserAndPassword_Pass, PeaRoxy.CommonLibrary.Common.Encryption_Type.SimpleXOR, PeaRoxy.CommonLibrary.Common.Compression_Type.None);
 
                 ser.NoDataTimeout = ZARA.Properties.Settings.Default.Connection_NoDataTimeout;
                 Listener.ActiveServer = ser;
 
-                Listener.TestServerAsyc((PeaRoxy.ClientLibrary.Proxy_Controller.OperationWithErrorMessageFinished)delegate(bool suc, string mes)
+                Listener.TestServerAsyc((PeaRoxy.ClientLibrary.ProxyController.OperationWithErrorMessageFinished)delegate(bool suc, string mes)
                 {
                     this.Invoke((SimpleVoid_Delegate)delegate()
                     {
@@ -236,7 +238,7 @@ namespace ZARA
                 this.Enabled = false;
                 if (Listener != null)
                 {
-                    if (Listener.Status != PeaRoxy.ClientLibrary.Proxy_Controller.ControllerStatus.Stopped)
+                    if (Listener.Status != PeaRoxy.ClientLibrary.ProxyController.ControllerStatus.Stopped)
                         Listener.Stop();
 
                     Status = CurrentStatus.Disconnected;
@@ -393,17 +395,17 @@ namespace ZARA
         {
             if (Listener != null)
             {
-                DownSpeed = (Listener.AvgReceivingSpeed + DownSpeed) / 2;
-                UpSpeed = (Listener.AvgSendingSpeed + UpSpeed) / 2;
-                if (Listener != null && (Listener.Status == PeaRoxy.ClientLibrary.Proxy_Controller.ControllerStatus.OnlyProxy || Listener.Status == PeaRoxy.ClientLibrary.Proxy_Controller.ControllerStatus.Both))
+                DownSpeed = (Listener.AverageReceivingSpeed + DownSpeed) / 2;
+                UpSpeed = (Listener.AverageSendingSpeed + UpSpeed) / 2;
+                if (Listener != null && (Listener.Status == PeaRoxy.ClientLibrary.ProxyController.ControllerStatus.OnlyProxy || Listener.Status == PeaRoxy.ClientLibrary.ProxyController.ControllerStatus.Both))
                     Program.Notify.Text = "Z A Я A\r\nCurrent Transfer Rate: " + PeaRoxy.CommonLibrary.Common.FormatFileSizeAsString(DownSpeed + UpSpeed) + "/s";
 
                 if (this.Visible)
                 {
-                    lbl_stat_acceptingthreads.Text = Listener.WaitingAcceptionConnections.ToString();
+                    lbl_stat_acceptingthreads.Text = Listener.AcceptingConnections.ToString();
                     lbl_stat_activeconnections.Text = Listener.RoutingConnections.ToString();
-                    SplitBySpace(PeaRoxy.CommonLibrary.Common.FormatFileSizeAsString(Listener.BytesReceived), lbl_stat_downloaded, lbl_stat_downloaded_v);
-                    SplitBySpace(PeaRoxy.CommonLibrary.Common.FormatFileSizeAsString(Listener.BytesSent), lbl_stat_uploaded, lbl_stat_uploaded_v);
+                    SplitBySpace(PeaRoxy.CommonLibrary.Common.FormatFileSizeAsString(Listener.ReceivedBytes), lbl_stat_downloaded, lbl_stat_downloaded_v);
+                    SplitBySpace(PeaRoxy.CommonLibrary.Common.FormatFileSizeAsString(Listener.SentBytes), lbl_stat_uploaded, lbl_stat_uploaded_v);
                     SplitBySpace(PeaRoxy.CommonLibrary.Common.FormatFileSizeAsString(DownSpeed), cpb_stat_downloadrate);
                     SplitBySpace(PeaRoxy.CommonLibrary.Common.FormatFileSizeAsString(UpSpeed), cpb_stat_uploadrate);
                 }
