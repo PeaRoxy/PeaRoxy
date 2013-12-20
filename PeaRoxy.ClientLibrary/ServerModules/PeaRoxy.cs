@@ -43,12 +43,12 @@ namespace PeaRoxy.ClientLibrary.ServerModules
         /// <summary>
         ///     The compression type.
         /// </summary>
-        private readonly Common.Compression_Type compressionType = Common.Compression_Type.None;
+        private readonly Common.CompressionType compressionType = Common.CompressionType.None;
 
         /// <summary>
         ///     The encryption type.
         /// </summary>
-        private readonly Common.Encryption_Type encryptionType = Common.Encryption_Type.None;
+        private readonly Common.EncryptionType encryptionType = Common.EncryptionType.None;
 
         /// <summary>
         ///     The current timeout.
@@ -102,8 +102,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             string domain, 
             string username = "", 
             string password = "", 
-            Common.Encryption_Type encType = Common.Encryption_Type.None, 
-            Common.Compression_Type comType = Common.Compression_Type.None)
+            Common.EncryptionType encType = Common.EncryptionType.None, 
+            Common.CompressionType comType = Common.CompressionType.None)
         {
             if (string.IsNullOrEmpty(address))
             {
@@ -248,7 +248,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                         this.ParentClient.Write(this.ParentClient.SmartResponseBuffer);
                     }
 
-                    if (!this.ParentClient.BusyWrite && this.Protocol.isDataAvailable())
+                    if (!this.ParentClient.BusyWrite && this.Protocol.IsDataAvailable())
                     {
                         this.IsDataSent = true;
                         this.currentTimeout = this.NoDataTimeout * 1000;
@@ -369,7 +369,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                             {
                                 this.UnderlyingSocket.EndConnect(ar);
                                 this.ParentClient.Controller.FailAttempts = 0;
-                                HTTPForger forger = new HTTPForger(this.UnderlyingSocket);
+                                HttpForger forger = new HttpForger(this.UnderlyingSocket);
                                 forger.SendRequest(this.ServerDomain);
                                 if (!forger.ReceiveResponse())
                                 {

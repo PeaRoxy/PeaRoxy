@@ -98,12 +98,12 @@ namespace PeaRoxy.ClientLibrary
         {
             get
             {
-                return Common.FromRegEX(this.DetectorDnsGrabberRegExPattern);
+                return Common.FromRegEx(this.DetectorDnsGrabberRegExPattern);
             }
 
             set
             {
-                this.DetectorDnsGrabberRegExPattern = Common.ToRegEX(value);
+                this.DetectorDnsGrabberRegExPattern = Common.ToRegEx(value);
                 this.DetectorDnsGrabberRegEx = new Regex(
                     this.DetectorDnsGrabberRegExPattern, 
                     RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline);
@@ -132,12 +132,12 @@ namespace PeaRoxy.ClientLibrary
         {
             get
             {
-                return Common.FromRegEX(this.DetectorHttpRegExPattern);
+                return Common.FromRegEx(this.DetectorHttpRegExPattern);
             }
 
             set
             {
-                this.DetectorHttpRegExPattern = Common.ToRegEX(value);
+                this.DetectorHttpRegExPattern = Common.ToRegEx(value);
                 this.DetectorHttpRegEx = new Regex(
                     this.DetectorHttpRegExPattern, 
                     RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline);

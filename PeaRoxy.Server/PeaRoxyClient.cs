@@ -22,12 +22,12 @@ namespace PeaRoxy.Server
             ResolvingLocalServer
         }
         internal PeaRoxy.CoreProtocol.PeaRoxyProtocol Protocol;
-        private Common.Encryption_Type UnderlyingClientEncType;
-        private Common.Compression_Type UnderlyingClientComType;
+        private Common.EncryptionType UnderlyingClientEncType;
+        private Common.CompressionType UnderlyingClientComType;
         private int UnderlyingClientReceivePacketSize;
         private int UnderlyingClientSendPacketSize;
         private byte[] writeBuffer = new byte[0];
-        private CoreProtocol.HTTPForger Forger;
+        private CoreProtocol.HttpForger Forger;
         private HTTPForwarder Forwarder;
         private bool Forwarded = false;
         private Socket destinationSocket = null;
@@ -54,8 +54,8 @@ namespace PeaRoxy.Server
         public PeaRoxyClient(
                 Socket client,
                 Controller parent,
-                Common.Encryption_Type encType = Common.Encryption_Type.None,
-                Common.Compression_Type comType = Common.Compression_Type.None,
+                Common.EncryptionType encType = Common.EncryptionType.None,
+                Common.CompressionType comType = Common.CompressionType.None,
                 int ReceivePacketSize = 8192,
                 int SendPacketSize = 1024,
                 int SelectedAuthMode = 255,
@@ -90,7 +90,7 @@ namespace PeaRoxy.Server
                     {
                         case Client_Stage.Connected:
                             CurrentTimeout = NoDataTimeout * 1000;
-                            Forger = new CoreProtocol.HTTPForger(UnderlyingSocket, Controller.PeaRoxyDomain, true);
+                            Forger = new CoreProtocol.HttpForger(UnderlyingSocket, Controller.PeaRoxyDomain, true);
                             this.CurrentStage = Client_Stage.WaitingForForger;
                             break;
                         case Client_Stage.WaitingForForger:
@@ -115,8 +115,8 @@ namespace PeaRoxy.Server
                                     ReceivePacketSize = UnderlyingClientReceivePacketSize,
                                     SendPacketSize = UnderlyingClientSendPacketSize,
                                     CloseCallback = this.CloseCal,
-                                    ClientSupportedCompressionType = (Common.Compression_Type)ClientSupportedCompressionType,
-                                    ClientSupportedEncryptionType = (Common.Encryption_Type)ClientSupportedEncryptionType
+                                    ClientSupportedCompressionType = (Common.CompressionType)ClientSupportedCompressionType,
+                                    ClientSupportedEncryptionType = (Common.EncryptionType)ClientSupportedEncryptionType
                                 };
                                 Id = Screen.ClientConnected(UserId, "C." + Protocol.UnderlyingSocket.RemoteEndPoint.ToString()); // Report that a new client connected
                                 CurrentTimeout = NoDataTimeout * 1000;
@@ -124,7 +124,7 @@ namespace PeaRoxy.Server
                             }
                             break;
                         case Client_Stage.WaitingForWelcomeMessage:
-                            if (Protocol.isDataAvailable())
+                            if (Protocol.IsDataAvailable())
                             {
                                 byte server_errorCode = 0;
                                 byte[] client_request = Protocol.Read(); // Read data from client
@@ -134,7 +134,7 @@ namespace PeaRoxy.Server
                                     return;
                                 }
 
-                                ConfigReader.User Accepted_User = null;
+                                ConfigUser Accepted_User = null;
                                 // Select Auth Type
                                 if (client_request[0] != this.SelectedAuthMode)
                                     server_errorCode = 99;
@@ -148,7 +148,7 @@ namespace PeaRoxy.Server
                                     
                                     
                                     // Search out users to find out if we have this user in users.ini
-                                    foreach (ConfigReader.User user in ConfigReader.GetUsers())
+                                    foreach (ConfigUser user in ConfigReader.GetUsers())
                                         if (user.Username.ToLower() == username.ToLower() && user.Hash.SequenceEqual(passwordHash)) // Check each user name and password hash
                                         {
                                             Accepted_User = user;
@@ -309,7 +309,7 @@ namespace PeaRoxy.Server
                             }
                         }
 
-                        if (!this.BusyWrite && Protocol.isDataAvailable()) // If any new data in client connection
+                        if (!this.BusyWrite && Protocol.IsDataAvailable()) // If any new data in client connection
                         {
                             CurrentTimeout = NoDataTimeout * 1000; // Reset timeout variable
                             byte[] buffer = Protocol.Read(); // Read data from client

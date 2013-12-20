@@ -122,7 +122,7 @@ namespace PeaRoxy.ClientLibrary
         public static string GetCertForDomain(string domainName)
         {
             domainName = domainName.ToLower().Trim();
-            string md5 = Common.MD5(domainName);
+            string md5 = Common.Md5(domainName);
             if (ClassRegistry.GetClass<CertManager>()
                 .CreateCert(domainName, "HTTPSCerts\\PeaRoxy.crt", "HTTPSCerts\\" + md5 + ".crt"))
             {
@@ -279,7 +279,7 @@ namespace PeaRoxy.ClientLibrary
                 if (https)
                 {
                     string certAddress = url.DnsSafeHost;
-                    if (!Common.IsIPAddress(certAddress))
+                    if (!Common.IsIpAddress(certAddress))
                     {
                         certAddress = Common.GetNextLevelDomain(certAddress);
                         if (string.IsNullOrEmpty(certAddress))

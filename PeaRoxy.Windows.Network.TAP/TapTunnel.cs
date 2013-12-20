@@ -47,10 +47,10 @@ namespace PeaRoxy.Windows.Network.TAP
 
         public bool StartTunnel()
         {
-            if (!CommonLibrary.Common.IsValidIPSubnet(ipSubnet))
+            if (!CommonLibrary.Common.IsValidIpSubnet(ipSubnet))
                 return false;
-            AdapterAddressRange = CommonLibrary.Common.MergeIPIntoIPSubnet(AdapterAddressRange, ipSubnet, IPAddress.Parse("10.0.0.1"));
-            IPAddress ipAddressGateWay = CommonLibrary.Common.MergeIPIntoIPSubnet(AdapterAddressRange, ipSubnet, IPAddress.Parse("10.0.0.2"));
+            AdapterAddressRange = CommonLibrary.Common.MergeIpIntoIpSubnet(AdapterAddressRange, ipSubnet, IPAddress.Parse("10.0.0.1"));
+            IPAddress ipAddressGateWay = CommonLibrary.Common.MergeIpIntoIpSubnet(AdapterAddressRange, ipSubnet, IPAddress.Parse("10.0.0.2"));
             NetworkAdapter net = TapAdapter.InstallAnAdapter(TunnelName);
             if (net == null)
                 return false;

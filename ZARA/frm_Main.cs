@@ -156,7 +156,7 @@ namespace ZARA
 
                 string ServerAddress = ZARA.Properties.Settings.Default.ServerAddress;
 
-                ServerType ser = new PeaRoxy.ClientLibrary.ServerModules.PeaRoxy(ZARA.Properties.Settings.Default.ServerAddress, ZARA.Properties.Settings.Default.ServerPort, "", ZARA.Properties.Settings.Default.UserAndPassword_User, ZARA.Properties.Settings.Default.UserAndPassword_Pass, PeaRoxy.CommonLibrary.Common.Encryption_Type.SimpleXOR, PeaRoxy.CommonLibrary.Common.Compression_Type.None);
+                ServerType ser = new PeaRoxy.ClientLibrary.ServerModules.PeaRoxy(ZARA.Properties.Settings.Default.ServerAddress, ZARA.Properties.Settings.Default.ServerPort, "", ZARA.Properties.Settings.Default.UserAndPassword_User, ZARA.Properties.Settings.Default.UserAndPassword_Pass, PeaRoxy.CommonLibrary.Common.EncryptionType.SimpleXor, PeaRoxy.CommonLibrary.Common.CompressionType.None);
 
                 ser.NoDataTimeout = ZARA.Properties.Settings.Default.Connection_NoDataTimeout;
                 Listener.ActiveServer = ser;
@@ -172,7 +172,7 @@ namespace ZARA
                                 Listener.Start();
 
                                 List<System.Net.IPAddress> hostIps = new List<System.Net.IPAddress>();
-                                if (PeaRoxy.CommonLibrary.Common.IsIPAddress(ServerAddress))
+                                if (PeaRoxy.CommonLibrary.Common.IsIpAddress(ServerAddress))
                                     hostIps.Add(System.Net.IPAddress.Parse(ServerAddress));
                                 else
                                     hostIps.AddRange(System.Net.Dns.GetHostEntry(ServerAddress).AddressList);

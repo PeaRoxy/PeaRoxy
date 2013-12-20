@@ -238,7 +238,7 @@ namespace PeaRoxy.Server
 
             byte enc; // Temporary variable
             if (!(ConfigReader.GetSettings().ContainsKey("EncryptionType".ToLower()) && byte.TryParse(ConfigReader.GetSettings()["EncryptionType".ToLower()], out enc))) // Try to set selected encryption type in settings
-                enc = (byte)Common.Encryption_Type.None;
+                enc = (byte)Common.EncryptionType.None;
 
             int clientSupportedEncryptionType;
             if (!ConfigReader.GetSettings().ContainsKey("SupportedEncryptionTypes".ToLower()) || !int.TryParse(ConfigReader.GetSettings()["SupportedEncryptionTypes".ToLower()], out clientSupportedEncryptionType)) // If we don't have any setting about supported types of encryption set it to def, -1 mean any type
@@ -246,7 +246,7 @@ namespace PeaRoxy.Server
 
             byte com; // Temporary variable
             if (!(ConfigReader.GetSettings().ContainsKey("CompressionType".ToLower()) && byte.TryParse(ConfigReader.GetSettings()["CompressionType".ToLower()], out com))) // Try to set selected compression type in settings
-                com = (byte)Common.Compression_Type.None;
+                com = (byte)Common.CompressionType.None;
 
             int clientSupportedCompressionType;
             if (!ConfigReader.GetSettings().ContainsKey("SupportedCompressionTypes".ToLower()) || !int.TryParse(ConfigReader.GetSettings()["SupportedCompressionTypes".ToLower()], out clientSupportedCompressionType)) // If we don't have any setting about supported types of compression set it to def, -1 mean any type
@@ -266,8 +266,8 @@ namespace PeaRoxy.Server
                         lock (ConnectedClients)
                             this.ConnectedClients.Add(new PeaRoxyClient(this.ListeningServer.Accept(),
                                 this,
-                                (Common.Encryption_Type)enc,
-                                (Common.Compression_Type)com,
+                                (Common.EncryptionType)enc,
+                                (Common.CompressionType)com,
                                 _rp,
                                 _sp,
                                 config_SelectedAuth,

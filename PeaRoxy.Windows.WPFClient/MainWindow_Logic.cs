@@ -204,8 +204,8 @@ namespace PeaRoxy.Windows.WPFClient
                             PeaRoxy.Windows.WPFClient.Properties.Settings.Default.PeaRoxySocks_Domain,
                             ((PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Auth_Type == 2) ? PeaRoxy.Windows.WPFClient.Properties.Settings.Default.UserAndPassword_User : string.Empty),
                             ((PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Auth_Type == 2) ? PeaRoxy.Windows.WPFClient.Properties.Settings.Default.UserAndPassword_Pass : string.Empty),
-                            (CommonLibrary.Common.Encryption_Type)PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_Encryption,
-                            (CommonLibrary.Common.Compression_Type)PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_Compression
+                            (CommonLibrary.Common.EncryptionType)PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_Encryption,
+                            (CommonLibrary.Common.CompressionType)PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_Compression
                             );
                         break;
                     case 2:
@@ -214,7 +214,7 @@ namespace PeaRoxy.Windows.WPFClient
                             PeaRoxy.Windows.WPFClient.Properties.Settings.Default.PeaRoxyWeb_Address,
                             ((PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Auth_Type == 2) ? PeaRoxy.Windows.WPFClient.Properties.Settings.Default.UserAndPassword_User : string.Empty),
                             ((PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Auth_Type == 2) ? PeaRoxy.Windows.WPFClient.Properties.Settings.Default.UserAndPassword_Pass : string.Empty),
-                            (CommonLibrary.Common.Encryption_Type)PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_Encryption
+                            (CommonLibrary.Common.EncryptionType)PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_Encryption
                             );
                         Listener.SmartPear.ForwarderHttpsEnable = false;
                         break;
@@ -323,7 +323,7 @@ namespace PeaRoxy.Windows.WPFClient
                                         break;
                                     case 1:
                                         List<System.Net.IPAddress> hostIps = new List<System.Net.IPAddress>();
-                                        if (CommonLibrary.Common.IsIPAddress(ServerAddress))
+                                        if (CommonLibrary.Common.IsIpAddress(ServerAddress))
                                             hostIps.Add(System.Net.IPAddress.Parse(ServerAddress));
                                         else
                                             hostIps.AddRange(System.Net.Dns.GetHostEntry(ServerAddress).AddressList);

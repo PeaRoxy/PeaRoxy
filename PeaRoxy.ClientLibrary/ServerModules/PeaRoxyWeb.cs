@@ -56,7 +56,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
         /// <summary>
         ///     The encryption type.
         /// </summary>
-        private readonly Common.Encryption_Type encryptionType = Common.Encryption_Type.None;
+        private readonly Common.EncryptionType encryptionType = Common.EncryptionType.None;
 
         /// <summary>
         ///     The chunked is first.
@@ -135,7 +135,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
         /// <summary>
         ///     The server encryption type.
         /// </summary>
-        private Common.Encryption_Type serverEncryptionType = Common.Encryption_Type.None;
+        private Common.EncryptionType serverEncryptionType = Common.EncryptionType.None;
 
         /// <summary>
         ///     The write buffer.
@@ -171,7 +171,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             string address, 
             string username = "", 
             string password = "", 
-            Common.Encryption_Type encType = Common.Encryption_Type.None, 
+            Common.EncryptionType encType = Common.EncryptionType.None, 
             bool addressChecked = false)
         {
             if (string.IsNullOrEmpty(address))
@@ -179,7 +179,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                 throw new ArgumentException(@"Invalid value.", "address");
             }
 
-            if (encType != Common.Encryption_Type.SimpleXOR && encType != Common.Encryption_Type.None)
+            if (encType != Common.EncryptionType.SimpleXor && encType != Common.EncryptionType.None)
             {
                 throw new ArgumentException(@"Invalid value.", "encType");
             }
@@ -658,7 +658,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                     }
 
                     string certAddress = url.DnsSafeHost;
-                    if (!Common.IsIPAddress(certAddress))
+                    if (!Common.IsIpAddress(certAddress))
                     {
                         certAddress = Common.GetNextLevelDomain(certAddress);
                         if (string.IsNullOrEmpty(certAddress))
@@ -1078,7 +1078,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                     indexOfCookies, 
                     StringComparison.InvariantCultureIgnoreCase);
                 this.serverEncryptionType =
-                    (Common.Encryption_Type)
+                    (Common.EncryptionType)
                     int.Parse(responseHeader.Substring(startOfCookies, endOfCookies - startOfCookies));
             }
 
@@ -1090,12 +1090,12 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             {
                 switch (this.serverEncryptionType)
                 {
-                    case Common.Encryption_Type.None:
+                    case Common.EncryptionType.None:
 
                         // Do Nothing. It is OK
                         break;
-                    case Common.Encryption_Type.SimpleXOR:
-                        this.peerCryptor = new SimpleXORCryptor(this.encryptionKey, false);
+                    case Common.EncryptionType.SimpleXor:
+                        this.peerCryptor = new SimpleXorCryptor(this.encryptionKey, false);
                         this.peerCryptor.SetSalt(this.encryptionSaltBytes);
                         break;
                     default:
@@ -1187,14 +1187,14 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             {
                 httpHeader += "Authorization: Basic "
                               + Convert.ToBase64String(
-                                  Encoding.ASCII.GetBytes(this.Username + ":" + Common.MD5(this.Password))) + "\r\n";
+                                  Encoding.ASCII.GetBytes(this.Username + ":" + Common.Md5(this.Password))) + "\r\n";
                 this.encryptionKey = Encoding.ASCII.GetBytes(this.Password);
             }
 
             switch (this.encryptionType)
             {
-                case Common.Encryption_Type.SimpleXOR:
-                    this.cryptor = new SimpleXORCryptor(this.encryptionKey, false);
+                case Common.EncryptionType.SimpleXor:
+                    this.cryptor = new SimpleXorCryptor(this.encryptionKey, false);
                     break;
             }
 
