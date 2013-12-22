@@ -1,35 +1,48 @@
-﻿<UserControl x:Class="PeaRoxy.Windows.WPFClient.MainPanel"
+﻿<UserControl x:Class="PeaRoxy.Windows.WPFClient.Panels.MainPanel"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:uc="clr-namespace:PeaRoxy.Windows.WPFClient.UserControls" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:uc="clr-namespace:PeaRoxy.Windows.WPFClient.UserControls"
              xmlns:thriple="http://thriple.codeplex.com/"
              xmlns:d3="http://research.microsoft.com/DynamicDataDisplay/1.0"
-             mc:Ignorable="d" 
-             d:DesignHeight="319" d:DesignWidth="610" Height="319" MinHeight="319" MaxHeight="319" Width="610" MaxWidth="610" MinWidth="610" Loaded="UserControl_Loaded">
-    <Grid Name="MainGrid" Width="610">
+             mc:Ignorable="d"
+             d:DesignHeight="319" d:DesignWidth="610" Height="319" MinHeight="319" MaxHeight="319" Width="610"
+             MaxWidth="610" MinWidth="610" Loaded="UserControlLoaded">
+    <Grid Width="610">
         <Grid Margin="-500,-500,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="200" Height="100">
-            <d3:ChartPlotter  x:Name="ThumbnileChart" Width="200" Height="100" FontSize="11" Grid.Row="1" BorderBrush="#FF272727" Foreground="Black" IsEnabled="False" BorderThickness="1" Background="#FFF9F9F9" >
+            <d3:ChartPlotter x:Name="ThumbnileChart" Width="200" Height="100" FontSize="11"
+                             BorderBrush="#FF272727" Foreground="Black" IsEnabled="False" BorderThickness="1"
+                             Background="#FFF9F9F9">
                 <d3:ChartPlotter.HorizontalAxis>
-                    <d3:HorizontalTimeSpanAxis Visibility="Collapsed" Name="hztsa_chartThumbnile"></d3:HorizontalTimeSpanAxis>
+                    <d3:HorizontalTimeSpanAxis Visibility="Collapsed" Name="HztsaChartThumbnile" />
                 </d3:ChartPlotter.HorizontalAxis>
             </d3:ChartPlotter>
         </Grid>
-        <Label Content="Server Type:" Height="28" HorizontalAlignment="Left" Margin="23,45,0,0" Name="label6" VerticalAlignment="Top" Foreground="White" />
-        <Label Content="Authenticate using:" Foreground="White" Height="28" HorizontalAlignment="Left" Margin="284,45,0,0" Name="label11" VerticalAlignment="Top" />
-        <Image Height="70" Margin="133,0,183,-10" Name="img_Disconnected" Stretch="Fill" VerticalAlignment="Bottom" Source="/PeaRoxy.Windows.WPFClient;component/Images/MainPanel/Disconnected.png" />
-        <Image Height="70" Margin="133,0,183,-10" Name="img_Connected" Source="/PeaRoxy.Windows.WPFClient;component/Images/MainPanel/Connected.png" Stretch="Fill" VerticalAlignment="Bottom" Opacity="0" />
+        <Label Content="Server Type:" Height="28" HorizontalAlignment="Left" Margin="23,45,0,0"
+               VerticalAlignment="Top" Foreground="White" />
+        <Label Content="Authenticate using:" Foreground="White" Height="28" HorizontalAlignment="Left"
+               Margin="284,45,0,0" VerticalAlignment="Top" />
+        <Image Height="70" Margin="133,0,183,-10" Name="ImgDisconnected" Stretch="Fill" VerticalAlignment="Bottom"
+               Source="/PeaRoxy.Windows.WPFClient;component/Images/MainPanel/Disconnected.png"
+               x:FieldModifier="private" />
+        <Image Height="70" Margin="133,0,183,-10" Name="ImgConnected"
+               Source="/PeaRoxy.Windows.WPFClient;component/Images/MainPanel/Connected.png" Stretch="Fill"
+               VerticalAlignment="Bottom" Opacity="0" x:FieldModifier="private" />
         <Grid Margin="18,0,6,239">
-            <thriple:ContentControl3D Height="36" HorizontalAlignment="Left" Name="cc3" VerticalAlignment="Top" Width="200" Margin="-34,0,0,0">
+            <thriple:ContentControl3D Height="36" HorizontalAlignment="Left" Name="TitleControl3D" VerticalAlignment="Top"
+                                      Width="200" Margin="-34,0,0,0" x:FieldModifier="private">
                 <thriple:ContentControl3D.BackContent>
                     <Grid Width="150" Height="150">
-                        <Label Content="PeaRoxy Client" FontSize="20" FontWeight="Bold" Foreground="White" Height="39" Width="150" HorizontalAlignment="Left" Name="txt_Title" VerticalAlignment="Center" ToolTip="PeaRoxy.com" />
+                        <Label Content="PeaRoxy Client" FontSize="20" FontWeight="Bold" Foreground="White" Height="39"
+                               Width="150" HorizontalAlignment="Left" VerticalAlignment="Center"
+                               ToolTip="PeaRoxy.com" />
                     </Grid>
                 </thriple:ContentControl3D.BackContent>
             </thriple:ContentControl3D>
         </Grid>
-        <Rectangle Height="39" HorizontalAlignment="Left" Name="r_active" VerticalAlignment="Top" Width="12" Opacity="0">
+        <Rectangle Height="39" HorizontalAlignment="Left" Name="RActive" VerticalAlignment="Top" Width="12"
+                   Opacity="0" x:FieldModifier="private">
             <Rectangle.Fill>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF005299" Offset="0" />
@@ -37,7 +50,8 @@
                 </LinearGradientBrush>
             </Rectangle.Fill>
         </Rectangle>
-        <Rectangle Height="39" HorizontalAlignment="Left" Name="r_inactive" VerticalAlignment="Top" Width="12">
+        <Rectangle Height="39" HorizontalAlignment="Left" Name="RInactive" VerticalAlignment="Top" Width="12"
+                   x:FieldModifier="private">
             <Rectangle.Fill>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF990000" Offset="0" />
@@ -45,127 +59,178 @@
                 </LinearGradientBrush>
             </Rectangle.Fill>
         </Rectangle>
-        <uc:LoadingBox Margin="141,0,189,24" x:Name="loadingBox" VerticalAlignment="Bottom"/>
-        <WrapPanel HorizontalAlignment="Left" Margin="40,79,0,0" Name="wp_Servers" Width="249" Orientation="Horizontal" Height="239" VerticalAlignment="Top">
-            <Expander Width="249" Foreground="Black" Expanded="AnimatedExpender_Expanded" Background="#FFF8F8F8" Collapsed="AnimatedExpender_Collapsed" Name="ex_server" Height="25" BorderThickness="1" ClipToBounds="False">
-                <Grid Height="76">
-                    <Label Content="Address:" Height="28" HorizontalAlignment="Left" Margin="6,1,0,0" Name="label2" VerticalAlignment="Top" />
-                    <Label Content="Port:" Height="28" HorizontalAlignment="Left" Margin="6,23,0,0" Name="label3" VerticalAlignment="Top" />
-                    <TextBox HorizontalAlignment="Left" Margin="67,6,0,0" Name="txt_serverAddress" Width="174" FontSize="10" Height="20" VerticalAlignment="Top" LostFocus="txt_serverAddress_LostFocus" ToolTip="IPAddress or Hostname of PeaRoxy Server" />
-                    <TextBox FontSize="10" Height="20" HorizontalAlignment="Left" Margin="67,28,0,0" Name="txt_serverPort" VerticalAlignment="Top" Width="42" TextChanged="txt_serverPort_TextChanged" LostFocus="txt_TextBox_LostFocus" ToolTip="Port Number of PeaRoxy Server" />
-                    <Slider Height="23" HorizontalAlignment="Left" Margin="115,27,0,0" Name="s_serverPort" VerticalAlignment="Top" Width="125" IsDirectionReversed="False" IsMoveToPointEnabled="True" Maximum="65535" Minimum="1" Orientation="Horizontal" Value="1080" TickPlacement="None" SmallChange="1" LargeChange="100" ValueChanged="s_serverPort_ValueChanged" AutoToolTipPlacement="TopLeft" LostFocus="txt_TextBox_LostFocus" />
-                    <Label Content="Domain:" Height="28" HorizontalAlignment="Left" Margin="6,45,0,0" Name="label13" VerticalAlignment="Top" />
-                    <TextBox FontSize="10" Height="20" HorizontalAlignment="Left" Margin="67,50,0,0" Name="txt_serverdomain" VerticalAlignment="Top" Width="174" LostFocus="txt_TextBox_LostFocus" ToolTip="DomainName used by PeaRoxy Server to recognize us. Ask Server Admin or leave blank if not sure." />
+        <uc:LoadingBox Margin="141,0,189,24" x:Name="LoadingBox" VerticalAlignment="Bottom" />
+        <WrapPanel HorizontalAlignment="Left" Margin="40,79,0,0" Name="WpServers" Width="249" Orientation="Horizontal"
+                   Height="239" VerticalAlignment="Top" x:FieldModifier="private">
+            <Expander Width="249" Foreground="Black" Expanded="AnimatedExpenderExpanded" Background="#FFF8F8F8"
+                      Collapsed="AnimatedExpenderCollapsed" Name="ExServer" Height="80" BorderThickness="1"
+                      ClipToBounds="False" x:FieldModifier="private">
+                <Grid Height="55">
+                    <Label Content="Address:" Height="28" HorizontalAlignment="Left" Margin="6,1,0,0"
+                           VerticalAlignment="Top" />
+                    <Label Content=":" Height="28" HorizontalAlignment="Left" Margin="181,1,0,0"
+                           VerticalAlignment="Top" />
+                    <TextBox HorizontalAlignment="Left" Margin="67,6,0,0" Name="TxtServerAddress" Width="109"
+                             FontSize="10" Height="20" VerticalAlignment="Top" LostFocus="TxtServerAddressLostFocus"
+                             ToolTip="IPAddress or Hostname of PeaRoxy Server" x:FieldModifier="private" />
+                    <TextBox FontSize="10" Height="20" HorizontalAlignment="Left" Margin="199,6,0,0"
+                             Name="TxtServerPort" VerticalAlignment="Top" Width="42"
+                             TextChanged="TxtServerPortTextChanged" LostFocus="TxtTextBoxLostFocus"
+                             ToolTip="Port Number of PeaRoxy Server" x:FieldModifier="private" RenderTransformOrigin="0.619,0.5" />
+                    <Label Content="Domain:" Height="28" HorizontalAlignment="Left" Margin="6,23,0,0"
+                           VerticalAlignment="Top" />
+                    <TextBox FontSize="10" Height="20" HorizontalAlignment="Left" Margin="67,28,0,0"
+                             Name="TxtServerdomain" VerticalAlignment="Top" Width="174"
+                             LostFocus="TxtTextBoxLostFocus"
+                             ToolTip="DomainName used by PeaRoxy Server to recognize us. Ask Server Admin or leave blank if not sure."
+                             x:FieldModifier="private" />
                 </Grid>
                 <Expander.Header>
                     <Grid>
-                        <Label Content="PeaRoxy Server" Height="25" HorizontalAlignment="Left" Margin="0,-3,0,0" VerticalAlignment="Top" />
-                        <Button Name="btn_ex_pearoxy" Height="16" Width="16" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="190,2,0,0" Style="{StaticResource NoChromeButton}">
+                        <Label Content="PeaRoxy Server" Height="25" HorizontalAlignment="Left" Margin="0,-3,0,0"
+                               VerticalAlignment="Top" />
+                        <Button Name="btn_ex_pearoxy" Height="16" Width="16" VerticalAlignment="Top"
+                                HorizontalAlignment="Left" Margin="190,2,0,0" Style="{StaticResource NoChromeButton}">
                             <Button.Background>
-                                <ImageBrush ImageSource="/PeaRoxy.Windows.WPFClient;component/Images/MainPanel/Help.png" Stretch="Uniform" TileMode="None" />
+                                <ImageBrush
+                                    ImageSource="/PeaRoxy.Windows.WPFClient;component/Images/MainPanel/Help.png"
+                                    Stretch="Uniform" TileMode="None" />
                             </Button.Background>
                         </Button>
                     </Grid>
                 </Expander.Header>
             </Expander>
-            <Expander Background="#FFF8F8F8" Foreground="Black" Height="25" Name="ex_web" Width="249" Collapsed="AnimatedExpender_Collapsed" Expanded="AnimatedExpender_Expanded">
+            <Expander Background="#FFF8F8F8" Foreground="Black" Height="25" Name="ExWeb" Width="249"
+                      Collapsed="AnimatedExpenderCollapsed" Expanded="AnimatedExpenderExpanded"
+                      x:FieldModifier="private">
                 <Grid Height="32">
-                    <Label Content="Web Address:" Height="28" HorizontalAlignment="Left" Margin="6,1,0,0" Name="label4" VerticalAlignment="Top" />
-                    <TextBox FontSize="10" Height="20" HorizontalAlignment="Left" Margin="95,6,0,0" Name="txt_web" VerticalAlignment="Top" Width="146" LostFocus="txt_web_LostFocus" UseLayoutRounding="False" ToolTip="Address of PeaRoxyWeb script" />
+                    <Label Content="Web Address:" Height="28" HorizontalAlignment="Left" Margin="6,1,0,0"
+                           VerticalAlignment="Top" />
+                    <TextBox FontSize="10" Height="20" HorizontalAlignment="Left" Margin="95,6,0,0" Name="TxtWeb"
+                             VerticalAlignment="Top" Width="146" LostFocus="TxtWebLostFocus"
+                             UseLayoutRounding="False" ToolTip="Address of PeaRoxyWeb script" x:FieldModifier="private" />
                 </Grid>
                 <Expander.Header>
                     <Grid>
-                        <Label Content="PHPear / ASPear" Height="25" HorizontalAlignment="Left" Margin="0,-3,0,0" VerticalAlignment="Top" />
-                        <Button Name="btn_ex_web" Height="16" Width="16" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="190,2,0,0" Style="{StaticResource NoChromeButton}">
+                        <Label Content="PHPear / ASPear" Height="25" HorizontalAlignment="Left" Margin="0,-3,0,0"
+                               VerticalAlignment="Top" />
+                        <Button Name="BtnExWeb" Height="16" Width="16" VerticalAlignment="Top"
+                                HorizontalAlignment="Left" Margin="190,2,0,0" Style="{StaticResource NoChromeButton}"
+                                x:FieldModifier="private">
                             <Button.Background>
-                                <ImageBrush ImageSource="/PeaRoxy.Windows.WPFClient;component/Images/MainPanel/Help.png" Stretch="Uniform" TileMode="None" />
+                                <ImageBrush
+                                    ImageSource="/PeaRoxy.Windows.WPFClient;component/Images/MainPanel/Help.png"
+                                    Stretch="Uniform" TileMode="None" />
                             </Button.Background>
                         </Button>
                     </Grid>
                 </Expander.Header>
             </Expander>
-            <Expander Width="249" Foreground="Black" Expanded="AnimatedExpender_Expanded" Background="#FFF8F8F8" Collapsed="AnimatedExpender_Collapsed" Name="ex_proxy" Height="25">
-                <Grid Height="75">
-                    <Label Content="Address:" Height="28" HorizontalAlignment="Left" Margin="6,1,0,0" VerticalAlignment="Top" />
-                    <Label Content="Port:" Height="28" HorizontalAlignment="Left" Margin="6,23,0,0" VerticalAlignment="Top" />
-                    <TextBox FontSize="10" Height="20" HorizontalAlignment="Left" Margin="67,6,0,0" Name="txt_proxyAddress" VerticalAlignment="Top" Width="174" LostFocus="txt_proxyAddress_LostFocus" ToolTip="IPAddress or Hostname of Proxy Server" />
-                    <TextBox FontSize="10" Height="20" HorizontalAlignment="Left" Margin="67,28,0,0" Name="txt_proxyPort" VerticalAlignment="Top" Width="42" TextChanged="txt_proxyPort_TextChanged" LostFocus="txt_TextBox_LostFocus" ToolTip="Port Number of Proxy Server" />
-                    <Slider Height="23" HorizontalAlignment="Left" Margin="115,27,0,0" Name="s_proxyPort" VerticalAlignment="Top" Width="125" IsDirectionReversed="False" IsMoveToPointEnabled="True" Maximum="65535" Minimum="1" Orientation="Horizontal" Value="1080" TickPlacement="None" SmallChange="1" LargeChange="100" ValueChanged="s_proxyPort_ValueChanged" AutoToolTipPlacement="TopLeft" LostFocus="txt_TextBox_LostFocus" />
-                    <RadioButton FontSize="10" Name="rb_proxyType_socket" Content="Socks 5" HorizontalAlignment="Left" Margin="67,55,0,0" VerticalAlignment="Top" Width="80" Checked="txt_TextBox_LostFocus" Unchecked="txt_TextBox_LostFocus" ToolTip="Connect using SOCKS5 Protocol" />
-                    <RadioButton FontSize="10" Name="rb_proxyType_https" Content="Https" HorizontalAlignment="Left" Margin="154,55,0,0" VerticalAlignment="Top" Width="80" Checked="txt_TextBox_LostFocus" Unchecked="txt_TextBox_LostFocus" ToolTip="Connect using HTTPS Protocol" />
+            <Expander Width="249" Foreground="Black" Expanded="AnimatedExpenderExpanded" Background="#FFF8F8F8"
+                      Collapsed="AnimatedExpenderCollapsed" Name="ExProxy" Height="25" x:FieldModifier="private">
+                <Grid Height="55">
+                    <Label Content="Address:" Height="28" HorizontalAlignment="Left" Margin="6,1,0,0"
+                           VerticalAlignment="Top" />
+                    <Label Content="Port:" Height="28" HorizontalAlignment="Left" Margin="6,23,0,0"
+                           VerticalAlignment="Top" />
+                    <TextBox FontSize="10" Height="20" HorizontalAlignment="Left" Margin="67,6,0,0"
+                             Name="TxtProxyAddress" VerticalAlignment="Top" Width="174"
+                             LostFocus="TxtProxyAddressLostFocus" ToolTip="IPAddress or Hostname of Proxy Server"
+                             x:FieldModifier="private" />
+                    <TextBox FontSize="10" Height="20" HorizontalAlignment="Left" Margin="67,28,0,0"
+                             Name="TxtProxyPort" VerticalAlignment="Top" Width="42"
+                             TextChanged="TxtProxyPortTextChanged" LostFocus="TxtTextBoxLostFocus"
+                             ToolTip="Port Number of Proxy Server" x:FieldModifier="private" />
+                    <RadioButton FontSize="10" Name="RbProxyTypeSocket" Content="Socks 5" HorizontalAlignment="Left"
+                                 Margin="124,32,0,0" VerticalAlignment="Top" Width="56" Checked="TxtTextBoxLostFocus"
+                                 Unchecked="TxtTextBoxLostFocus" ToolTip="Connect using SOCKS5 Protocol"
+                                 x:FieldModifier="private" />
+                    <RadioButton FontSize="10" Name="RbProxyTypeHttps" Content="Https" HorizontalAlignment="Left"
+                                 Margin="185,32,0,0" VerticalAlignment="Top" Width="52" Checked="TxtTextBoxLostFocus"
+                                 Unchecked="TxtTextBoxLostFocus" ToolTip="Connect using HTTPS Protocol"
+                                 x:FieldModifier="private" />
                 </Grid>
                 <Expander.Header>
                     <Grid>
-                        <Label Content="Socks / Https Proxy" Height="25" HorizontalAlignment="Left" Margin="0,-3,0,0" VerticalAlignment="Top" />
-                        <Button Name="btn_ex_proxy" Height="16" Width="16" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="190,2,0,0" Style="{StaticResource NoChromeButton}">
+                        <Label Content="Socks / Https Proxy" Height="25" HorizontalAlignment="Left" Margin="0,-3,0,0"
+                               VerticalAlignment="Top" />
+                        <Button Name="BtnExProxy" Height="16" Width="16" VerticalAlignment="Top"
+                                HorizontalAlignment="Left" Margin="190,2,0,0" Style="{StaticResource NoChromeButton}"
+                                x:FieldModifier="private">
                             <Button.Background>
-                                <ImageBrush ImageSource="/PeaRoxy.Windows.WPFClient;component/Images/MainPanel/Help.png" Stretch="Uniform" TileMode="None" />
+                                <ImageBrush
+                                    ImageSource="/PeaRoxy.Windows.WPFClient;component/Images/MainPanel/Help.png"
+                                    Stretch="Uniform" TileMode="None" />
                             </Button.Background>
                         </Button>
                     </Grid>
                 </Expander.Header>
             </Expander>
-            <Expander Width="249" Foreground="Black" Expanded="AnimatedExpender_Expanded" Background="#FFF8F8F8" Collapsed="AnimatedExpender_Collapsed" Name="ex_ns" Height="25" IsEnabled="False" Visibility="Collapsed">
-                <Grid Height="75">
-                    <Label Content="Address:" Height="28" HorizontalAlignment="Left" Margin="6,1,0,0" VerticalAlignment="Top" />
-                    <Label Content="Port:" Height="28" HorizontalAlignment="Left" Margin="6,23,0,0" VerticalAlignment="Top" />
-                    <TextBox FontSize="10" Height="20" HorizontalAlignment="Left" Margin="67,6,0,0" Name="txt_vpnAddress" VerticalAlignment="Top" Width="174" LostFocus="txt_TextBox_LostFocus" />
-                    <TextBox FontSize="10" Height="20" HorizontalAlignment="Left" Margin="67,28,0,0" Name="txt_vpnPort" VerticalAlignment="Top" Width="42" TextChanged="txt_serverPort_TextChanged" LostFocus="txt_TextBox_LostFocus" />
-                    <Slider Height="23" HorizontalAlignment="Left" Margin="115,27,0,0" Name="s_vpnPort" VerticalAlignment="Top" Width="125" IsDirectionReversed="False" IsMoveToPointEnabled="True" Maximum="65535" Minimum="1" Orientation="Horizontal" Value="1080" TickPlacement="None" SmallChange="1" LargeChange="100" ValueChanged="s_serverPort_ValueChanged" AutoToolTipPlacement="TopLeft" LostFocus="txt_TextBox_LostFocus" />
-                    <RadioButton FontSize="10" IsChecked="True" Name="rb_vpnType_socket" Content="Socks 5" HorizontalAlignment="Left" Margin="67,55,0,0" VerticalAlignment="Top" Width="80" Checked="txt_TextBox_LostFocus" Unchecked="txt_TextBox_LostFocus" />
-                    <RadioButton FontSize="10" Name="rb_vpnType_https" Content="Https" HorizontalAlignment="Left" Margin="154,55,0,0" VerticalAlignment="Top" Width="80" Checked="txt_TextBox_LostFocus" Unchecked="txt_TextBox_LostFocus" />
-                </Grid>
-                <Expander.Header>
-                    <Grid>
-                        <Label Content="PeaRNS" Height="25" HorizontalAlignment="Left" Margin="0,-3,0,0" VerticalAlignment="Top" />
-                        <Button Name="btn_ex_ns" Height="16" Width="16" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="190,2,0,0" Style="{StaticResource NoChromeButton}">
-                            <Button.Background>
-                                <ImageBrush ImageSource="/PeaRoxy.Windows.WPFClient;component/Images/MainPanel/Help.png" Stretch="Uniform" TileMode="None" />
-                            </Button.Background>
-                        </Button>
-                    </Grid>
-                </Expander.Header>
-            </Expander>
-            <Expander Background="#FFF8F8F8" Foreground="Black" IsEnabled="True" Name="ex_self" Collapsed="AnimatedExpender_Collapsed" Expanded="AnimatedExpender_Expanded" Width="249" Height="25">
+            <Expander Background="#FFF8F8F8" Foreground="Black" IsEnabled="True" Name="ExSelf"
+                      Collapsed="AnimatedExpenderCollapsed" Expanded="AnimatedExpenderExpanded" Width="249"
+                      Height="25" x:FieldModifier="private">
                 <Grid Height="37">
-                    <Label Content="No Settings" Height="28" HorizontalAlignment="Center" Margin="0,6,0,0" Name="label5" VerticalAlignment="Top" Width="77" FontStretch="Normal" FontWeight="Bold" />
+                    <Label Content="No Settings" Height="28" HorizontalAlignment="Center" Margin="0,6,0,0"
+                           VerticalAlignment="Top" Width="77" FontStretch="Normal" FontWeight="Bold" />
                 </Grid>
                 <Expander.Header>
                     <Grid>
-                        <Label Content="No Server - Direct" Height="25" HorizontalAlignment="Left" Margin="0,-3,0,0" VerticalAlignment="Top" />
-                        <Button Name="btn_ex_self" Height="16" Width="16" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="190,2,0,0" Style="{StaticResource NoChromeButton}">
+                        <Label Content="No Server - Direct" Height="25" HorizontalAlignment="Left" Margin="0,-3,0,0"
+                               VerticalAlignment="Top" />
+                        <Button Name="BtnExSelf" Height="16" Width="16" VerticalAlignment="Top"
+                                HorizontalAlignment="Left" Margin="190,2,0,0" Style="{StaticResource NoChromeButton}"
+                                x:FieldModifier="private">
                             <Button.Background>
-                                <ImageBrush ImageSource="/PeaRoxy.Windows.WPFClient;component/Images/MainPanel/Help.png" Stretch="Uniform" TileMode="None" />
+                                <ImageBrush
+                                    ImageSource="/PeaRoxy.Windows.WPFClient;component/Images/MainPanel/Help.png"
+                                    Stretch="Uniform" TileMode="None" />
                             </Button.Background>
                         </Button>
                     </Grid>
                 </Expander.Header>
             </Expander>
         </WrapPanel>
-        <WrapPanel Name="wp_Auths" Height="145" HorizontalAlignment="Left" Margin="301,79,0,0" Orientation="Horizontal" VerticalAlignment="Top" Width="220">
-            <Expander Background="#FFF8F8F8" Collapsed="AnimatedExpender_Collapsed" Expanded="AnimatedExpender_Expanded" Foreground="Black" Height="25" Name="ex_usernameandpass" Width="220">
+        <WrapPanel Height="145" HorizontalAlignment="Left" Margin="301,79,0,0" Orientation="Horizontal"
+                   VerticalAlignment="Top" Width="220">
+            <Expander Background="#FFF8F8F8" Collapsed="AnimatedExpenderCollapsed"
+                      Expanded="AnimatedExpenderExpanded" Foreground="Black" Height="25" Name="ExUsernameAndPass"
+                      Width="220" x:FieldModifier="private">
                 <Expander.Header>
                     <Grid>
-                        <Label Content="Username and Password" Height="25" HorizontalAlignment="Left" Margin="0,-3,0,0" VerticalAlignment="Top" />
-                        <Button Height="16" Width="0" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="190,2,0,0" Style="{StaticResource NoChromeButton}" />
+                        <Label Content="Username and Password" Height="25" HorizontalAlignment="Left" Margin="0,-3,0,0"
+                               VerticalAlignment="Top" />
+                        <Button Height="16" Width="0" VerticalAlignment="Top" HorizontalAlignment="Left"
+                                Margin="190,2,0,0" Style="{StaticResource NoChromeButton}" />
                     </Grid>
                 </Expander.Header>
                 <Grid Height="57">
-                    <Label Content="Username:" Height="28" HorizontalAlignment="Left" Margin="6,1,0,0" Name="label7" VerticalAlignment="Top" />
-                    <Label Content="Password:" Height="28" HorizontalAlignment="Left" Margin="6,26,0,0" Name="label8" VerticalAlignment="Top" />
-                    <TextBox FontSize="10" Height="20" HorizontalAlignment="Left" Margin="78,6,0,0" Name="txt_username" VerticalAlignment="Top" Width="133" LostFocus="txt_TextBox_LostFocus" />
-                    <PasswordBox FontSize="10" Height="20" HorizontalAlignment="Left" Margin="78,31,0,0" Name="txt_password" VerticalAlignment="Top" Width="133" LostFocus="txt_TextBox_LostFocus" />
+                    <Label Content="Username:" Height="28" HorizontalAlignment="Left" Margin="6,1,0,0"
+                           VerticalAlignment="Top" />
+                    <Label Content="Password:" Height="28" HorizontalAlignment="Left" Margin="6,26,0,0"
+                           VerticalAlignment="Top" />
+                    <TextBox FontSize="10" Height="20" HorizontalAlignment="Left" Margin="78,6,0,0" Name="TxtUsername"
+                             VerticalAlignment="Top" Width="133" LostFocus="TxtTextBoxLostFocus"
+                             x:FieldModifier="private" />
+                    <PasswordBox FontSize="10" Height="20" HorizontalAlignment="Left" Margin="78,31,0,0"
+                                 Name="TxtPassword" VerticalAlignment="Top" Width="133"
+                                 LostFocus="TxtTextBoxLostFocus" x:FieldModifier="private" />
                 </Grid>
             </Expander>
-            <Expander Background="#FFF8F8F8" Collapsed="AnimatedExpender_Collapsed" Expanded="AnimatedExpender_Expanded" Foreground="Black" Height="25" IsEnabled="True" Name="ex_open" Width="220">
+            <Expander Background="#FFF8F8F8" Collapsed="AnimatedExpenderCollapsed"
+                      Expanded="AnimatedExpenderExpanded" Foreground="Black" Height="25" IsEnabled="True"
+                      Name="ExOpen" Width="220" x:FieldModifier="private">
                 <Expander.Header>
                     <Grid>
-                        <Label Content="Un-Protected" Height="25" HorizontalAlignment="Left" Margin="0,-3,0,0" VerticalAlignment="Top" />
-                        <Button Height="16" Width="0" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="190,2,0,0" Style="{StaticResource NoChromeButton}" />
+                        <Label Content="Un-Protected" Height="25" HorizontalAlignment="Left" Margin="0,-3,0,0"
+                               VerticalAlignment="Top" />
+                        <Button Height="16" Width="0" VerticalAlignment="Top" HorizontalAlignment="Left"
+                                Margin="190,2,0,0" Style="{StaticResource NoChromeButton}" />
                     </Grid>
                 </Expander.Header>
                 <Grid Height="37">
-                    <Label Content="No Settings" FontStretch="Normal" FontWeight="Bold" Height="28" HorizontalAlignment="Center" Margin="0,6,0,0" Name="label10" VerticalAlignment="Top" Width="77" />
+                    <Label Content="No Settings" FontStretch="Normal" FontWeight="Bold" Height="28"
+                           HorizontalAlignment="Center" Margin="0,6,0,0" VerticalAlignment="Top"
+                           Width="77" />
                 </Grid>
             </Expander>
         </WrapPanel>
@@ -173,7 +238,8 @@
             <TranslateTransform X="-0" />
         </Grid.RenderTransform>
         <Grid.Background>
-            <ImageBrush ImageSource="/PeaRoxy.Windows.WPFClient;component/Images/MainPanel/Background.png" Stretch="None" TileMode="None" />
+            <ImageBrush ImageSource="/PeaRoxy.Windows.WPFClient;component/Images/MainPanel/Background.png"
+                        Stretch="None" TileMode="None" />
         </Grid.Background>
     </Grid>
 </UserControl>

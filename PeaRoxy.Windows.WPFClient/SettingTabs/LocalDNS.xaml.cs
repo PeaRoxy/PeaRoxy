@@ -1,73 +1,135 @@
-﻿using LukeSw.Windows.Forms;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="LocalDNS.xaml.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   Interaction logic for LocalDNS.xaml
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.Windows.WPFClient.SettingTabs
 {
+    #region
+
+    using System.Diagnostics.CodeAnalysis;
+    using System.Net;
+    using System.Threading;
+    using System.Windows;
+    using System.Windows.Forms;
+
+    using LukeSw.Windows.Forms;
+
+    using PeaRoxy.Windows.WPFClient.Properties;
+
+    #endregion
+
     /// <summary>
-    /// Interaction logic for LocalDNS.xaml
+    ///     Interaction logic for LocalDNS.xaml
     /// </summary>
-    public partial class LocalDNS : Base
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
+    public partial class LocalDns
     {
-        public LocalDNS()
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LocalDns"/> class.
+        /// </summary>
+        public LocalDns()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
 
-        private void cb_dns_enable_Checked(object sender, RoutedEventArgs e)
-        {
-            SaveSettings();
-        }
+        #endregion
 
-        private void txt_dns_ipaddress_LostFocus(object sender, RoutedEventArgs e)
-        {
-            System.Net.IPAddress ip = null;
-            if (txt_dns_ipaddress.Text.Split('.').Length != 4 || !System.Net.IPAddress.TryParse(txt_dns_ipaddress.Text, out ip))
-            {
-                txt_dns_ipaddress.Text = "8.8.8.8";
-                VDialog.Show("IP address is not acceptable.", "Data Validation", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                new System.Threading.Thread(delegate()
-                {
-                    System.Threading.Thread.Sleep((int)(10));
-                    this.Dispatcher.Invoke((App.SimpleVoid_Delegate)delegate()
-                    {
-                        txt_dns_ipaddress.Focus();
-                    }, new object[] { });
-                }) { IsBackground = true }.Start();
-            }
-            else
-                txt_dns_ipaddress.Text = ip.ToString();
+        #region Public Methods and Operators
 
-            SaveSettings();
-        }
-
-        public override void SaveSettings()
-        {
-            if (isLoading) return;
-            lbl_dns_ipaddress.IsEnabled = (bool)cb_dns_enable.IsChecked;
-            txt_dns_ipaddress.IsEnabled = (bool)cb_dns_enable.IsChecked;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.DNS_Enable = (bool)cb_dns_enable.IsChecked;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.DNS_IPAddress = txt_dns_ipaddress.Text;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Save();
-        }
-
+        /// <summary>
+        /// The load settings.
+        /// </summary>
         public override void LoadSettings()
         {
-            isLoading = true;
-            txt_dns_ipaddress.Text = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.DNS_IPAddress;
-            cb_dns_enable.IsChecked = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.DNS_Enable;
-            isLoading = false;
+            this.IsLoading = true;
+            this.TxtDnsIpaddress.Text = Settings.Default.DNS_IPAddress;
+            this.CbDnsEnable.IsChecked = Settings.Default.DNS_Enable;
+            this.IsLoading = false;
         }
+
+        /// <summary>
+        /// The save settings.
+        /// </summary>
+        public override void SaveSettings()
+        {
+            if (this.IsLoading)
+            {
+                return;
+            }
+
+            this.LblDnsIpaddress.IsEnabled = this.CbDnsEnable.IsChecked ?? false;
+            this.TxtDnsIpaddress.IsEnabled = this.CbDnsEnable.IsChecked ?? false;
+            Settings.Default.DNS_Enable = this.CbDnsEnable.IsChecked ?? false;
+            Settings.Default.DNS_IPAddress = this.TxtDnsIpaddress.Text;
+            Settings.Default.Save();
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The cb_dns_enable_ checked.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void CbDnsEnableChecked(object sender, RoutedEventArgs e)
+        {
+            this.SaveSettings();
+        }
+
+        /// <summary>
+        /// The txt_dns_ipaddress_ lost focus.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void TxtDnsIpaddressLostFocus(object sender, RoutedEventArgs e)
+        {
+            IPAddress ip;
+            if (this.TxtDnsIpaddress.Text.Split('.').Length != 4
+                || !IPAddress.TryParse(this.TxtDnsIpaddress.Text, out ip))
+            {
+                this.TxtDnsIpaddress.Text = "8.8.8.8";
+                VDialog.Show(
+                    "IP address is not acceptable.", 
+                    "Data Validation", 
+                    MessageBoxButtons.OK, 
+                    MessageBoxIcon.Exclamation);
+                new Thread(
+                    delegate()
+                        {
+                            Thread.Sleep(10);
+                            this.Dispatcher.Invoke(
+                                (App.SimpleVoidDelegate)(() => this.TxtDnsIpaddress.Focus()), 
+                                new object[] { });
+                        }) {
+                              IsBackground = true 
+                           }.Start();
+            }
+            else
+            {
+                this.TxtDnsIpaddress.Text = ip.ToString();
+            }
+
+            this.SaveSettings();
+        }
+
+        #endregion
     }
 }

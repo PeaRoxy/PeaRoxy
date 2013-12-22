@@ -1,60 +1,112 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Windows.Media.Animation;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="LoadingItem.xaml.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   Interaction logic for LoadingItem.xaml
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
 namespace PeaRoxy.Windows.WPFClient.UserControls
 {
+    #region
+
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Windows;
+    using System.Windows.Media.Animation;
+
+    #endregion
+
     /// <summary>
-    /// Interaction logic for LoadingItem.xaml
+    ///     Interaction logic for LoadingItem.xaml
     /// </summary>
-    public partial class LoadingItem : UserControl
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
+    public partial class LoadingItem
     {
-        Storyboard story = new Storyboard() { RepeatBehavior = RepeatBehavior.Forever};
+        #region Fields
+
+        /// <summary>
+        /// The story.
+        /// </summary>
+        private readonly Storyboard story = new Storyboard { RepeatBehavior = RepeatBehavior.Forever };
+
+        #endregion
+
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LoadingItem"/> class.
+        /// </summary>
+        public LoadingItem()
+        {
+            this.InitializeComponent();
+        }
+
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Gets or sets the delay.
+        /// </summary>
         public double Delay { get; set; }
+
+        /// <summary>
+        /// Sets a value indicating whether is playing.
+        /// </summary>
         public bool IsPlaying
         {
             set
             {
                 if (value)
                 {
-                    rect.Opacity = 0;
-                    rect.Margin = new Thickness(-5, 0, 0, 0);
-                    story.Begin(rect, true);
+                    this.Rect.Opacity = 0;
+                    this.Rect.Margin = new Thickness(-5, 0, 0, 0);
+                    this.story.Begin(this.Rect, true);
                 }
                 else
-                    story.Stop(rect);
+                {
+                    this.story.Stop(this.Rect);
+                }
             }
         }
 
-        public LoadingItem()
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The user control_ loaded.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void UserControlLoaded(object sender, RoutedEventArgs e)
         {
-            InitializeComponent();
+            this.story.BeginTime = TimeSpan.FromSeconds(this.Delay);
+            PowerEase ease = new PowerEase { Power = 0.3, EasingMode = EasingMode.EaseInOut };
+            DoubleAnimation opacityAnimation = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.8)))
+                                                   {
+                                                       EasingFunction = ease,
+                                                       AutoReverse = true
+                                                   };
+            ThicknessAnimation dbxPos = new ThicknessAnimation(
+                new Thickness(0, 0, 0, 0),
+                new Thickness(this.ActualWidth, 0, 0, 0),
+                new Duration(TimeSpan.FromSeconds(1.6))) { EasingFunction = ease, AutoReverse = true };
+            this.story.Children.Add(opacityAnimation);
+            this.story.Children.Add(dbxPos);
+            Storyboard.SetTarget(opacityAnimation, this.Rect);
+            Storyboard.SetTarget(dbxPos, this.Rect);
+            Storyboard.SetTargetProperty(opacityAnimation, new PropertyPath(OpacityProperty));
+            Storyboard.SetTargetProperty(dbxPos, new PropertyPath(MarginProperty));
         }
 
-        private void UserControl_Loaded(object sender, RoutedEventArgs e)
-        {
-            story.BeginTime = TimeSpan.FromSeconds(Delay);
-            PowerEase ease = new PowerEase() { Power = 0.3, EasingMode = EasingMode.EaseInOut};
-            DoubleAnimation dbOpacity = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(0.8))) 
-                                        { EasingFunction = ease, AutoReverse = true };
-            ThicknessAnimation dbxPos = new ThicknessAnimation(new Thickness(0, 0, 0, 0), new Thickness(this.ActualWidth, 0, 0, 0), new Duration(TimeSpan.FromSeconds(1.6))) 
-                                        { EasingFunction = ease, AutoReverse = true };
-            story.Children.Add(dbOpacity);
-            story.Children.Add(dbxPos);
-            Storyboard.SetTarget(dbOpacity, rect);
-            Storyboard.SetTarget(dbxPos, rect);
-            Storyboard.SetTargetProperty(dbOpacity, new PropertyPath(MediaElement.OpacityProperty));
-            Storyboard.SetTargetProperty(dbxPos, new PropertyPath(MediaElement.MarginProperty));
-        }
+        #endregion
     }
 }

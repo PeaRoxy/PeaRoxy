@@ -1,36 +1,78 @@
 ﻿<st:Base x:Class="PeaRoxy.Windows.WPFClient.SettingTabs.LocalProxy"
-             xmlns:st="clr-namespace:PeaRoxy.Windows.WPFClient.SettingTabs"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="360">
-    <Grid x:Name="SettingsGrid">
-        <GroupBox Name="gb_ListeningSettings" Header="Local Server" Height="109" Margin="8,9,0,0" VerticalAlignment="Top" Foreground="Black"  Width="350">
+         xmlns:st="clr-namespace:PeaRoxy.Windows.WPFClient.SettingTabs"
+         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+         mc:Ignorable="d"
+         d:DesignHeight="300" d:DesignWidth="360">
+    <Grid>
+        <GroupBox Header="Local Server" Height="109" Margin="8,9,0,0"
+                  VerticalAlignment="Top" Foreground="Black" Width="350">
             <Grid>
-                <Label Content="Listening IP Address:" Height="28" HorizontalAlignment="Left" Margin="6,1,0,0" VerticalAlignment="Top" />
+                <Label Content="Listening IP Address:" Height="28" HorizontalAlignment="Left" Margin="6,1,0,0"
+                       VerticalAlignment="Top" />
                 <Label Content="Port:" Height="28" HorizontalAlignment="Left" Margin="6,30,0,0" VerticalAlignment="Top" />
-                <TextBox Height="23" HorizontalAlignment="Left" Margin="132,3,0,0" Name="txt_localProxyServerAddress" VerticalAlignment="Top" Width="153" Text="127.0.0.1" MaxLength="15" LostFocus="txt_localProxyServerAddress_LostFocus" TextChanged="lbl_autoConfigScriptPreAddress_Refresh" />
-                <TextBox Height="23" HorizontalAlignment="Left" Margin="132,32,0,0" Name="txt_localProxyServerPort" VerticalAlignment="Top" Width="42" AcceptsReturn="False" TextChanged="txt_localProxyServerPort_TextChanged" LostFocus="txt_TextBox_LostFocus" />
-                <Slider Height="23" HorizontalAlignment="Left" Margin="183,32,0,0" Name="s_localProxyServerPort" VerticalAlignment="Top" Width="148" IsDirectionReversed="False" IsMoveToPointEnabled="True" Maximum="65535" Minimum="1" Orientation="Horizontal" Value="1080" TickPlacement="None" SmallChange="1" LargeChange="100" ValueChanged="s_localProxyServerPort_ValueChanged" AutoToolTipPlacement="TopLeft" />
-                <CheckBox Content="Any" Height="16" HorizontalAlignment="Left" Margin="290,7,0,0" Name="cb_localProxyServerAddressAny" VerticalAlignment="Top" Checked="cb_localProxyServerAddressAny_Checked" Unchecked="cb_localProxyServerAddressAny_Checked" Loaded="cb_localProxyServerAddressAny_Checked" />
-                <Label Content="Protocols:" Height="28" HorizontalAlignment="Left" Margin="6,59,0,0" VerticalAlignment="Top" />
-                <CheckBox Content="SOCKS 4/5" Height="16" HorizontalAlignment="Left" Margin="253,65,0,0" Name="cb_localProxyServerSOCKS" VerticalAlignment="Top" IsChecked="True" Checked="txt_TextBox_LostFocus" Unchecked="txt_TextBox_LostFocus" />
-                <CheckBox Content="HTTP 1.1" Height="16" HorizontalAlignment="Left" Margin="100,65,0,0" Name="cb_localProxyServerHTTP" VerticalAlignment="Top" IsChecked="True" Checked="txt_TextBox_LostFocus" Unchecked="txt_TextBox_LostFocus" />
-                <CheckBox Content="HTTPS" Height="16" HorizontalAlignment="Left" Margin="180,65,0,0" Name="cb_localProxyServerHTTPS" VerticalAlignment="Top" IsChecked="True" Checked="txt_TextBox_LostFocus" Unchecked="txt_TextBox_LostFocus" />
+                <TextBox Height="23" HorizontalAlignment="Left" Margin="132,3,0,0" Name="TxtLocalProxyServerAddress"
+                         VerticalAlignment="Top" Width="153" Text="127.0.0.1" MaxLength="15"
+                         LostFocus="TxtLocalProxyServerAddressLostFocus"
+                         TextChanged="LblAutoConfigScriptPreAddressRefresh" x:FieldModifier="private" />
+                <TextBox Height="23" HorizontalAlignment="Left" Margin="132,32,0,0" Name="TxtLocalProxyServerPort"
+                         VerticalAlignment="Top" Width="42" AcceptsReturn="False"
+                         TextChanged="TxtLocalProxyServerPortTextChanged" LostFocus="TxtTextBoxLostFocus"
+                         x:FieldModifier="private" />
+                <Slider Height="23" HorizontalAlignment="Left" Margin="183,32,0,0" Name="SLocalProxyServerPort"
+                        VerticalAlignment="Top" Width="148" IsDirectionReversed="False" IsMoveToPointEnabled="True"
+                        Maximum="65535" Minimum="1" Orientation="Horizontal" Value="1080" TickPlacement="None"
+                        SmallChange="1" LargeChange="100" ValueChanged="SLocalProxyServerPortValueChanged"
+                        AutoToolTipPlacement="TopLeft" x:FieldModifier="private" />
+                <CheckBox Content="Any" Height="16" HorizontalAlignment="Left" Margin="290,7,0,0"
+                          Name="CbLocalProxyServerAddressAny" VerticalAlignment="Top"
+                          Checked="CbLocalProxyServerAddressAnyChecked"
+                          Unchecked="CbLocalProxyServerAddressAnyChecked"
+                          Loaded="CbLocalProxyServerAddressAnyChecked" x:FieldModifier="private" />
+                <Label Content="Protocols:" Height="28" HorizontalAlignment="Left" Margin="6,59,0,0"
+                       VerticalAlignment="Top" />
+                <CheckBox Content="SOCKS 4/5" Height="16" HorizontalAlignment="Left" Margin="253,65,0,0"
+                          Name="CbLocalProxyServerSocks" VerticalAlignment="Top" IsChecked="True"
+                          Checked="TxtTextBoxLostFocus" Unchecked="TxtTextBoxLostFocus" x:FieldModifier="private" />
+                <CheckBox Content="HTTP 1.1" Height="16" HorizontalAlignment="Left" Margin="100,65,0,0"
+                          Name="CbLocalProxyServerHttp" VerticalAlignment="Top" IsChecked="True"
+                          Checked="TxtTextBoxLostFocus" Unchecked="TxtTextBoxLostFocus" x:FieldModifier="private" />
+                <CheckBox Content="HTTPS" Height="16" HorizontalAlignment="Left" Margin="180,65,0,0"
+                          Name="CbLocalProxyServerHttps" VerticalAlignment="Top" IsChecked="True"
+                          Checked="TxtTextBoxLostFocus" Unchecked="TxtTextBoxLostFocus" x:FieldModifier="private" />
             </Grid>
         </GroupBox>
-        <GroupBox Foreground="Black" Header="Automatic Configuration Script" Height="140" Margin="6,119,0,0" VerticalAlignment="Top"  Width="350">
+        <GroupBox Foreground="Black" Header="Automatic Configuration Script" Height="140" Margin="6,119,0,0"
+                  VerticalAlignment="Top" Width="350">
             <Grid>
-                <Label Content="Address:" Height="28" HorizontalAlignment="Left" Margin="6,44,0,0" VerticalAlignment="Top" />
-                <TextBox Height="23" HorizontalAlignment="Left" Margin="189,46,0,0" MaxLength="15" Text="proxy.pac" Name="txt_autoConfigScriptAddress" VerticalAlignment="Top" Width="144" LostFocus="txt_TextBox_LostFocus" />
-                <Label Content="http://255.255.255:62356/" Height="28" HorizontalAlignment="Left" Margin="76,44,0,0" Name="lbl_autoConfigScriptPreAddress" VerticalAlignment="Top" FontSize="9" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Width="115" Loaded="lbl_autoConfigScriptPreAddress_Refresh" />
-                <CheckBox Content="Keep listener running even when local server is down" Height="16" HorizontalAlignment="Left" Margin="28,25,0,0" Name="cb_autoConfigScriptKeepRunning" VerticalAlignment="Top" IsChecked="True" Checked="txt_TextBox_LostFocus" />
-                <Label Content="Mime Type:" Height="28" HorizontalAlignment="Left" Margin="6,72,0,0" VerticalAlignment="Top" />
-                <RadioButton Content="application/x-ns-proxy-autoconfig" Height="16" HorizontalAlignment="Left" Margin="134,78,0,0" Name="rb_autoConfigScriptNSMime" VerticalAlignment="Top" Checked="txt_TextBox_LostFocus" />
-                <RadioButton Content="application/x-javascript-config" Height="16" Margin="134,96,0,0" Name="rb_autoConfigScriptJSMime" VerticalAlignment="Top" HorizontalAlignment="Left" Width="198" IsChecked="True" Checked="txt_TextBox_LostFocus" />
-                <CheckBox Content="Enable automatic configuration script (Proxy auto-config)" Height="16" HorizontalAlignment="Left" Margin="10,7,0,0" Name="cb_autoConfigScriptEnable" VerticalAlignment="Top" IsChecked="True" Checked="cb_autoConfigScriptEnable_CheckedChanged" Unchecked="cb_autoConfigScriptEnable_CheckedChanged" Loaded="cb_autoConfigScriptEnable_CheckedChanged" />
+                <Label Content="Address:" Height="28" HorizontalAlignment="Left" Margin="6,44,0,0"
+                       VerticalAlignment="Top" />
+                <TextBox Height="23" HorizontalAlignment="Left" Margin="189,46,0,0" MaxLength="15" Text="proxy.pac"
+                         Name="TxtAutoConfigScriptAddress" VerticalAlignment="Top" Width="144"
+                         LostFocus="TxtTextBoxLostFocus" x:FieldModifier="private" />
+                <Label Content="http://255.255.255:62356/" Height="28" HorizontalAlignment="Left" Margin="76,44,0,0"
+                       Name="LblAutoConfigScriptPreAddress" VerticalAlignment="Top" FontSize="9"
+                       HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Width="115"
+                       Loaded="LblAutoConfigScriptPreAddressRefresh" x:FieldModifier="private" />
+                <CheckBox Content="Keep listener running even when local server is down" Height="16"
+                          HorizontalAlignment="Left" Margin="28,25,0,0" Name="CbAutoConfigScriptKeepRunning"
+                          VerticalAlignment="Top" IsChecked="True" Checked="TxtTextBoxLostFocus"
+                          x:FieldModifier="private" />
+                <Label Content="Mime Type:" Height="28" HorizontalAlignment="Left" Margin="6,72,0,0"
+                       VerticalAlignment="Top" />
+                <RadioButton Content="application/x-ns-proxy-autoconfig" Height="16" HorizontalAlignment="Left"
+                             Margin="134,78,0,0" Name="RbAutoConfigScriptNsMime" VerticalAlignment="Top"
+                             Checked="TxtTextBoxLostFocus" x:FieldModifier="private" />
+                <RadioButton Content="application/x-javascript-config" Height="16" Margin="134,96,0,0"
+                             Name="RbAutoConfigScriptJsMime" VerticalAlignment="Top" HorizontalAlignment="Left"
+                             Width="198" IsChecked="True" Checked="TxtTextBoxLostFocus" x:FieldModifier="private" />
+                <CheckBox Content="Enable automatic configuration script (Proxy auto-config)" Height="16"
+                          HorizontalAlignment="Left" Margin="10,7,0,0" Name="CbAutoConfigScriptEnable"
+                          VerticalAlignment="Top" IsChecked="True" Checked="CbAutoConfigScriptEnableCheckedChanged"
+                          Unchecked="CbAutoConfigScriptEnableCheckedChanged"
+                          Loaded="CbAutoConfigScriptEnableCheckedChanged" x:FieldModifier="private" />
             </Grid>
         </GroupBox>
     </Grid>

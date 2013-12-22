@@ -1,128 +1,230 @@
-﻿using PeaRoxy.ClientLibrary;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="ActiveConnections.xaml.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   Interaction logic for ActiveConnections.xaml
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.Windows.WPFClient.SettingTabs
 {
+    #region
+
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Drawing;
+    using System.Globalization;
+    using System.IO;
+    using System.Windows;
+    using System.Windows.Controls;
+    using System.Windows.Interop;
+    using System.Windows.Media;
+    using System.Windows.Media.Imaging;
+
+    using PeaRoxy.ClientLibrary;
+    using PeaRoxy.CommonLibrary;
+    using PeaRoxy.Platform;
+    using PeaRoxy.Windows.WPFClient.UserControls;
+
+    #endregion
+
     /// <summary>
-    /// Interaction logic for ActiveConnections.xaml
+    ///     Interaction logic for ActiveConnections.xaml
     /// </summary>
-    public partial class ActiveConnections : Base
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
+    public partial class ActiveConnections
     {
-        private Dictionary<string, System.Windows.Media.ImageSource> processIconCache = new Dictionary<string, System.Windows.Media.ImageSource>();
-        BitmapImage defProcessIcon;
-        ContextMenu connectionContextMenu;
+        #region Fields
+
+        /// <summary>
+        /// The connection context menu.
+        /// </summary>
+        private readonly ContextMenu connectionContextMenu;
+
+        /// <summary>
+        /// The default process icon.
+        /// </summary>
+        private readonly BitmapImage defaultProcessIcon;
+
+        /// <summary>
+        /// The process icon cache.
+        /// </summary>
+        private readonly Dictionary<string, ImageSource> processIconCache = new Dictionary<string, ImageSource>();
+
+        #endregion
+
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ActiveConnections"/> class.
+        /// </summary>
         public ActiveConnections()
         {
-            InitializeComponent();
-            defProcessIcon = new BitmapImage(new Uri("pack://application:,,,/PeaRoxy.Windows.WPFClient;component/Images/SettingsPanel/Process_def.png"));
-            connectionContextMenu = new ContextMenu();
-            MenuItem cItem = new MenuItem();
-            cItem.Header = "Close this connection";
-            cItem.Click += (RoutedEventHandler)delegate(object sender, RoutedEventArgs e)
-            {
-                if (connectionContextMenu.PlacementTarget.GetType().Equals(typeof(TreeViewItem)))
+            this.InitializeComponent();
+            this.defaultProcessIcon =
+                new BitmapImage(
+                    new Uri(
+                        "pack://application:,,,/PeaRoxy.Windows.WPFClient;component/Images/SettingsPanel/Process_def.png"));
+            this.connectionContextMenu = new ContextMenu();
+            MenuItem menuItem = new MenuItem { Header = "Close this connection" };
+            menuItem.Click += (RoutedEventHandler)delegate
                 {
-                    TreeViewItem sel = (TreeViewItem)connectionContextMenu.PlacementTarget;
-                    if (sel.Tag != null && sel.Tag.GetType().Equals(typeof(ProxyClient)))
-                        ((ProxyClient)sel.Tag).Close("Closed By User");
-                }
-            };
-            connectionContextMenu.Items.Add(cItem);
-            cItem = new MenuItem();
-            cItem.Header = "Copy";
-            cItem.Click += (RoutedEventHandler)delegate(object sender, RoutedEventArgs e)
-            {
-                if (connectionContextMenu.PlacementTarget.GetType().Equals(typeof(TreeViewItem)))
-                {
+                    TreeViewItem placementTarget = this.connectionContextMenu.PlacementTarget as TreeViewItem;
+                    if (placementTarget == null)
+                    {
+                        return;
+                    }
+
                     try
                     {
-                        TreeViewItem sel = (TreeViewItem)connectionContextMenu.PlacementTarget;
-                        if (sel.Tag != null && sel.Tag.GetType().Equals(typeof(ProxyClient)))
-                            System.Windows.Clipboard.SetText(((ProxyClient)sel.Tag).RequestAddress);
+                        ProxyClient client = placementTarget.Tag as ProxyClient;
+                        if (client != null)
+                        {
+                            client.Close("Closed By User");
+                        }
                     }
-                    catch (Exception) { }
-                }
-            };
-            connectionContextMenu.Items.Add(cItem);
+                    catch
+                    {
+                    }
+                };
+
+            this.connectionContextMenu.Items.Add(menuItem);
+            menuItem = new MenuItem { Header = "Copy" };
+            menuItem.Click += (RoutedEventHandler)delegate
+                {
+                    TreeViewItem placementTarget = this.connectionContextMenu.PlacementTarget as TreeViewItem;
+                    if (placementTarget == null)
+                    {
+                        return;
+                    }
+
+                    try
+                    {
+                        ProxyClient client = placementTarget.Tag as ProxyClient;
+                        if (client != null)
+                        {
+                            Clipboard.SetText(client.RequestAddress);
+                        }
+                    }
+                    catch
+                    {
+                    }
+                };
+
+            this.connectionContextMenu.Items.Add(menuItem);
         }
 
-        public void UpdateConnections(ProxyController Listener)
+        #endregion
+
+        #region Public Methods and Operators
+
+        /// <summary>
+        /// The set enable.
+        /// </summary>
+        /// <param name="enable">
+        /// The enable.
+        /// </param>
+        public override void SetEnable(bool enable)
         {
-            IEnumerable<ProxyClient> clients = Listener.GetConnectedClients();
-            Dictionary<string, List<ProxyClient>> processSeperatedConnections = new Dictionary<string, List<ProxyClient>>();
+        }
+
+        /// <summary>
+        /// The update connections.
+        /// </summary>
+        /// <param name="listener">
+        /// The listener.
+        /// </param>
+        public void UpdateConnections(ProxyController listener)
+        {
+            IEnumerable<ProxyClient> clients = listener.GetConnectedClients();
+            Dictionary<string, List<ProxyClient>> processSeperatedConnections =
+                new Dictionary<string, List<ProxyClient>>();
             foreach (ProxyClient client in clients)
             {
-                Platform.ConnectionInfo conInfo = client.GetExtendedInfo();
+                ConnectionInfo conInfo = client.GetExtendedInfo();
                 string processName = "(Unknown)";
                 if (conInfo != null && conInfo.ProcessId > 0)
                 {
-                    processName = conInfo.ProcessId.ToString();
-                    if (conInfo.ProcessString != string.Empty)
+                    processName = conInfo.ProcessId.ToString(CultureInfo.InvariantCulture);
+                    if (conInfo.ProcessString == string.Empty)
+                    {
+                        processName = "[PID: " + processName + "] (Unknown)";
+                    }
+                    else
                     {
                         processName = "[PID: " + processName + "] " + conInfo.ProcessString;
-                        if (!processIconCache.ContainsKey(processName))
+                        if (!this.processIconCache.ContainsKey(processName))
                         {
                             try
                             {
-                                using (System.Diagnostics.Process p = System.Diagnostics.Process.GetProcessById(conInfo.ProcessId))
+                                using (Process p = Process.GetProcessById(conInfo.ProcessId))
                                 {
-                                    if (p != null && p.MainModule.FileName != null && p.MainModule.FileName != string.Empty)
+                                    if (!string.IsNullOrEmpty(p.MainModule.FileName))
                                     {
                                         string fileName = p.MainModule.FileName;
-                                        if (System.IO.File.Exists(fileName))
+                                        if (File.Exists(fileName))
                                         {
-                                            using (System.Drawing.Icon icon = System.Drawing.Icon.ExtractAssociatedIcon(fileName))
+                                            using (Icon icon = Icon.ExtractAssociatedIcon(fileName))
                                             {
-                                                processIconCache.Add(processName, System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(
-                                                                      icon.Handle,
-                                                                      System.Windows.Int32Rect.Empty,
-                                                                      System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions()));
+                                                if (icon != null)
+                                                {
+                                                    BitmapSource iconImage =
+                                                        Imaging.CreateBitmapSourceFromHIcon(
+                                                            icon.Handle,
+                                                            Int32Rect.Empty,
+                                                            BitmapSizeOptions.FromWidthAndHeight(16, 16));
+                                                    this.processIconCache.Add(processName, iconImage);
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
-                            catch (Exception) { }
+                            catch (Exception)
+                            {
+                            }
                         }
                     }
-                    else
-                        processName = "[PID: " + processName + "] (Unknown)";
                 }
+
                 if (!processSeperatedConnections.ContainsKey(processName))
+                {
                     processSeperatedConnections.Add(processName, new List<ProxyClient>());
+                }
+
                 processSeperatedConnections[processName].Add(client);
             }
-            for (int i = 0; i < ConnectionsListView.Items.Count; i++)
+
+            for (int i = 0; i < this.ConnectionsListView.Items.Count; i++)
             {
-                TreeViewItem processNode = (TreeViewItem)ConnectionsListView.Items[i];
+                TreeViewItem processNode = (TreeViewItem)this.ConnectionsListView.Items[i];
                 if (processSeperatedConnections.ContainsKey((string)processNode.Header))
                 {
                     List<ProxyClient> processConnections = processSeperatedConnections[(string)processNode.Header];
-                    ((UserControls.Tooltip)(processNode.ToolTip)).Text = "Connections: " + processConnections.Count.ToString();
+                    ((Tooltip)processNode.ToolTip).Text = "Connections: " + processConnections.Count;
                     for (int i2 = 0; i2 < processNode.Items.Count; i2++)
                     {
                         TreeViewItem connectionNode = (TreeViewItem)processNode.Items[i2];
-                        if (processConnections.Contains(connectionNode.Tag))
+                        ProxyClient connectedClient = connectionNode.Tag as ProxyClient;
+                        if (connectedClient != null && processConnections.Contains(connectedClient))
                         {
-                            connectionNode.Resources["Type"] = ((ProxyClient)connectionNode.Tag).Type.ToString();
-                            connectionNode.Resources["Status"] = ((ProxyClient)connectionNode.Tag).Status.ToString();
-                            connectionNode.Resources["Download"] = "D: " + CommonLibrary.Common.FormatFileSizeAsString(((ProxyClient)connectionNode.Tag).AverageReceivingSpeed) + "/s";
-                            connectionNode.Resources["Upload"] = "U: " + CommonLibrary.Common.FormatFileSizeAsString(((ProxyClient)connectionNode.Tag).AverageSendingSpeed) + "/s";
-                            connectionNode.Header = (((ProxyClient)connectionNode.Tag).RequestAddress.Length > 40 ? ((ProxyClient)connectionNode.Tag).RequestAddress.Substring(0, 40) + "..." : ((ProxyClient)connectionNode.Tag).RequestAddress);
-                            connectionNode.ToolTip = ((ProxyClient)connectionNode.Tag).RequestAddress;
-                            processConnections.Remove((ProxyClient)connectionNode.Tag);
+                            connectionNode.Resources["Type"] = connectedClient.Type.ToString();
+                            connectionNode.Resources["Status"] = connectedClient.Status.ToString();
+                            connectionNode.Resources["Download"] = "D: "
+                                                                   + Common.FormatFileSizeAsString(
+                                                                       connectedClient.AverageReceivingSpeed) + "/s";
+                            connectionNode.Resources["Upload"] = string.Format("U: {0}/s", Common.FormatFileSizeAsString(connectedClient.AverageSendingSpeed));
+                            connectionNode.Header = connectedClient.RequestAddress.Length > 40
+                                                        ? connectedClient.RequestAddress.Substring(
+                                                            0, 
+                                                            40) + "..."
+                                                        : connectedClient.RequestAddress;
+                            connectionNode.ToolTip = connectedClient.RequestAddress;
+                            processConnections.Remove(connectedClient);
                         }
                         else
                         {
@@ -130,47 +232,62 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
                             i2--;
                         }
                     }
-                    for (int i2 = 0; i2 < processConnections.Count; i2++)
+
+                    foreach (ProxyClient connectedClient in processConnections)
                     {
-                        TreeViewItem connectionNode = new TreeViewItem();
-                        connectionNode.Style = (Style)FindResource("ConnectionNode");
-                        connectionNode.Tag = processConnections[i2];
-                        connectionNode.ContextMenu = connectionContextMenu;
-                        connectionNode.Resources.Add("Type", ((ProxyClient)connectionNode.Tag).Type.ToString());
-                        connectionNode.Resources.Add("Status", ((ProxyClient)connectionNode.Tag).Status.ToString());
-                        connectionNode.Resources.Add("Download", "D: " + CommonLibrary.Common.FormatFileSizeAsString(((ProxyClient)connectionNode.Tag).AverageReceivingSpeed) + "/s");
-                        connectionNode.Resources.Add("Upload", "U: " + CommonLibrary.Common.FormatFileSizeAsString(((ProxyClient)connectionNode.Tag).AverageSendingSpeed) + "/s");
-                        connectionNode.Header = (((ProxyClient)connectionNode.Tag).RequestAddress.Length > 40 ? ((ProxyClient)connectionNode.Tag).RequestAddress.Substring(0, 40) + "..." : ((ProxyClient)connectionNode.Tag).RequestAddress);
-                        connectionNode.ToolTip = ((ProxyClient)connectionNode.Tag).RequestAddress;
+                        TreeViewItem connectionNode = new TreeViewItem
+                                                          {
+                                                              Style =
+                                                                  (Style)
+                                                                  this.FindResource("ConnectionNode"),
+                                                              Tag = connectedClient,
+                                                              ContextMenu = this.connectionContextMenu
+                                                          };
+                        connectionNode.Resources.Add("Type", connectedClient.Type.ToString());
+                        connectionNode.Resources.Add("Status", connectedClient.Status.ToString());
+                        connectionNode.Resources.Add(
+                            "Download", 
+                            string.Format("D: {0}/s", Common.FormatFileSizeAsString(connectedClient.AverageReceivingSpeed)));
+                        connectionNode.Resources.Add(
+                            "Upload", 
+                            string.Format("U: {0}/s", Common.FormatFileSizeAsString(connectedClient.AverageSendingSpeed)));
+                        connectionNode.Header = connectedClient.RequestAddress.Length > 40
+                                                    ? connectedClient.RequestAddress.Substring(0, 40)
+                                                      + "..."
+                                                    : connectedClient.RequestAddress;
+                        connectionNode.ToolTip = connectedClient.RequestAddress;
                         processNode.Items.Add(connectionNode);
                     }
+
                     processSeperatedConnections.Remove((string)processNode.Header);
                 }
                 else
                 {
-                    ConnectionsListView.Items.RemoveAt(i);
+                    this.ConnectionsListView.Items.RemoveAt(i);
                     i--;
                 }
             }
+
             foreach (KeyValuePair<string, List<ProxyClient>> processConnections in processSeperatedConnections)
             {
-                TreeViewItem processNode = new TreeViewItem();
-                processNode.Header = processConnections.Key;
-                processNode.Style = (Style)FindResource("ProcessMainNode");
-                processNode.IsExpanded = true;
-                processNode.ToolTip = new UserControls.Tooltip(processConnections.Key, "Connections: " + processConnections.Value.Count.ToString());
-                if (processIconCache.ContainsKey(processConnections.Key))
-                    processNode.Resources.Add("Img", processIconCache[processConnections.Key]);
-                else
-                    processNode.Resources.Add("Img", defProcessIcon);
-                ConnectionsListView.Items.Add(processNode);
+                TreeViewItem processNode = new TreeViewItem
+                                               {
+                                                   Header = processConnections.Key,
+                                                   Style = (Style)this.FindResource("ProcessMainNode"),
+                                                   IsExpanded = true,
+                                                   ToolTip =
+                                                       new Tooltip(
+                                                       processConnections.Key,
+                                                       "Connections: " + processConnections.Value.Count)
+                                               };
+                processNode.Resources.Add(
+                    "Image",
+                    this.processIconCache.ContainsKey(processConnections.Key) ? this.processIconCache[processConnections.Key] : this.defaultProcessIcon);
+
+                this.ConnectionsListView.Items.Add(processNode);
             }
         }
 
-        public override void SetEnable(bool enable)
-        {
-            return;
-        }
-
+        #endregion
     }
 }

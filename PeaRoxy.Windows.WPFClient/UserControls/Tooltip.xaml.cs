@@ -1,74 +1,127 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Tooltip.xaml.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   Interaction logic for Tooltip.xaml
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.Windows.WPFClient.UserControls
 {
+    #region
+
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Windows;
+    using System.Windows.Documents;
+
+    #endregion
+
     /// <summary>
-    /// Interaction logic for Tooltip.xaml
+    ///     Interaction logic for Tooltip.xaml
     /// </summary>
-    public partial class Tooltip : UserControl
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
+    public partial class Tooltip
     {
-        public Tooltip(string title,string text)
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Tooltip"/> class.
+        /// </summary>
+        /// <param name="title">
+        /// The title.
+        /// </param>
+        /// <param name="text">
+        /// The text.
+        /// </param>
+        public Tooltip(string title, string text)
         {
-            InitializeComponent();
-            Text = text;
-            Title = title;
+            this.InitializeComponent();
+            this.Text = text;
+            this.Title = title;
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Tooltip"/> class.
+        /// </summary>
         public Tooltip()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
+
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Gets or sets the text.
+        /// </summary>
         public string Text
         {
             get
             {
-                return lbl_data.Text;
+                return this.DataBlock.Text;
             }
+
             set
             {
-                lbl_data.Text = "";
+                this.DataBlock.Text = string.Empty;
 
-                string[] textBoldParts = value.Replace("[N]", Environment.NewLine).Split(new char[] { '[' });
+                string[] textBoldParts = value.Replace("[N]", Environment.NewLine).Split(new[] { '[' });
                 foreach (string b in textBoldParts)
                 {
-                    string b_buggyMS = b;
-                    int stEnd = b_buggyMS.IndexOf("]");
-                    if (stEnd > -1)
+                    string buggyMs = b;
+                    int stringEnd = buggyMs.IndexOf("]", StringComparison.Ordinal);
+                    if (stringEnd > -1)
                     {
-                        lbl_data.Inlines.Add(new Bold(new Run(b_buggyMS.Substring(0, stEnd))));
-                        b_buggyMS = b_buggyMS.Substring(stEnd + 1);
+                        this.DataBlock.Inlines.Add(new Bold(new Run(buggyMs.Substring(0, stringEnd))));
+                        buggyMs = buggyMs.Substring(stringEnd + 1);
                     }
-                    lbl_data.Inlines.Add(new Run(b_buggyMS));
+
+                    this.DataBlock.Inlines.Add(new Run(buggyMs));
                 }
             }
         }
+
+        /// <summary>
+        /// Gets or sets the title.
+        /// </summary>
         public string Title
         {
             get
             {
-                return (string)lbl_title.Content;
+                return (string)this.TitleLabel.Content;
             }
+
             set
             {
-                lbl_title.Content = value;
+                this.TitleLabel.Content = value;
             }
         }
 
-        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The user control_ loaded.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void UserControlLoaded(object sender, RoutedEventArgs e)
         {
-            if (lbl_data.Text == string.Empty && lbl_data.Inlines.Count == 0)
-                text_co.Visibility = System.Windows.Visibility.Collapsed;
+            if (this.DataBlock.Text == string.Empty && this.DataBlock.Inlines.Count == 0)
+            {
+                this.TextLabel.Visibility = Visibility.Collapsed;
+            }
         }
+
+        #endregion
     }
 }

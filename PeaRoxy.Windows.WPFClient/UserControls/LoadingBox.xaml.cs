@@ -1,49 +1,86 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="LoadingBox.xaml.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   Interaction logic for LoadingBox.xaml
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.Windows.WPFClient.UserControls
 {
+    #region
+
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
+    using System.Windows;
+    using System.Windows.Media.Animation;
+
+    #endregion
+
     /// <summary>
-    /// Interaction logic for LoadingBox.xaml
+    ///     Interaction logic for LoadingBox.xaml
     /// </summary>
-    public partial class LoadingBox : UserControl
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
+    public partial class LoadingBox
     {
-        bool _isVisible = false;
+        #region Fields
+
+        /// <summary>
+        /// The _is visible.
+        /// </summary>
+        private bool isVisible;
+
+        #endregion
+
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LoadingBox"/> class.
+        /// </summary>
         public LoadingBox()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
 
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Gets or sets a value indicating whether is visible.
+        /// </summary>
         public new bool IsVisible
         {
+            // ReSharper disable once UnusedMember.Global
             get
             {
-                return _isVisible;
+                return this.isVisible;
             }
+
             set
             {
-                if (_isVisible != value)
+                if (this.isVisible == value)
                 {
-                    DoubleAnimation da_Loading = new DoubleAnimation((!value).GetHashCode(), value.GetHashCode(), new Duration(TimeSpan.FromSeconds(0.5)));
-                    this.BeginAnimation(UIElement.OpacityProperty, da_Loading);
-                    foreach (UIElement item in LoadingItemsGrid.Children)
-                        if (item is LoadingItem)
-                            ((LoadingItem)item).IsPlaying = value;
-                    _isVisible = value;
+                    return;
                 }
+
+                DoubleAnimation loadingAnimation = new DoubleAnimation(
+                    (!value).GetHashCode(), 
+                    value.GetHashCode(), 
+                    new Duration(TimeSpan.FromSeconds(0.5)));
+                this.BeginAnimation(OpacityProperty, loadingAnimation);
+                foreach (LoadingItem loadingItem in this.LoadingItemsGrid.Children.OfType<LoadingItem>())
+                {
+                    loadingItem.IsPlaying = value;
+                }
+
+                this.isVisible = value;
             }
         }
+
+        #endregion
     }
 }

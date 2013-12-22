@@ -105,9 +105,23 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             Common.EncryptionType encType = Common.EncryptionType.None, 
             Common.CompressionType comType = Common.CompressionType.None)
         {
-            if (string.IsNullOrEmpty(address))
+            if (string.IsNullOrEmpty(address)) throw new ArgumentException(@"Invalid value.", "address");
+
+            IPAddress ip;
+            if (IPAddress.TryParse(address, out ip))
             {
-                throw new ArgumentException(@"Invalid value.", "address");
+                address = ip.ToString();
+            }
+            else
+            {
+                try
+                {
+                    ip = Dns.GetHostAddresses(address)[0];
+                    address = ip.ToString();
+                }
+                catch
+                {
+                }
             }
 
             this.ServerDomain = domain.ToLower().Trim();

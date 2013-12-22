@@ -1,76 +1,277 @@
-﻿using Microsoft.Win32.SafeHandles;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-using System.Runtime.ConstrainedExecution;
-using System.Runtime.InteropServices;
-using System.Security;
-using System.Text;
-using SocketError = System.Net.Sockets.SocketError;
-using SocketFlags = System.Net.Sockets.SocketFlags;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Unmanaged.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   The unmanaged.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
 namespace PeaRoxy.Windows.Network.Hook
 {
-    class Unmanaged
+    #region
+
+    using System;
+    using System.Collections;
+    using System.Net;
+    using System.Net.Sockets;
+    using System.Runtime.InteropServices;
+
+    #endregion
+
+    /// <summary>
+    ///     The unmanaged.
+    /// </summary>
+    internal static class Unmanaged
     {
-        public enum ConnectStatus : int
+        #region Delegates
+
+        /// <summary>
+        ///     The connect_ delegate.
+        /// </summary>
+        /// <param name="socket">
+        ///     The socket.
+        /// </param>
+        /// <param name="address">
+        ///     The address.
+        /// </param>
+        /// <param name="addressSize">
+        ///     The address size.
+        /// </param>
+        /// <returns>
+        ///     Status of connection
+        /// </returns>
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
+        public delegate ConnectStatus ConnectDelegate(IntPtr socket, ref SocketAddressIn address, int addressSize);
+
+        /// <summary>
+        ///     The get address info_ delegate.
+        /// </summary>
+        /// <param name="nodeName">
+        ///     The node name.
+        /// </param>
+        /// <param name="serviceName">
+        ///     The service name.
+        /// </param>
+        /// <param name="hints">
+        ///     The hints.
+        /// </param>
+        /// <param name="results">
+        ///     The results.
+        /// </param>
+        /// <returns>
+        ///     Status of socket
+        /// </returns>
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
+        public delegate SocketError GetAddressInfoDelegate(
+            IntPtr nodeName, 
+            IntPtr serviceName, 
+            IntPtr hints, 
+            out IntPtr results);
+
+        /// <summary>
+        ///     The get host by name delegate.
+        /// </summary>
+        /// <param name="host">
+        ///     The host.
+        /// </param>
+        /// <returns>
+        ///     IP handler
+        /// </returns>
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
+        public delegate IntPtr GetHostByNameDelegate(string host);
+
+        #endregion
+
+        #region Enums
+
+        /// <summary>
+        ///     The connect status.
+        /// </summary>
+        public enum ConnectStatus
         {
-            Error = -1,
+            /// <summary>
+            ///     The error.
+            /// </summary>
+            Error = -1, 
+
+            /// <summary>
+            ///     The ok.
+            /// </summary>
             Ok = 0
         }
 
-        [StructLayout(LayoutKind.Sequential, Size = 16)]
-        public struct SocketAddress_In
-        {
-            private ushort _Family;
-            private short _Port;
-            internal AddressIn IPAddress;
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
-            internal byte[] Padding;
-            [StructLayout(LayoutKind.Explicit, Size = 4)]
-            public struct AddressIn
-            {
-                [FieldOffset(0)]
-                internal byte Byte1;
-                [FieldOffset(1)]
-                internal byte Byte2;
-                [FieldOffset(2)]
-                internal byte Byte3;
-                [FieldOffset(3)]
-                internal byte Byte4;
-                [FieldOffset(0)]
-                internal uint Int;
-            }
-            internal int Port
-            {
-                get { return System.Net.IPAddress.NetworkToHostOrder(_Port); }
-                set { _Port = System.Net.IPAddress.HostToNetworkOrder((short)value); }
-            }
-            internal AddressFamily Family
-            {
-                get { return (AddressFamily)_Family; }
-                set { _Family = (ushort)value; }
-            }
-        }
+        #endregion
 
+        #region Public Methods and Operators
+
+        /// <summary>
+        /// The WS2 connect.
+        /// </summary>
+        /// <param name="socket">
+        /// The socket.
+        /// </param>
+        /// <param name="address">
+        /// The address.
+        /// </param>
+        /// <param name="addressSize">
+        /// The address size.
+        /// </param>
+        /// <returns>
+        /// The <see cref="ConnectStatus"/>.
+        /// </returns>
+        [DllImport("ws2_32.dll", SetLastError = true, EntryPoint = "connect")]
+        public static extern ConnectStatus WS2_Connect(IntPtr socket, ref SocketAddressIn address, int addressSize);
+
+        /// <summary>
+        /// The WS2 get address info.
+        /// </summary>
+        /// <param name="nodeName">
+        /// The node name.
+        /// </param>
+        /// <param name="serviceName">
+        /// The service name.
+        /// </param>
+        /// <param name="hints">
+        /// The hints.
+        /// </param>
+        /// <param name="results">
+        /// The results.
+        /// </param>
+        /// <returns>
+        /// The <see cref="SocketError"/>.
+        /// </returns>
+        [DllImport("ws2_32.dll", CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true, 
+            EntryPoint = "getaddrinfo")]
+        public static extern SocketError WS2_GetAddressInfo(
+            IntPtr nodeName, 
+            IntPtr serviceName, 
+            IntPtr hints, 
+            out IntPtr results);
+
+        /// <summary>
+        /// The WS2 get address info unicode.
+        /// </summary>
+        /// <param name="nodeName">
+        /// The node name.
+        /// </param>
+        /// <param name="serviceName">
+        /// The service name.
+        /// </param>
+        /// <param name="hints">
+        /// The hints.
+        /// </param>
+        /// <param name="results">
+        /// The results.
+        /// </param>
+        /// <returns>
+        /// The <see cref="SocketError"/>.
+        /// </returns>
+        [DllImport("ws2_32.dll", CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true, 
+            EntryPoint = "GetAddrInfoW")]
+        public static extern SocketError WS2_GetAddressInfoUni(
+            IntPtr nodeName, 
+            IntPtr serviceName, 
+            IntPtr hints, 
+            out IntPtr results);
+
+        /// <summary>
+        /// The WS2 get host by name.
+        /// </summary>
+        /// <param name="host">
+        /// The host.
+        /// </param>
+        /// <returns>
+        /// The <see cref="IntPtr"/>.
+        /// </returns>
+        [DllImport("ws2_32.dll", CharSet = CharSet.Ansi, SetLastError = true, EntryPoint = "gethostbyname")]
+        public static extern IntPtr WS2_GetHostByName(string host);
+
+        /// <summary>
+        ///     The WS2 get last error.
+        /// </summary>
+        /// <returns>
+        ///     The <see cref="SocketError" />.
+        /// </returns>
+        [DllImport("ws2_32.dll", SetLastError = true, EntryPoint = "WSAGetLastError")]
+        public static extern SocketError WS2_GetLastError();
+
+        /// <summary>
+        /// The WS2 send.
+        /// </summary>
+        /// <param name="socket">
+        /// The socket.
+        /// </param>
+        /// <param name="buffer">
+        /// The buffer.
+        /// </param>
+        /// <param name="len">
+        /// The len.
+        /// </param>
+        /// <param name="flags">
+        /// The flags.
+        /// </param>
+        /// <returns>
+        /// The <see cref="int"/>.
+        /// </returns>
+        [DllImport("Ws2_32.dll", SetLastError = true, EntryPoint = "send")]
+        public static extern int WS2_Send(IntPtr socket, IntPtr buffer, int len, SocketFlags flags);
+
+        #endregion
+
+        /// <summary>
+        ///     The native IP host entry.
+        /// </summary>
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        public struct NativeIPHostEntry
+        public struct NativeIpHostEntry
         {
-            private IntPtr h_name;
-            private IntPtr h_aliases;
-            private short h_addrtype;
-            private short h_length;
-            private IntPtr h_addr_list;
+            /// <summary>
+            ///     The name.
+            /// </summary>
+            private readonly IntPtr nameHandler;
+
+            /// <summary>
+            ///     The aliases.
+            /// </summary>
+            private readonly IntPtr aliasesHandler;
+
+            /// <summary>
+            ///     The address type.
+            /// </summary>
+            private readonly short addrType;
+
+            /// <summary>
+            ///     The length.
+            /// </summary>
+            private readonly short length;
+
+            /// <summary>
+            ///     The address list handler.
+            /// </summary>
+            private readonly IntPtr addrListHandler;
+
+            /// <summary>
+            /// The from native.
+            /// </summary>
+            /// <param name="nativePointer">
+            /// The native pointer.
+            /// </param>
+            /// <returns>
+            /// The <see cref="IPHostEntry"/>.
+            /// </returns>
             public static IPHostEntry FromNative(IntPtr nativePointer)
             {
-                NativeIPHostEntry hostent = (NativeIPHostEntry)Marshal.PtrToStructure(nativePointer, typeof(NativeIPHostEntry));
+                NativeIpHostEntry hostent =
+                    (NativeIpHostEntry)Marshal.PtrToStructure(nativePointer, typeof(NativeIpHostEntry));
                 IPHostEntry entry = new IPHostEntry();
-                if (hostent.h_name != IntPtr.Zero)
-                    entry.HostName = Marshal.PtrToStringAnsi(hostent.h_name);
+                if (hostent.nameHandler != IntPtr.Zero)
+                {
+                    entry.HostName = Marshal.PtrToStringAnsi(hostent.nameHandler);
+                }
+
                 ArrayList list = new ArrayList();
-                IntPtr ptr = hostent.h_addr_list;
+                IntPtr ptr = hostent.addrListHandler;
                 nativePointer = Marshal.ReadIntPtr(ptr);
                 while (nativePointer != IntPtr.Zero)
                 {
@@ -79,70 +280,204 @@ namespace PeaRoxy.Windows.Network.Hook
                     ptr += IntPtr.Size;
                     nativePointer = Marshal.ReadIntPtr(ptr);
                 }
+
                 entry.AddressList = new IPAddress[list.Count];
                 list.CopyTo(entry.AddressList, 0);
                 list.Clear();
-                ptr = hostent.h_aliases;
+                ptr = hostent.aliasesHandler;
                 nativePointer = Marshal.ReadIntPtr(ptr);
                 while (nativePointer != IntPtr.Zero)
                 {
                     string str = Marshal.PtrToStringAnsi(nativePointer);
-                    list.Add(str);
+                    if (str != null)
+                    {
+                        list.Add(str);
+                    }
+
                     ptr += IntPtr.Size;
                     nativePointer = Marshal.ReadIntPtr(ptr);
                 }
+
                 entry.Aliases = new string[list.Count];
                 list.CopyTo(entry.Aliases, 0);
                 return entry;
             }
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        internal struct AddressInfo
+        /// <summary>
+        ///     The socket address_ in.
+        /// </summary>
+        [StructLayout(LayoutKind.Sequential, Size = 16)]
+        public struct SocketAddressIn
         {
-            internal AddressInfoHints Flags;
-            internal AddressFamily Family;
-            internal SocketType SocketType;
-            internal ProtocolFamily Protocol;
-            internal int Addrlen;
-            internal IntPtr CanonName; // sbyte Array
-            internal IntPtr Address; // byte Array
-            internal IntPtr Next; // Next Element In AddressInfo Array
-            [Flags]
-            internal enum AddressInfoHints
+            /// <summary>
+            ///     The padding.
+            /// </summary>
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
+            internal readonly byte[] Padding;
+
+            /// <summary>
+            ///     The IP address.
+            /// </summary>
+            internal AddressIn IPAddress;
+
+            /// <summary>
+            ///     The family.
+            /// </summary>
+            private ushort family;
+
+            /// <summary>
+            ///     The port.
+            /// </summary>
+            private short port;
+
+            /// <summary>
+            ///     Gets or sets the port.
+            /// </summary>
+            internal int Port
             {
-                AI_CANONNAME = 2,
-                AI_FQDN = 0x20000,
-                AI_NUMERICHOST = 4,
-                AI_PASSIVE = 1
+                get
+                {
+                    return System.Net.IPAddress.NetworkToHostOrder(this.port);
+                }
+
+                set
+                {
+                    this.port = System.Net.IPAddress.HostToNetworkOrder((short)value);
+                }
+            }
+
+            /// <summary>
+            ///     Gets or sets the family.
+            /// </summary>
+            internal AddressFamily Family
+            {
+                get
+                {
+                    return (AddressFamily)this.family;
+                }
+
+                // ReSharper disable once UnusedMember.Global
+                set
+                {
+                    this.family = (ushort)value;
+                }
+            }
+
+            /// <summary>
+            ///     The address in.
+            /// </summary>
+            [StructLayout(LayoutKind.Explicit, Size = 4)]
+            public struct AddressIn
+            {
+                /// <summary>
+                ///     The integer.
+                /// </summary>
+                [FieldOffset(0)]
+                internal readonly uint Int;
+
+                /// <summary>
+                ///     The byte 1.
+                /// </summary>
+                [FieldOffset(0)]
+                internal byte Byte1;
+
+                /// <summary>
+                ///     The byte 2.
+                /// </summary>
+                [FieldOffset(1)]
+                internal byte Byte2;
+
+                /// <summary>
+                ///     The byte 3.
+                /// </summary>
+                [FieldOffset(2)]
+                internal byte Byte3;
+
+                /// <summary>
+                ///     The byte 4.
+                /// </summary>
+                [FieldOffset(3)]
+                internal byte Byte4;
             }
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
-        public delegate ConnectStatus Connect_Delegate(IntPtr Socket, ref SocketAddress_In Address, int AddressSize);
+        /// <summary>
+        ///     The address info.
+        /// </summary>
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct AddressInfo
+        {
+            /// <summary>
+            ///     The flags.
+            /// </summary>
+            internal readonly AddressInfoHints Flags;
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
-        public delegate IntPtr GetHostByName_Delegate(string Host);
+            /// <summary>
+            ///     The family.
+            /// </summary>
+            internal readonly AddressFamily Family;
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall, SetLastError = true)]
-        public delegate SocketError GetAddressInfo_Delegate(IntPtr NodeName, IntPtr ServiceName, IntPtr Hints, out IntPtr Results);
+            /// <summary>
+            ///     The socket type.
+            /// </summary>
+            internal readonly SocketType SocketType;
 
-        [DllImport("ws2_32.dll", SetLastError = true, EntryPoint = "connect")]
-        public static extern ConnectStatus WS2_Connect(IntPtr Socket, ref SocketAddress_In Address, int AddressSize);
+            /// <summary>
+            ///     The protocol.
+            /// </summary>
+            internal readonly ProtocolFamily Protocol;
 
-        [DllImport("Ws2_32.dll", SetLastError = true, EntryPoint = "send")]
-        public static extern int WS2_Send(IntPtr Socket, IntPtr Buffer, int Len, SocketFlags Flags);
+            /// <summary>
+            ///     The address len.
+            /// </summary>
+            internal readonly int AddressLen;
 
-        [DllImport("ws2_32.dll", SetLastError = true, EntryPoint = "WSAGetLastError")]
-        public static extern SocketError WS2_GetLastError();
+            /// <summary>
+            ///     The canon name.
+            /// </summary>
+            internal IntPtr CanonName; // sbyte Array
 
-        [DllImport("ws2_32.dll", CharSet = CharSet.Ansi, SetLastError = true, EntryPoint = "gethostbyname")]
-        public static extern IntPtr WA2_GetHostByName(string Host);
+            /// <summary>
+            ///     The address.
+            /// </summary>
+            internal IntPtr Address; // byte Array
 
-        [DllImport("ws2_32.dll", CharSet = CharSet.Unicode, SetLastError = true, ExactSpelling = true, EntryPoint = "GetAddrInfoW")]
-        public static extern SocketError WA2_GetAddressInfoUni(IntPtr NodeName, IntPtr ServiceName, IntPtr Hints, out IntPtr Results);
+            /// <summary>
+            ///     The next.
+            /// </summary>
+            internal IntPtr Next; // Next Element In AddressInfo Array
 
-        [DllImport("ws2_32.dll", CharSet = CharSet.Ansi, SetLastError = true, ExactSpelling = true, EntryPoint = "getaddrinfo")]
-        public static extern SocketError WA2_GetAddressInfo(IntPtr NodeName, IntPtr ServiceName, IntPtr Hints, out IntPtr Results);
+            /// <summary>
+            ///     The address info hints.
+            /// </summary>
+            [Flags]
+            internal enum AddressInfoHints
+            {
+                /// <summary>
+                ///     The canon name.
+                /// </summary>
+                // ReSharper disable once UnusedMember.Global
+                AiCanonname = 2, 
+
+                /// <summary>
+                ///     The FQDN.
+                /// </summary>
+                // ReSharper disable once UnusedMember.Global
+                AiFqdn = 0x20000, 
+
+                /// <summary>
+                ///     The numeric host.
+                /// </summary>
+                // ReSharper disable once UnusedMember.Global
+                AiNumerichost = 4, 
+
+                /// <summary>
+                ///     The passive.
+                /// </summary>
+                // ReSharper disable once UnusedMember.Global
+                AiPassive = 1
+            }
+        }
     }
 }

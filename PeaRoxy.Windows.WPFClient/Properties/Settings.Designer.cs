@@ -577,8 +577,20 @@ namespace PeaRoxy.Windows.WPFClient.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("firefox.exe\r\niexplorer.exe\r\nchrome,exe\r\nopera.exe\r\nsafari.exe\r\navant.exe\r\nrockmel" +
-            "t.exe\r\ndeepnet.exe\r\nmaxthon.exe\r\nseamonkey.exe\r\ngameoverlayui.exe\r\nsteam.exe")]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"
+        firefox.exe
+        iexplorer.exe
+        chrome,exe
+        opera.exe
+        safari.exe
+        avant.exe
+        rockmelt.exe
+        deepnet.exe
+        maxthon.exe
+        seamonkey.exe
+        gameoverlayui.exe
+        steam.exe
+      ")]
         public string Hook_Processes {
             get {
                 return ((string)(this["Hook_Processes"]));

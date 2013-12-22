@@ -1,22 +1,33 @@
 ﻿<UserControl x:Class="PeaRoxy.Windows.WPFClient.UserControls.ToolbarButtons"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" 
-             d:DesignHeight="20" d:DesignWidth="190" Width="190"  MaxWidth="190" MinWidth="190" Height="20" MaxHeight="20" MinHeight="20" Loaded="UserControl_Loaded">
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="20" d:DesignWidth="190" Width="190" MaxWidth="190" MinWidth="190" Height="20"
+             MaxHeight="20" MinHeight="20" Loaded="UserControlLoaded">
     <Grid>
         <Grid Height="20" Margin="0,0,60,0" Name="NavigatorGrid" Width="20" HorizontalAlignment="Right">
-            <Ellipse Height="20" HorizontalAlignment="Right" Margin="0,0,0,0" Stroke="White" VerticalAlignment="Top" Width="20" />
-            <Button Name="OptionButton" Style="{DynamicResource NoChromeButton}" Click="btn_options_Click">
-                <Image Height="14" HorizontalAlignment="Center" Name="img_optionsButton" Stretch="Fill" VerticalAlignment="Center" Width="14" Source="/PeaRoxy.Windows.WPFClient;component/Images/Toolbar/Options.png" MouseEnter="img_optionsButton_MouseEnter" MouseLeave="img_optionsButton_MouseLeave" Cursor="Hand">
+            <Ellipse Height="20" HorizontalAlignment="Right" Margin="0,0,0,0" Stroke="White" VerticalAlignment="Top"
+                     Width="20" />
+            <Button Name="OptionButton" Style="{DynamicResource NoChromeButton}" Click="BtnOptionsClick">
+                <Image Height="14" HorizontalAlignment="Center" Name="ImgOptionsButton" Stretch="Fill"
+                       VerticalAlignment="Center" Width="14"
+                       Source="/PeaRoxy.Windows.WPFClient;component/Images/Toolbar/Options.png"
+                       MouseEnter="ImgOptionsButtonMouseEnter" MouseLeave="ImgOptionsButtonMouseLeave"
+                       Cursor="Hand" x:FieldModifier="private">
                     <Image.RenderTransform>
                         <RotateTransform Angle="0" CenterX="7" CenterY="7" />
                     </Image.RenderTransform>
                 </Image>
             </Button>
-            <Button Name="BackButton" Style="{DynamicResource NoChromeButton}" Visibility="Hidden" Opacity="0" Click="btn_back_Click">
-                <Image Height="14" HorizontalAlignment="Left" Name="img_backButton" Stretch="Fill" VerticalAlignment="Top" Width="14" Source="/PeaRoxy.Windows.WPFClient;component/Images/Toolbar/Back.png" MouseEnter="img_optionsButton_MouseEnter" MouseLeave="img_optionsButton_MouseLeave" Cursor="Hand">
+            <Button Name="BackButton" Style="{DynamicResource NoChromeButton}" Visibility="Hidden" Opacity="0"
+                    Click="BtnBackClick" x:FieldModifier="private">
+                <Image Height="14" HorizontalAlignment="Left" Name="ImgBackButton" Stretch="Fill"
+                       VerticalAlignment="Top" Width="14"
+                       Source="/PeaRoxy.Windows.WPFClient;component/Images/Toolbar/Back.png"
+                       MouseEnter="ImgOptionsButtonMouseEnter" MouseLeave="ImgOptionsButtonMouseLeave"
+                       Cursor="Hand" x:FieldModifier="private">
                     <Image.RenderTransform>
                         <RotateTransform Angle="0" CenterX="7" CenterY="7" />
                     </Image.RenderTransform>
@@ -24,30 +35,39 @@
             </Button>
         </Grid>
         <Grid Height="20" Margin="0,0,120,0" Name="GrabberGrid" HorizontalAlignment="Right" Width="20">
-            <Ellipse Height="20" HorizontalAlignment="Right" Margin="0,0,0,0"  Stroke="#FF00A0DC" VerticalAlignment="Top" Width="20" Name="e_qb_grabber" />
-            <Button ContextMenuService.Placement="Bottom" Name="GrabberButton" Style="{DynamicResource NoChromeButton}" Click="btn_qb_Click">
-                <Image Height="14" HorizontalAlignment="Left" Stretch="Fill" VerticalAlignment="Top" Width="14" Source="/PeaRoxy.Windows.WPFClient;component/Images/Toolbar/Grabber.png" Cursor="Hand">
-                </Image>
+            <Ellipse Height="20" HorizontalAlignment="Right" Margin="0,0,0,0" Stroke="#FF00A0DC"
+                     VerticalAlignment="Top" Width="20" Name="EQbGrabber" x:FieldModifier="private" />
+            <Button ContextMenuService.Placement="Bottom" Style="{DynamicResource NoChromeButton}"
+                    Click="BtnQbClick">
+                <Image Height="14" HorizontalAlignment="Left" Stretch="Fill" VerticalAlignment="Top" Width="14"
+                       Source="/PeaRoxy.Windows.WPFClient;component/Images/Toolbar/Grabber.png" Cursor="Hand" />
                 <Button.ContextMenu>
                     <ContextMenu FontSize="11">
-                        <MenuItem Header="Proxy - None" IsCheckable="True" IsChecked="True" Name="GrabberNoneMenuItem"  Click="mi_grabber_Click"/>
-                        <MenuItem Header="TAP Adapter" IsCheckable="True" Name="GrabberTAPMenuItem" Click="mi_grabber_Click"/>
-                        <MenuItem Header="Hook" IsCheckable="True" IsEnabled="False" Name="GrabberHookMenuItem" Click="mi_grabber_Click" />
+                        <MenuItem Header="Proxy - None" IsCheckable="True" IsChecked="True" Name="GrabberNoneMenuItem"
+                                  Click="MiGrabberClick" />
+                        <MenuItem Header="TAP Adapter" IsCheckable="True" Name="GrabberTapMenuItem"
+                                  Click="MiGrabberClick" />
+                        <MenuItem Header="Hook" IsCheckable="True" IsEnabled="False" Name="GrabberHookMenuItem"
+                                  Click="MiGrabberClick" />
                     </ContextMenu>
                 </Button.ContextMenu>
             </Button>
         </Grid>
         <Grid Height="20" Margin="0,0,90,0" Name="SmartPearGrid" HorizontalAlignment="Right" Width="20">
-            <Ellipse Height="20" HorizontalAlignment="Right" Margin="0,0,0,0"  Stroke="#FF00A0DC" VerticalAlignment="Top" Width="20"  Name="e_qb_smartpear" />
-            <Button ContextMenuService.Placement="Bottom" Name="SmartPearButton" Style="{DynamicResource NoChromeButton}" Click="btn_qb_Click">
-                <Image Height="14" HorizontalAlignment="Left" Stretch="Fill" VerticalAlignment="Top" Width="14" Source="/PeaRoxy.Windows.WPFClient;component/Images/Toolbar/SmartPear.png" Cursor="Hand">
-                </Image>
+            <Ellipse Height="20" HorizontalAlignment="Right" Margin="0,0,0,0" Stroke="#FF00A0DC"
+                     VerticalAlignment="Top" Width="20" Name="EQbSmartpear" x:FieldModifier="private" />
+            <Button ContextMenuService.Placement="Bottom"
+                    Style="{DynamicResource NoChromeButton}" Click="BtnQbClick">
+                <Image Height="14" HorizontalAlignment="Left" Stretch="Fill" VerticalAlignment="Top" Width="14"
+                       Source="/PeaRoxy.Windows.WPFClient;component/Images/Toolbar/SmartPear.png" Cursor="Hand" />
                 <Button.ContextMenu>
                     <ContextMenu FontSize="11">
-                        <MenuItem Header="Enable" IsCheckable="True" IsChecked="True" Name="SmartPearEnableMenuItem" Click="mi_smartpear_Click" />
-                        <MenuItem Header="Disable" IsCheckable="True" Name="SmartPearDisableMenuItem" Click="mi_smartpear_Click" />
+                        <MenuItem Header="Enable" IsCheckable="True" IsChecked="True" Name="SmartPearEnableMenuItem"
+                                  Click="MiSmartpearClick" />
+                        <MenuItem Header="Disable" IsCheckable="True" Name="SmartPearDisableMenuItem"
+                                  Click="MiSmartpearClick" />
                         <Separator />
-                        <MenuItem Header="Update" Click="mi_smartpear_update_Click" IsEnabled="False" Name="SmartPearUpdateMenuItem">
+                        <MenuItem Header="Update" Click="MiSmartpearUpdateClick" IsEnabled="False">
                             <MenuItem.Icon>
                                 <Image Source="/PeaRoxy.Windows.WPFClient;component/Images/Toolbar/Menu_Update.png" />
                             </MenuItem.Icon>
@@ -56,11 +76,12 @@
                 </Button.ContextMenu>
             </Button>
         </Grid>
-        <Grid Height="20" Margin="0,0,150,0" Name="ReConfigGrid" HorizontalAlignment="Right" Width="20" >
-            <Ellipse Height="20" HorizontalAlignment="Right" Margin="0,0,0,0" Stroke="#FF00A0DC" VerticalAlignment="Top" Width="20" Name="e_qb_reconfig" />
-            <Button Name="ReConfigButton" Style="{DynamicResource NoChromeButton}" Click="btn_qb_reconfig_Click">
-                <Image Height="14" HorizontalAlignment="Left" Stretch="Fill" VerticalAlignment="Top" Width="14" Source="/PeaRoxy.Windows.WPFClient;component/Images/Toolbar/ReConfig.png" Cursor="Hand">
-                </Image>
+        <Grid Height="20" Margin="0,0,150,0" Name="ReConfigGrid" HorizontalAlignment="Right" Width="20">
+            <Ellipse Height="20" HorizontalAlignment="Right" Margin="0,0,0,0" Stroke="#FF00A0DC"
+                     VerticalAlignment="Top" Width="20" Name="EQbReconfig" />
+            <Button Style="{DynamicResource NoChromeButton}" Click="BtnQbReconfigClick">
+                <Image Height="14" HorizontalAlignment="Left" Stretch="Fill" VerticalAlignment="Top" Width="14"
+                       Source="/PeaRoxy.Windows.WPFClient;component/Images/Toolbar/ReConfig.png" Cursor="Hand" />
             </Button>
         </Grid>
     </Grid>

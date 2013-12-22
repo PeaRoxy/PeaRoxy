@@ -1,51 +1,98 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.Remoting;
-using System.Text;
-using EasyHook;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Injector.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   The injector.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
 namespace PeaRoxy.Windows.Network.Hook
 {
-    class Injector
+    #region
+
+    using System;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Runtime.Remoting;
+
+    using EasyHook;
+
+    #endregion
+
+    /// <summary>
+    /// The injector.
+    /// </summary>
+    internal static class Injector
     {
-        static String ChannelName = null;
-        static bool isDebug = false;
-        [System.Diagnostics.Conditional("DEBUG")]
-        static void isDebugSetter() { isDebug = true; }
-        static void Main(string[] args)
+        #region Static Fields
+
+        /// <summary>
+        /// The channel name.
+        /// </summary>
+        private static string channelName;
+
+        /// <summary>
+        /// The is debug.
+        /// </summary>
+        private static bool isDebug;
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The main.
+        /// </summary>
+        private static void Main()
         {
-            isDebugSetter();
-            bool noGAC  = false;
-            System.Diagnostics.Process[] processes = System.Diagnostics.Process.GetProcessesByName("seamonkey");
+            IsDebugSetter();
+            bool noGac = false;
+            Process[] processes = Process.GetProcessesByName("seamonkey");
             Array.Reverse(processes);
             try
             {
                 Config.Register(
                     "PeaRoxy",
-                    isDebug ? "PeaRoxy.Windows.Network.Hook.exe" : System.IO.Path.GetFileName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName));
+                    isDebug ? "PeaRoxy.Windows.Network.Hook.exe" : Path.GetFileName(Process.GetCurrentProcess().MainModule.FileName));
             }
             catch (ApplicationException)
             {
                 Console.WriteLine("This is an administrative task! No admin privilege. Try to not use GAC");
-                noGAC = true;
+                noGac = true;
             }
-            RemoteHooking.IpcCreateServer<RemoteParent>(ref ChannelName, WellKnownObjectMode.SingleCall);
-            foreach (System.Diagnostics.Process p in processes)
+
+            RemoteHooking.IpcCreateServer<RemoteParent>(ref channelName, WellKnownObjectMode.SingleCall);
+            foreach (Process p in processes)
             {
                 try
                 {
                     RemoteHooking.Inject(
-                       p.Id,
-                       noGAC    ?   InjectionOptions.DoNotRequireStrongName   : InjectionOptions.Default,
-                       isDebug  ?   "PeaRoxy.Windows.Network.Hook.exe"        : "PeaRoxy.Windows.Network.Hook_x86.exe",
-                       isDebug  ?   "PeaRoxy.Windows.Network.Hook.exe"        : "PeaRoxy.Windows.Network.Hook_x64.exe",
-                       new object[] { ChannelName });
+                        p.Id, 
+                        noGac ? InjectionOptions.DoNotRequireStrongName : InjectionOptions.Default, 
+                        isDebug ? "PeaRoxy.Windows.Network.Hook.exe" : "PeaRoxy.Windows.Network.Hook_x86.exe", 
+                        isDebug ? "PeaRoxy.Windows.Network.Hook.exe" : "PeaRoxy.Windows.Network.Hook_x64.exe", 
+                        new object[] { channelName });
                 }
-                catch (Exception ExtInfo)
+                catch (Exception extInfo)
                 {
-                    Console.WriteLine("There was an error while connecting to target:\r\n{0}", ExtInfo.ToString());
+                    Console.WriteLine("There was an error while connecting to target:\r\n{0}", extInfo);
                 }
             }
+
             Console.ReadLine();
         }
+
+        /// <summary>
+        /// The is debug setter.
+        /// </summary>
+        [Conditional("DEBUG")]
+        private static void IsDebugSetter()
+        {
+            isDebug = true;
+        }
+
+        #endregion
     }
 }

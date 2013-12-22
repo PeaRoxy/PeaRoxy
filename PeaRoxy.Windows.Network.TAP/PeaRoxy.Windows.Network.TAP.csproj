@@ -38,9 +38,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TapTunnel\TapAdapter.cs" />
+    <Compile Include="TapAdapter.cs" />
     <Compile Include="TapTunnel.cs" />
-    <Compile Include="TapTunnel\Tun2Socks.cs" />
+    <Compile Include="Tun2Socks.cs" />
     <Compile Include="Win32_WMI\IP4RouteTable.cs" />
     <Compile Include="Win32_WMI\NetworkAdapter.cs" />
     <Compile Include="Win32_WMI\NetworkAdapterConfiguration.cs" />

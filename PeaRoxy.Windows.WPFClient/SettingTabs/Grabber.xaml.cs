@@ -1,196 +1,344 @@
-﻿using LukeSw.Windows.Forms;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Grabber.xaml.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   Interaction logic for Grabber.xaml
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.Windows.WPFClient.SettingTabs
 {
+    #region
+
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Net;
+    using System.Threading;
+    using System.Windows;
+    using System.Windows.Controls;
+    using System.Windows.Forms;
+    using System.Windows.Media;
+    using System.Windows.Media.Animation;
+
+    using LukeSw.Windows.Forms;
+
+    using PeaRoxy.Windows.WPFClient.Properties;
+
+    #endregion
+
     /// <summary>
-    /// Interaction logic for Grabber.xaml
+    ///     Interaction logic for Grabber.xaml
     /// </summary>
-    public partial class Grabber : Base
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
+    public partial class Grabber
     {
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Grabber"/> class.
+        /// </summary>
         public Grabber()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
 
-        private void txt_TextBox_LostFocus(object sender, RoutedEventArgs e)
+        #endregion
+
+        #region Public Methods and Operators
+
+        /// <summary>
+        /// The hook_ add item.
+        /// </summary>
+        public void HookAddItem()
         {
-            SaveSettings();
+            this.TxtHookEditApp.Text = ".exe";
+            this.CbHookEditType.SelectedIndex = 0;
+            this.ShowOptionsDialog();
         }
 
-        private void btn_hook_remove_Click(object sender, RoutedEventArgs e)
-        {
-            string[] pc = new string[lb_hook_processes.SelectedItems.Count];
-            lb_hook_processes.SelectedItems.CopyTo(pc, 0);
-            foreach (string s in pc)
-            {
-                lb_hook_processes.Items.Remove(s);
-            }
-            lb_hook_processes.SelectedItems.Clear();
-            SaveSettings();
-        }
-
-        private void btn_hook_add_Click(object sender, RoutedEventArgs e)
-        {
-
-            Hook_AddItem();
-        }
-
-        private void txt_tap_ipaddress_LostFocus(object sender, RoutedEventArgs e)
-        {
-            System.Net.IPAddress ip = null;
-            if (txt_tap_ipaddress.Text.Split('.').Length != 4 || !System.Net.IPAddress.TryParse(txt_tap_ipaddress.Text, out ip) || ip.GetAddressBytes()[3] != 0)
-            {
-                txt_tap_ipaddress.Text = "10.0.0.0";
-                VDialog.Show("IP address is not acceptable.", "Data Validation", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                new System.Threading.Thread(delegate()
-                {
-                    System.Threading.Thread.Sleep((int)(10));
-                    this.Dispatcher.Invoke((App.SimpleVoid_Delegate)delegate()
-                    {
-                        txt_tap_ipaddress.Focus();
-                    }, new object[] { });
-                }) { IsBackground = true }.Start();
-            }
-            else
-                txt_tap_ipaddress.Text = ip.ToString();
-
-            SaveSettings();
-        }
-
-        private void cb_grabber_active_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            SaveSettings();
-        }
-
-        public override void SetEnable(bool enable)
-        {
-            SettingsGrid.IsEnabled = enable;
-        }
-
-        public override void SaveSettings()
-        {
-            if (isLoading) return;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Grabber = ActiveGrabber.SelectedIndex;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.TAP_IPRange = txt_tap_ipaddress.Text;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Hook_IntoRuningProcesses = (bool)cb_hook_running.IsChecked;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Hook_Processes = "";
-            foreach (string p in lb_hook_processes.Items)
-            {
-                PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Hook_Processes += p + Environment.NewLine;
-            }
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Save();
-        }
-
-        public override void LoadSettings()
-        {
-            isLoading = true;
-            cb_hook_running.IsChecked = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Hook_IntoRuningProcesses;
-
-            List<string> Hook_Processes = new List<string>(
-                PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Hook_Processes.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries));
-            lb_hook_processes.Items.Clear();
-            foreach (string p in Hook_Processes)
-            {
-                lb_hook_processes.Items.Add(p);
-            }
-
-            txt_tap_ipaddress.Text = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.TAP_IPRange;
-            ActiveGrabber.SelectedIndex = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Grabber;
-            isLoading = false;
-        }
-
-        public void Hook_SaveItem()
+        /// <summary>
+        /// The hook_ save item.
+        /// </summary>
+        public void HookSaveItem()
         {
             try
             {
-                string app = txt_hook_edit_app.Text.ToLower();
+                string app = this.TxtHookEditApp.Text.ToLower();
                 if (app.Trim() != string.Empty)
-                    lb_hook_processes.Items.Add(((ComboBoxItem)(cb_hook_edit_type.SelectedItem)).Tag.ToString() + app);
-                SaveSettings();
-                HideOptionsDialog();
+                {
+                    this.LbHookProcesses.Items.Add(((ComboBoxItem)this.CbHookEditType.SelectedItem).Tag + app);
+                }
+
+                this.SaveSettings();
+                this.HideOptionsDialog();
             }
             catch (Exception e)
             {
-                VDialog.Show("Can't add process name: " + e.Message, "PeaRoxy Client - Hook Processes Update", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Stop);
+                VDialog.Show(
+                    "Can't add process name: " + e.Message, 
+                    "PeaRoxy Client - Hook Processes Update", 
+                    MessageBoxButtons.OK, 
+                    MessageBoxIcon.Stop);
             }
         }
 
-
-        public void Hook_AddItem()
+        /// <summary>
+        /// The load settings.
+        /// </summary>
+        public override void LoadSettings()
         {
-            txt_hook_edit_app.Text = ".exe";
-            cb_hook_edit_type.SelectedIndex = 0;
-            ShowOptionsDialog();
+            this.IsLoading = true;
+            this.CbHookRunning.IsChecked = Settings.Default.Hook_IntoRuningProcesses;
+
+            List<string> hookProcesses =
+                new List<string>(
+                    Settings.Default.Hook_Processes.Split(
+                        new[] { Environment.NewLine }, 
+                        StringSplitOptions.RemoveEmptyEntries));
+            this.LbHookProcesses.Items.Clear();
+            foreach (string p in hookProcesses)
+            {
+                this.LbHookProcesses.Items.Add(p);
+            }
+
+            this.TxtTapIpaddress.Text = Settings.Default.TAP_IPRange;
+            this.ActiveGrabber.SelectedIndex = Settings.Default.Grabber;
+            this.IsLoading = false;
         }
 
+        /// <summary>
+        /// The save settings.
+        /// </summary>
+        public override void SaveSettings()
+        {
+            if (this.IsLoading)
+            {
+                return;
+            }
+
+            Settings.Default.Grabber = this.ActiveGrabber.SelectedIndex;
+            Settings.Default.TAP_IPRange = this.TxtTapIpaddress.Text;
+            Settings.Default.Hook_IntoRuningProcesses = this.CbHookRunning.IsChecked ?? false;
+            Settings.Default.Hook_Processes = string.Empty;
+            foreach (string p in this.LbHookProcesses.Items)
+            {
+                Settings.Default.Hook_Processes += p + Environment.NewLine;
+            }
+
+            Settings.Default.Save();
+        }
+
+        /// <summary>
+        /// The set enable.
+        /// </summary>
+        /// <param name="enable">
+        /// The enable.
+        /// </param>
+        public override void SetEnable(bool enable)
+        {
+            this.SettingsGrid.IsEnabled = enable;
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The hide options dialog.
+        /// </summary>
         private void HideOptionsDialog()
         {
-            grid_optionsdialog.IsEnabled = false;
-            DoubleAnimation da_ShowS = new DoubleAnimation(0, -250, new Duration(TimeSpan.FromSeconds(0.5)));
-            da_ShowS.EasingFunction = new ElasticEase();
-            ((ElasticEase)da_ShowS.EasingFunction).EasingMode = EasingMode.EaseIn;
-            ((ElasticEase)da_ShowS.EasingFunction).Oscillations = 1;
+            this.GridOptionsdialog.IsEnabled = false;
+            DoubleAnimation showAnimation = new DoubleAnimation(0, -250, new Duration(TimeSpan.FromSeconds(0.5)))
+                                                {
+                                                    EasingFunction = new ElasticEase()
+                                                };
+            ((ElasticEase)showAnimation.EasingFunction).EasingMode = EasingMode.EaseIn;
+            ((ElasticEase)showAnimation.EasingFunction).Oscillations = 1;
             TranslateTransform tt2 = new TranslateTransform();
-            grid_optionsdialog.RenderTransform = tt2;
-            tt2.BeginAnimation(TranslateTransform.YProperty, da_ShowS);
-            new System.Threading.Thread(delegate()
-            {
-                System.Threading.Thread.Sleep(500);
-                this.Dispatcher.Invoke((App.SimpleVoid_Delegate)delegate()
-                {
-                    gb_hook.IsEnabled =
-                    gb_tap.IsEnabled =
-                    ActiveGrabber.IsEditable =
-                    lbl_grabber_active.IsEnabled = true;
-                }, new object[] { });
-            }) { IsBackground = true }.Start();
+            this.GridOptionsdialog.RenderTransform = tt2;
+            tt2.BeginAnimation(TranslateTransform.YProperty, showAnimation);
+            new Thread(
+                delegate()
+                    {
+                        Thread.Sleep(500);
+                        this.Dispatcher.Invoke(
+                            (App.SimpleVoidDelegate)
+                            delegate
+                                {
+                                    this.GbHook.IsEnabled =
+                                        this.gb_tap.IsEnabled =
+                                        this.ActiveGrabber.IsEditable = this.LblGrabberActive.IsEnabled = true;
+                                }, 
+                            new object[] { });
+                    }) {
+                          IsBackground = true 
+                       }.Start();
         }
 
+        /// <summary>
+        /// The show options dialog.
+        /// </summary>
         private void ShowOptionsDialog()
         {
-            gb_hook.IsEnabled =
-            gb_tap.IsEnabled =
-            ActiveGrabber.IsEditable =
-            lbl_grabber_active.IsEnabled = false;
-            DoubleAnimation da_ShowS = new DoubleAnimation(-250, 0, new Duration(TimeSpan.FromSeconds(0.5)));
-            da_ShowS.EasingFunction = new ElasticEase();
-            ((ElasticEase)da_ShowS.EasingFunction).EasingMode = EasingMode.EaseOut;
-            ((ElasticEase)da_ShowS.EasingFunction).Oscillations = 50;
+            this.GbHook.IsEnabled =
+                this.gb_tap.IsEnabled = this.ActiveGrabber.IsEditable = this.LblGrabberActive.IsEnabled = false;
+            DoubleAnimation showAnimation = new DoubleAnimation(-250, 0, new Duration(TimeSpan.FromSeconds(0.5)))
+                                                {
+                                                    EasingFunction = new ElasticEase()
+                                                };
+            ((ElasticEase)showAnimation.EasingFunction).EasingMode = EasingMode.EaseOut;
+            ((ElasticEase)showAnimation.EasingFunction).Oscillations = 50;
             TranslateTransform tt2 = new TranslateTransform();
-            grid_optionsdialog.RenderTransform = tt2;
-            tt2.BeginAnimation(TranslateTransform.YProperty, da_ShowS);
-            new System.Threading.Thread(delegate()
+            this.GridOptionsdialog.RenderTransform = tt2;
+            tt2.BeginAnimation(TranslateTransform.YProperty, showAnimation);
+            new Thread(
+                delegate()
+                    {
+                        Thread.Sleep(1000);
+                        this.Dispatcher.Invoke(
+                            (App.SimpleVoidDelegate)delegate { this.GridOptionsdialog.IsEnabled = true; }, 
+                            new object[] { });
+                    }) {
+                          IsBackground = true 
+                       }.Start();
+        }
+
+        /// <summary>
+        /// The hook add click.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void BtnHookAddClick(object sender, RoutedEventArgs e)
+        {
+            this.HookAddItem();
+        }
+
+        /// <summary>
+        /// The hook cancel-edit click.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void BtnHookEditCancelClick(object sender, RoutedEventArgs e)
+        {
+            this.HideOptionsDialog();
+        }
+
+        /// <summary>
+        /// The hook ok-edit click.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void BtnHookEditOkClick(object sender, RoutedEventArgs e)
+        {
+            this.HookSaveItem();
+        }
+
+        /// <summary>
+        /// The hook remove click.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void BtnHookRemoveClick(object sender, RoutedEventArgs e)
+        {
+            string[] pc = new string[this.LbHookProcesses.SelectedItems.Count];
+            this.LbHookProcesses.SelectedItems.CopyTo(pc, 0);
+            foreach (string s in pc)
             {
-                System.Threading.Thread.Sleep(1000);
-                this.Dispatcher.Invoke((App.SimpleVoid_Delegate)delegate()
-                {
-                    grid_optionsdialog.IsEnabled = true;
-                }, new object[] { });
-            }) { IsBackground = true }.Start();
+                this.LbHookProcesses.Items.Remove(s);
+            }
+
+            this.LbHookProcesses.SelectedItems.Clear();
+            this.SaveSettings();
         }
 
-        private void btn_hook_edit_cancel_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// The grabber selection changed.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void CbGrabberActiveSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            HideOptionsDialog();
+            this.SaveSettings();
         }
 
-        private void btn_hook_edit_ok_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// The txt_ text box_ lost focus.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void TxtTextBoxLostFocus(object sender, RoutedEventArgs e)
         {
-            Hook_SaveItem();
+            this.SaveSettings();
         }
+
+        /// <summary>
+        /// The TAP IPAddress lost focus.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void TxtTapIpaddressLostFocus(object sender, RoutedEventArgs e)
+        {
+            IPAddress ip;
+            if (this.TxtTapIpaddress.Text.Split('.').Length != 4
+                || !IPAddress.TryParse(this.TxtTapIpaddress.Text, out ip) || ip.GetAddressBytes()[3] != 0)
+            {
+                this.TxtTapIpaddress.Text = "10.0.0.0";
+                VDialog.Show(
+                    "IP address is not acceptable.", 
+                    "Data Validation", 
+                    MessageBoxButtons.OK, 
+                    MessageBoxIcon.Exclamation);
+                new Thread(
+                    delegate()
+                        {
+                            Thread.Sleep(10);
+                            this.Dispatcher.Invoke(
+                                (App.SimpleVoidDelegate)(() => this.TxtTapIpaddress.Focus()), 
+                                new object[] { });
+                        }) {
+                              IsBackground = true 
+                           }.Start();
+            }
+            else
+            {
+                this.TxtTapIpaddress.Text = ip.ToString();
+            }
+
+            this.SaveSettings();
+        }
+
+        #endregion
     }
 }

@@ -1,37 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Updater.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   The updater.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
-namespace PeaRoxy.Windows
+namespace PeaRoxy.Windows.Updater
 {
-    public class iUpdater
+    /// <summary>
+    /// The updater.
+    /// </summary>
+    public class Updater
     {
-        public delegate void DownloadCompleted(bool success, EventArgs e);
-        public delegate void ByteDownloaded(int readedBytes,int totalBytes, EventArgs e);
-        //public static event DownloadCompleted downloadCompleted;
-        //public static event ByteDownloaded byteDownloaded;
-        private Uri uri;
-        private System.Net.WebProxy proxy;
-        public iUpdater(string updateURL, System.Net.WebProxy connectionProxy)
-        {
-            proxy = connectionProxy;
-            uri = new Uri(updateURL);
-        }
-
-        public bool IsUpdateNeeded(Version currentVersion)
-        {
-            return false;
-        }
-
-        public void StartDownloading()
-        {
-
-        }
-
-        public void InstallUpdate()
-        {
-
-        }
     }
 }

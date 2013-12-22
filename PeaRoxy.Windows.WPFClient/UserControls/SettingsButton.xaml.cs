@@ -1,106 +1,265 @@
-﻿using PeaRoxy.Windows.WPFClient.SettingTabs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="SettingsButton.xaml.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   Interaction logic for SettingsButton.xaml
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.Windows.WPFClient.UserControls
 {
+    #region
+
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Windows;
+    using System.Windows.Input;
+    using System.Windows.Media;
+    using System.Windows.Media.Animation;
+
+    using PeaRoxy.Windows.WPFClient.SettingTabs;
+
+    #endregion
+
     /// <summary>
-    /// Interaction logic for SettingsButton.xaml
+    ///     Interaction logic for SettingsButton.xaml
     /// </summary>
-    public partial class SettingsButton : UserControl
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
+    public partial class SettingsButton
     {
+        #region Fields
+
+        /// <summary>
+        /// The is selected.
+        /// </summary>
+        private bool isSelected;
+
+        #endregion
+
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SettingsButton"/> class.
+        /// </summary>
+        public SettingsButton()
+        {
+            this.InitializeComponent();
+        }
+
+        #endregion
+
+        #region Public Events
+
+        /// <summary>
+        /// The selected changed.
+        /// </summary>
         public event RoutedEventHandler SelectedChanged;
+
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Gets or sets the image.
+        /// </summary>
+        public ImageSource Image
+        {
+            // ReSharper disable once UnusedMember.Global
+            get
+            {
+                return this.Img.Source;
+            }
+
+            set
+            {
+                this.Img.Source = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the settings page.
+        /// </summary>
         public Base SettingsPage { get; set; }
-        public bool isSelected
+
+        /// <summary>
+        /// Gets or sets the text.
+        /// </summary>
+        public string Text
+        {
+            // ReSharper disable once UnusedMember.Global
+            get
+            {
+                return (string)this.Label.Content;
+            }
+
+            set
+            {
+                this.Label.Content = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the tooltip text.
+        /// </summary>
+        public string TooltipText
+        {
+            // ReSharper disable once UnusedMember.Global
+            get
+            {
+                return ((Tooltip)this.Button.ToolTip).Text;
+            }
+
+            set
+            {
+                ((Tooltip)this.Button.ToolTip).Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the tooltip title.
+        /// </summary>
+        public string TooltipTitle
+        {
+            // ReSharper disable once UnusedMember.Global
+            get
+            {
+                return ((Tooltip)this.Button.ToolTip).Title;
+            }
+
+            set
+            {
+                ((Tooltip)this.Button.ToolTip).Title = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether is selected.
+        /// </summary>
+        public bool IsSelected
         {
             get
             {
-                return _isSelected;
+                return this.isSelected;
             }
+
             set
             {
-                if (value != _isSelected)
+                if (value != this.isSelected)
                 {
-                    _isSelected = value;
-                    if (_isSelected)
+                    this.isSelected = value;
+                    if (this.isSelected)
                     {
-                        DoubleAnimation da_ShowS = new DoubleAnimation(5, 20, new Duration(TimeSpan.FromSeconds(0.3)));
+                        DoubleAnimation showAnimation = new DoubleAnimation(5, 20, new Duration(TimeSpan.FromSeconds(0.3)));
                         TranslateTransform tt2 = new TranslateTransform();
-                        _button.RenderTransform = tt2;
-                        da_ShowS.DecelerationRatio = 0.8;
-                        tt2.BeginAnimation(TranslateTransform.XProperty, da_ShowS);
+                        this.Button.RenderTransform = tt2;
+                        showAnimation.DecelerationRatio = 0.8;
+                        tt2.BeginAnimation(TranslateTransform.XProperty, showAnimation);
                     }
                     else
                     {
-                        DoubleAnimation da_HideL = new DoubleAnimation(20, 0, new Duration(TimeSpan.FromSeconds(0.2)));
+                        DoubleAnimation hideAnimation = new DoubleAnimation(20, 0, new Duration(TimeSpan.FromSeconds(0.2)));
                         TranslateTransform tt = new TranslateTransform();
-                        _button.RenderTransform = tt;
-                        tt.BeginAnimation(TranslateTransform.XProperty, da_HideL);
-                        DoubleAnimation da_IncOpa = new DoubleAnimation(1, 0.7, new Duration(TimeSpan.FromSeconds(0.3)));
-                        _button.BeginAnimation(Button.OpacityProperty, da_IncOpa);
+                        this.Button.RenderTransform = tt;
+                        tt.BeginAnimation(TranslateTransform.XProperty, hideAnimation);
+                        DoubleAnimation opacityAnimation = new DoubleAnimation(1, 0.7, new Duration(TimeSpan.FromSeconds(0.3)));
+                        this.Button.BeginAnimation(OpacityProperty, opacityAnimation);
                     }
-                    if (SelectedChanged != null)
-                        SelectedChanged(this, new RoutedEventArgs());
+
+                    if (this.SelectedChanged != null)
+                    {
+                        this.SelectedChanged(this, new RoutedEventArgs());
+                    }
                 }
             }
         }
-        private bool _isSelected = false;
-        public string TooltipTitle { get { return ((Tooltip)_button.ToolTip).Title; } set { ((Tooltip)_button.ToolTip).Title = value; } }
-        public string TooltipText { get { return ((Tooltip)_button.ToolTip).Text; } set { ((Tooltip)_button.ToolTip).Text = value; } }
-        public string Text { get { return (string)_label.Content; } set { _label.Content = value; } }
-        public ImageSource Image { get { return _image.Source; } set { _image.Source = value; } }
-        public SettingsButton()
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The Button_ click.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void ButtonClick(object sender, RoutedEventArgs e)
         {
-            InitializeComponent();
+            this.IsSelected = true;
         }
 
-        private void _button_MouseEnter(object sender, MouseEventArgs e)
+        /// <summary>
+        /// The Button_ mouse enter.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void ButtonMouseEnter(object sender, MouseEventArgs e)
         {
-            if (isSelected) return;
-            if ((SettingsPage != null && !_button.Equals(SettingsPage)) || SettingsPage == null)
+            if (this.IsSelected)
             {
-                DoubleAnimation da_ShowS = new DoubleAnimation(0, 5, new Duration(TimeSpan.FromSeconds(0.3)));
-                TranslateTransform tt = new TranslateTransform();
-                _button.RenderTransform = tt;
-                da_ShowS.DecelerationRatio = 0.8;
-                tt.BeginAnimation(TranslateTransform.XProperty, da_ShowS);
-
-                DoubleAnimation da_IncOpa = new DoubleAnimation(0.7, 1, new Duration(TimeSpan.FromSeconds(0.3)));
-                _button.BeginAnimation(Button.OpacityProperty, da_IncOpa);
+                return;
             }
-        }
 
-        private void _button_MouseLeave(object sender, MouseEventArgs e)
-        {
-            if (isSelected) return;
-            if ((SettingsPage != null && !_button.Equals(SettingsPage)) || SettingsPage == null)
+            if ((this.SettingsPage == null || this.Button.Content.Equals(this.SettingsPage))
+                && this.SettingsPage != null)
             {
-                DoubleAnimation da_HideS = new DoubleAnimation(5, 0, new Duration(TimeSpan.FromSeconds(0.2)));
-                da_HideS.DecelerationRatio = 0.8;
-                TranslateTransform tt = new TranslateTransform();
-                _button.RenderTransform = tt;
-                tt.BeginAnimation(TranslateTransform.XProperty, da_HideS);
-
-                DoubleAnimation da_IncOpa = new DoubleAnimation(1, 0.7, new Duration(TimeSpan.FromSeconds(0.3)));
-                _button.BeginAnimation(Button.OpacityProperty, da_IncOpa);
+                return;
             }
+
+            DoubleAnimation showAnimation = new DoubleAnimation(0, 5, new Duration(TimeSpan.FromSeconds(0.3)));
+            TranslateTransform translateTransform = new TranslateTransform();
+            this.Button.RenderTransform = translateTransform;
+            showAnimation.DecelerationRatio = 0.8;
+            translateTransform.BeginAnimation(TranslateTransform.XProperty, showAnimation);
+
+            DoubleAnimation opacityAnimation = new DoubleAnimation(0.7, 1, new Duration(TimeSpan.FromSeconds(0.3)));
+            this.Button.BeginAnimation(OpacityProperty, opacityAnimation);
         }
 
-        private void _button_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// The Button_ mouse leave.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void ButtonMouseLeave(object sender, MouseEventArgs e)
         {
-            isSelected = true;
+            if (this.IsSelected)
+            {
+                return;
+            }
+
+            if ((this.SettingsPage == null || this.Button.Content.Equals(this.SettingsPage)) && this.SettingsPage != null)
+            {
+                return;
+            }
+
+            DoubleAnimation hideAnimation = new DoubleAnimation(5, 0, new Duration(TimeSpan.FromSeconds(0.2)))
+                                                {
+                                                    DecelerationRatio
+                                                        =
+                                                        0.8
+                                                };
+            TranslateTransform translateTransform = new TranslateTransform();
+            this.Button.RenderTransform = translateTransform;
+            translateTransform.BeginAnimation(TranslateTransform.XProperty, hideAnimation);
+
+            DoubleAnimation opacityAnimation = new DoubleAnimation(1, 0.7, new Duration(TimeSpan.FromSeconds(0.3)));
+            this.Button.BeginAnimation(OpacityProperty, opacityAnimation);
         }
+
+        #endregion
     }
 }

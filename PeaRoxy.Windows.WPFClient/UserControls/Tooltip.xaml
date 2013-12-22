@@ -1,18 +1,21 @@
 ﻿<UserControl x:Class="PeaRoxy.Windows.WPFClient.UserControls.Tooltip"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" 
-             d:DesignHeight="100" d:DesignWidth="200" MinWidth="200" MaxWidth="400" Loaded="UserControl_Loaded">
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="100" d:DesignWidth="200" MinWidth="200" MaxWidth="400" Loaded="UserControlLoaded">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="0*" />
             <ColumnDefinition Width="300*" />
         </Grid.ColumnDefinitions>
-        <Label Content="" Height="25" Name="lbl_title" VerticalAlignment="Top" HorizontalAlignment="Stretch" FontSize="12" FontStyle="Normal" FontWeight="Bold" Grid.Column="1" />
-        <Label Name="text_co" Margin="0,22,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" BorderThickness="0,1,0,0" BorderBrush="#FF2E2E2E" Grid.Column="1">
-            <TextBlock TextWrapping="WrapWithOverflow" Name="lbl_data" Margin="0,0,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></TextBlock>
+        <Label Content="" Height="25" Name="TitleLabel" VerticalAlignment="Top" HorizontalAlignment="Stretch"
+               FontSize="12" FontStyle="Normal" FontWeight="Bold" Grid.Column="1" x:FieldModifier="private" />
+        <Label Name="TextLabel" Margin="0,22,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+               BorderThickness="0,1,0,0" BorderBrush="#FF2E2E2E" Grid.Column="1" x:FieldModifier="private">
+            <TextBlock TextWrapping="WrapWithOverflow" Name="DataBlock" Margin="0,0,0,0" VerticalAlignment="Stretch"
+                       HorizontalAlignment="Stretch" x:FieldModifier="private" />
         </Label>
     </Grid>
 </UserControl>

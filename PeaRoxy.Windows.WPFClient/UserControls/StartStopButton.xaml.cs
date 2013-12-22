@@ -1,156 +1,341 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="StartStopButton.xaml.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   Interaction logic for StartStop.xaml
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.Windows.WPFClient.UserControls
 {
+    #region
+
+    using System.Diagnostics.CodeAnalysis;
+    using System.Threading;
+    using System.Windows;
+
+    #endregion
+
     /// <summary>
-    /// Interaction logic for StartStop.xaml
+    ///     Interaction logic for StartStop.xaml
     /// </summary>
-    public partial class StartStopButton : UserControl
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
+    public partial class StartStopButton
     {
-        public enum Status
+        #region Static Fields
+
+        /// <summary>
+        /// The minimize click event.
+        /// </summary>
+        public static readonly RoutedEvent MinimizeClickEvent = EventManager.RegisterRoutedEvent(
+            "MinimizeClick", 
+            RoutingStrategy.Bubble, 
+            typeof(RoutedEventHandler), 
+            typeof(StartStopButton));
+
+        /// <summary>
+        /// The start click event.
+        /// </summary>
+        public static readonly RoutedEvent StartClickEvent = EventManager.RegisterRoutedEvent(
+            "StartClick", 
+            RoutingStrategy.Bubble, 
+            typeof(RoutedEventHandler), 
+            typeof(StartStopButton));
+
+        /// <summary>
+        /// The stop click event.
+        /// </summary>
+        public static readonly RoutedEvent StopClickEvent = EventManager.RegisterRoutedEvent(
+            "StopClick", 
+            RoutingStrategy.Bubble, 
+            typeof(RoutedEventHandler), 
+            typeof(StartStopButton));
+
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        /// The current status.
+        /// </summary>
+        private Status currentStatus = Status.Hide;
+
+        /// <summary>
+        /// The desired status.
+        /// </summary>
+        private Status desiredStatus = Status.Hide;
+
+        /// <summary>
+        /// The in animation.
+        /// </summary>
+        private bool inAnimation;
+
+        #endregion
+
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StartStopButton"/> class.
+        /// </summary>
+        public StartStopButton()
         {
-            Hide,
-            ShowStart,
-            ShowStop
+            this.InitializeComponent();
         }
-        public static readonly RoutedEvent MinimizeClickEvent = EventManager.RegisterRoutedEvent("MinimizeClick", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(StartStopButton));
+
+        #endregion
+
+        #region Public Events
+
+        /// <summary>
+        /// The minimize click.
+        /// </summary>
         public event RoutedEventHandler MinimizeClick
         {
-            add { AddHandler(MinimizeClickEvent, value); }
-            remove { RemoveHandler(MinimizeClickEvent, value); }
+            add
+            {
+                this.AddHandler(MinimizeClickEvent, value);
+            }
+
+            remove
+            {
+                this.RemoveHandler(MinimizeClickEvent, value);
+            }
         }
-        public static readonly RoutedEvent StopClickEvent = EventManager.RegisterRoutedEvent("StopClick", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(StartStopButton));
-        public event RoutedEventHandler StopClick
-        {
-            add { AddHandler(StopClickEvent, value); }
-            remove { RemoveHandler(StopClickEvent, value); }
-        }
-        public static readonly RoutedEvent StartClickEvent = EventManager.RegisterRoutedEvent("StartClick", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(StartStopButton));
+
+        /// <summary>
+        /// The start click.
+        /// </summary>
         public event RoutedEventHandler StartClick
         {
-            add { AddHandler(StartClickEvent, value); }
-            remove { RemoveHandler(StartClickEvent, value); }
+            add
+            {
+                this.AddHandler(StartClickEvent, value);
+            }
+
+            remove
+            {
+                this.RemoveHandler(StartClickEvent, value);
+            }
         }
-        Status desiredStatus = Status.Hide;
-        Status currentStatus = Status.Hide;
-        bool inAnimation = false;
+
+        /// <summary>
+        /// The stop click.
+        /// </summary>
+        public event RoutedEventHandler StopClick
+        {
+            add
+            {
+                this.AddHandler(StopClickEvent, value);
+            }
+
+            remove
+            {
+                this.RemoveHandler(StopClickEvent, value);
+            }
+        }
+
+        #endregion
+
+        #region Enums
+
+        /// <summary>
+        /// The status.
+        /// </summary>
+        public enum Status
+        {
+            /// <summary>
+            /// The hide.
+            /// </summary>
+            Hide, 
+
+            /// <summary>
+            /// The show start.
+            /// </summary>
+            ShowStart, 
+
+            /// <summary>
+            /// The show stop.
+            /// </summary>
+            ShowStop
+        }
+
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Sets the current status.
+        /// </summary>
         public Status CurrentStatus
         {
             set
             {
-                desiredStatus = value;
-                if (inAnimation)
-                    return;
-
-                if (currentStatus != value)
+                this.desiredStatus = value;
+                if (this.inAnimation)
                 {
-                    inAnimation = true;
-                    btn_disconnect.IsEnabled = false;
-                    btn_connect.IsEnabled = false;
-                    btn_exit.IsEnabled = false;
-                    btn_disconnect.Visibility = System.Windows.Visibility.Hidden;
-                    btn_connect.Visibility = System.Windows.Visibility.Hidden;
-                    btn_exit.Visibility = System.Windows.Visibility.Hidden;
-                    cc3d_Exit.AnimationLength = 800;
-                    cc3d_Stop_Start.AnimationLength = 900;
+                    return;
+                }
+
+                if (this.currentStatus != value)
+                {
+                    this.inAnimation = true;
+                    this.BtnDisconnect.IsEnabled = false;
+                    this.BtnConnect.IsEnabled = false;
+                    this.BtnExit.IsEnabled = false;
+                    this.BtnDisconnect.Visibility = Visibility.Hidden;
+                    this.BtnConnect.Visibility = Visibility.Hidden;
+                    this.BtnExit.Visibility = Visibility.Hidden;
+                    this.cc3d_Exit.AnimationLength = 800;
+                    this.Cc3DStopStart.AnimationLength = 900;
                     if (value == Status.ShowStop)
                     {
-                        btn_disconnect.Visibility = System.Windows.Visibility.Visible;
-                        btn_exit.Visibility = System.Windows.Visibility.Visible;
-                        if (currentStatus != Status.Hide)
-                            btn_connect.Visibility = System.Windows.Visibility.Visible;
+                        this.BtnDisconnect.Visibility = Visibility.Visible;
+                        this.BtnExit.Visibility = Visibility.Visible;
+                        if (this.currentStatus != Status.Hide)
+                        {
+                            this.BtnConnect.Visibility = Visibility.Visible;
+                        }
                     }
                     else if (value == Status.ShowStart)
                     {
-                        btn_connect.Visibility = System.Windows.Visibility.Visible;
-                        btn_exit.Visibility = System.Windows.Visibility.Visible;
-                        if (currentStatus != Status.Hide)
-                            btn_disconnect.Visibility = System.Windows.Visibility.Visible;
+                        this.BtnConnect.Visibility = Visibility.Visible;
+                        this.BtnExit.Visibility = Visibility.Visible;
+                        if (this.currentStatus != Status.Hide)
+                        {
+                            this.BtnDisconnect.Visibility = Visibility.Visible;
+                        }
                     }
                     else if (value == Status.Hide)
                     {
-                        if (currentStatus == Status.ShowStart)
-                            btn_connect.Visibility = System.Windows.Visibility.Visible;
-                        else if (currentStatus == Status.ShowStop)
-                            btn_disconnect.Visibility = System.Windows.Visibility.Visible;
-                        btn_exit.Visibility = System.Windows.Visibility.Visible;
+                        if (this.currentStatus == Status.ShowStart)
+                        {
+                            this.BtnConnect.Visibility = Visibility.Visible;
+                        }
+                        else if (this.currentStatus == Status.ShowStop)
+                        {
+                            this.BtnDisconnect.Visibility = Visibility.Visible;
+                        }
+
+                        this.BtnExit.Visibility = Visibility.Visible;
                     }
 
                     if (value == Status.Hide)
-                        cc3d_Exit.BringFrontSideIntoView();
-                    else if (currentStatus == Status.Hide)
-                        cc3d_Exit.BringBackSideIntoView();
-
-                    if (value == Status.ShowStart || (value == Status.Hide && currentStatus == Status.ShowStop))
-                        cc3d_Stop_Start.BringBackSideIntoView();
-                    else if (value == Status.ShowStop || (value == Status.Hide && currentStatus == Status.ShowStart))
-                        cc3d_Stop_Start.BringFrontSideIntoView();
-
-                    currentStatus = value;
-                }
-                new System.Threading.Thread(delegate()
-                {
-                    //int timeOut = 0;
-                    while (inAnimation) // && timeOut < 20)
                     {
-                        this.Dispatcher.Invoke((App.SimpleVoid_Delegate)delegate()
-                        {
-                            if (cc3d_Stop_Start.IsRotating || cc3d_Exit.IsRotating)
-                                return;
-
-                            if (currentStatus == Status.ShowStop)
-                            {
-                                btn_disconnect.IsEnabled = true;
-                                btn_exit.IsEnabled = true;
-                            }
-                            else if (currentStatus == Status.ShowStart)
-                            {
-                                btn_connect.IsEnabled = true;
-                                btn_exit.IsEnabled = true;
-                            }
-                            inAnimation = false;
-                        }, new object[] { });
-                        System.Threading.Thread.Sleep((int)(100));
-                        //timeOut++;
+                        this.cc3d_Exit.BringFrontSideIntoView();
                     }
-                    this.Dispatcher.Invoke((App.SimpleVoid_Delegate)delegate()
+                    else if (this.currentStatus == Status.Hide)
                     {
-                        if (currentStatus != desiredStatus)
-                            CurrentStatus = desiredStatus;
-                    });
-                }) { IsBackground = true }.Start();
+                        this.cc3d_Exit.BringBackSideIntoView();
+                    }
+
+                    if (value == Status.ShowStart || (value == Status.Hide && this.currentStatus == Status.ShowStop))
+                    {
+                        this.Cc3DStopStart.BringBackSideIntoView();
+                    }
+                    else if (value == Status.ShowStop || (value == Status.Hide && this.currentStatus == Status.ShowStart))
+                    {
+                        this.Cc3DStopStart.BringFrontSideIntoView();
+                    }
+
+                    this.currentStatus = value;
+                }
+
+                new Thread(
+                    delegate()
+                        {
+                            // int timeOut = 0;
+                            while (this.inAnimation)
+                            {
+                                // && timeOut < 20)
+                                this.Dispatcher.Invoke(
+                                    (App.SimpleVoidDelegate)delegate
+                                        {
+                                            if (this.Cc3DStopStart.IsRotating || this.cc3d_Exit.IsRotating)
+                                            {
+                                                return;
+                                            }
+
+                                            if (this.currentStatus == Status.ShowStop)
+                                            {
+                                                this.BtnDisconnect.IsEnabled = true;
+                                                this.BtnExit.IsEnabled = true;
+                                            }
+                                            else if (this.currentStatus == Status.ShowStart)
+                                            {
+                                                this.BtnConnect.IsEnabled = true;
+                                                this.BtnExit.IsEnabled = true;
+                                            }
+
+                                            this.inAnimation = false;
+                                        }, 
+                                    new object[] { });
+                                Thread.Sleep(100);
+
+                                // timeOut++;
+                            }
+
+                            this.Dispatcher.Invoke(
+                                (App.SimpleVoidDelegate)delegate
+                                    {
+                                        if (this.currentStatus != this.desiredStatus)
+                                        {
+                                            this.CurrentStatus = this.desiredStatus;
+                                        }
+                                    });
+                        }) {
+                              IsBackground = true 
+                           }.Start();
             }
         }
-        public StartStopButton()
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The btn_connect_ click.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void BtnConnectClick(object sender, RoutedEventArgs e)
         {
-            InitializeComponent();
+            this.RaiseEvent(new RoutedEventArgs(StartClickEvent));
         }
 
-        private void btn_exit_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// The btn_dissconnect_ click.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void BtnDissconnectClick(object sender, RoutedEventArgs e)
         {
-            RaiseEvent(new RoutedEventArgs(StartStopButton.MinimizeClickEvent));
+            this.RaiseEvent(new RoutedEventArgs(StopClickEvent));
         }
 
-        private void btn_dissconnect_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// The btn_exit_ click.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void BtnExitClick(object sender, RoutedEventArgs e)
         {
-            RaiseEvent(new RoutedEventArgs(StartStopButton.StopClickEvent));
+            this.RaiseEvent(new RoutedEventArgs(MinimizeClickEvent));
         }
 
-        private void btn_connect_Click(object sender, RoutedEventArgs e)
-        {
-            RaiseEvent(new RoutedEventArgs(StartStopButton.StartClickEvent));
-        }
+        #endregion
     }
 }

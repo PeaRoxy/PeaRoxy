@@ -1,182 +1,510 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="ToolbarButtons.xaml.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   Interaction logic for ToolbarButtons.xaml
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.Windows.WPFClient.UserControls
 {
+    #region
+
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Threading;
+    using System.Windows;
+    using System.Windows.Controls;
+    using System.Windows.Controls.Primitives;
+    using System.Windows.Input;
+    using System.Windows.Media;
+    using System.Windows.Media.Animation;
+    using System.Windows.Shapes;
+
+    #endregion
+
     /// <summary>
-    /// Interaction logic for ToolbarButtons.xaml
+    ///     Interaction logic for ToolbarButtons.xaml
     /// </summary>
-    public partial class ToolbarButtons : UserControl
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", 
+        Justification = "Reviewed. Suppression is OK here.")]
+    public partial class ToolbarButtons
     {
-        public new MainWindow Parent;
-        public enum State
-        {
-            Back,
-            Option
-        }
-        public enum Color
-        {
-            White,
-            Red,
-            Blue,
-            Yellow
-        }
-        public class MenuItemEventArgs : RoutedEventArgs
-        {
-            public MenuItem SenderMenuItem { get; private set; }
-            public MenuItemEventArgs(RoutedEvent routedEvent, MenuItem sender)
-                : base(routedEvent) { SenderMenuItem = sender; }
-        }
-        public static readonly RoutedEvent BackClickEvent = EventManager.RegisterRoutedEvent("BackClick", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(ToolbarButtons));
-        public event RoutedEventHandler BackClick
-        {
-            add { AddHandler(BackClickEvent, value); }
-            remove { RemoveHandler(BackClickEvent, value); }
-        }
-        public static readonly RoutedEvent OptionClickEvent = EventManager.RegisterRoutedEvent("OptionClick", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(ToolbarButtons));
-        public event RoutedEventHandler OptionClick
-        {
-            add { AddHandler(OptionClickEvent, value); }
-            remove { RemoveHandler(OptionClickEvent, value); }
-        }
-        public static readonly RoutedEvent GrabberSelectedChangedEvent = EventManager.RegisterRoutedEvent("GrabberSelectedChanged", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(ToolbarButtons));
-        public event RoutedEventHandler GrabberSelectedChanged
-        {
-            add { AddHandler(GrabberSelectedChangedEvent, value); }
-            remove { RemoveHandler(GrabberSelectedChangedEvent, value); }
-        }
-        public static readonly RoutedEvent SmartPearSelectedChangedEvent = EventManager.RegisterRoutedEvent("SmartPearSelectedChanged", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(ToolbarButtons));
-        public event RoutedEventHandler SmartPearSelectedChanged
-        {
-            add { AddHandler(SmartPearSelectedChangedEvent, value); }
-            remove { RemoveHandler(SmartPearSelectedChangedEvent, value); }
-        }
-        public static readonly RoutedEvent SmartPearUpdateClickEvent = EventManager.RegisterRoutedEvent("SmartPearUpdateClick", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(ToolbarButtons));
-        public event RoutedEventHandler SmartPearUpdateClick
-        {
-            add { AddHandler(SmartPearUpdateClickEvent, value); }
-            remove { RemoveHandler(SmartPearUpdateClickEvent, value); }
-        }
-        public static readonly RoutedEvent ReConfigClickEvent = EventManager.RegisterRoutedEvent("ReConfigClick", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(ToolbarButtons));
-        public event RoutedEventHandler ReConfigClick
-        {
-            add { AddHandler(ReConfigClickEvent, value); }
-            remove { RemoveHandler(ReConfigClickEvent, value); }
-        }
+        #region Static Fields
 
-        private void btn_options_Click(object sender, RoutedEventArgs e)
-        {
-            RaiseEvent(new RoutedEventArgs(ToolbarButtons.OptionClickEvent));
-        }
+        /// <summary>
+        ///     The back click event.
+        /// </summary>
+        public static readonly RoutedEvent BackClickEvent = EventManager.RegisterRoutedEvent(
+            "BackClick", 
+            RoutingStrategy.Bubble, 
+            typeof(RoutedEventHandler), 
+            typeof(ToolbarButtons));
 
-        private void btn_back_Click(object sender, RoutedEventArgs e)
-        {
-            RaiseEvent(new RoutedEventArgs(ToolbarButtons.BackClickEvent));
-        }
+        /// <summary>
+        ///     The grabber selected changed event.
+        /// </summary>
+        public static readonly RoutedEvent GrabberSelectedChangedEvent =
+            EventManager.RegisterRoutedEvent(
+                "GrabberSelectedChanged", 
+                RoutingStrategy.Bubble, 
+                typeof(RoutedEventHandler), 
+                typeof(ToolbarButtons));
 
-        private void btn_qb_reconfig_Click(object sender, RoutedEventArgs e)
-        {
-            RaiseEvent(new RoutedEventArgs(ToolbarButtons.ReConfigClickEvent));
-        }
+        /// <summary>
+        ///     The option click event.
+        /// </summary>
+        public static readonly RoutedEvent OptionClickEvent = EventManager.RegisterRoutedEvent(
+            "OptionClick", 
+            RoutingStrategy.Bubble, 
+            typeof(RoutedEventHandler), 
+            typeof(ToolbarButtons));
 
-        private void mi_smartpear_update_Click(object sender, RoutedEventArgs e)
-        {
-            RaiseEvent(new RoutedEventArgs(ToolbarButtons.SmartPearUpdateClickEvent));
-        }
+        /// <summary>
+        ///     The re config click event.
+        /// </summary>
+        public static readonly RoutedEvent ReConfigClickEvent = EventManager.RegisterRoutedEvent(
+            "ReConfigClick", 
+            RoutingStrategy.Bubble, 
+            typeof(RoutedEventHandler), 
+            typeof(ToolbarButtons));
 
-        private void mi_smartpear_Click(object sender, RoutedEventArgs e)
-        {
-            RaiseEvent(new MenuItemEventArgs(ToolbarButtons.SmartPearSelectedChangedEvent, sender as MenuItem));
-        }
+        /// <summary>
+        ///     The smart pear selected changed event.
+        /// </summary>
+        public static readonly RoutedEvent SmartPearSelectedChangedEvent =
+            EventManager.RegisterRoutedEvent(
+                "SmartPearSelectedChanged", 
+                RoutingStrategy.Bubble, 
+                typeof(RoutedEventHandler), 
+                typeof(ToolbarButtons));
 
-        private void mi_grabber_Click(object sender, RoutedEventArgs e)
-        {
-            RaiseEvent(new MenuItemEventArgs(ToolbarButtons.GrabberSelectedChangedEvent, sender as MenuItem));
-        }
+        /// <summary>
+        ///     The smart pear update click event.
+        /// </summary>
+        public static readonly RoutedEvent SmartPearUpdateClickEvent =
+            EventManager.RegisterRoutedEvent(
+                "SmartPearUpdateClick", 
+                RoutingStrategy.Bubble, 
+                typeof(RoutedEventHandler), 
+                typeof(ToolbarButtons));
 
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        ///     The navigator state.
+        /// </summary>
+        private State navigatorState = State.Option;
+
+        #endregion
+
+        #region Constructors and Destructors
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="ToolbarButtons" /> class.
+        /// </summary>
         public ToolbarButtons()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
 
-        private void btn_qb_Click(object sender, RoutedEventArgs e)
+        #endregion
+
+        #region Public Events
+
+        /// <summary>
+        ///     The back click.
+        /// </summary>
+        public event RoutedEventHandler BackClick
         {
-            ((Button)sender).ContextMenu.PlacementTarget = (Button)sender;
-            ((Button)sender).ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
-            ((Button)sender).ContextMenu.IsOpen = true;
+            add
+            {
+                this.AddHandler(BackClickEvent, value);
+            }
+
+            remove
+            {
+                this.RemoveHandler(BackClickEvent, value);
+            }
         }
 
-        private void img_optionsButton_MouseEnter(object sender, MouseEventArgs e)
+        /// <summary>
+        ///     The grabber selected changed.
+        /// </summary>
+        public event RoutedEventHandler GrabberSelectedChanged
         {
-            DoubleAnimation da;
-            if (img_optionsButton.Tag == null)
-                da = new DoubleAnimation(0, 360, Duration.Automatic);
-            else
-                da = img_optionsButton.Tag as DoubleAnimation;
+            add
+            {
+                this.AddHandler(GrabberSelectedChangedEvent, value);
+            }
 
-            da.Duration = new Duration(TimeSpan.FromSeconds(2));
-            da.RepeatBehavior = RepeatBehavior.Forever;
-            RotateTransform rt = img_optionsButton.RenderTransform as RotateTransform;
-            rt.BeginAnimation(RotateTransform.AngleProperty, da);
-            img_optionsButton.Tag = da;
+            remove
+            {
+                this.RemoveHandler(GrabberSelectedChangedEvent, value);
+            }
         }
 
-        private void img_optionsButton_MouseLeave(object sender, MouseEventArgs e)
+        /// <summary>
+        ///     The option click.
+        /// </summary>
+        public event RoutedEventHandler OptionClick
         {
-            if (img_optionsButton.Tag == null)
-                return;
+            add
+            {
+                this.AddHandler(OptionClickEvent, value);
+            }
 
-            DoubleAnimation da = img_optionsButton.Tag as DoubleAnimation;
-            da.RepeatBehavior = new RepeatBehavior(1);
-            da.Duration = new Duration(TimeSpan.FromSeconds(1));
-            RotateTransform rt = img_optionsButton.RenderTransform as RotateTransform;
-            rt.BeginAnimation(RotateTransform.AngleProperty, da);
+            remove
+            {
+                this.RemoveHandler(OptionClickEvent, value);
+            }
         }
 
-        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        /// <summary>
+        ///     The re config click.
+        /// </summary>
+        public event RoutedEventHandler ReConfigClick
         {
-            Parent = (MainWindow)Window.GetWindow(this);
-            ReConfigGrid.ToolTip = new UserControls.Tooltip("Reconfigure Windows/Applications",
-                "Configure Windows and Firefox to use PeaRoxy Client as proxy server."
-                );
+            add
+            {
+                this.AddHandler(ReConfigClickEvent, value);
+            }
 
-            GrabberGrid.ToolTip = new UserControls.Tooltip("Traffic Grabber",
-                "Select how you want us to grab traffic from applications:" + Environment.NewLine +
-                "" +
-                "[None:] No grabbing, applications and Windows use PeaRoxy as proxy if they want" + Environment.NewLine +
-                "[TAP Adapter:] Force Windows and applications to use PeaRoxy using a Virtual Network Adapter" + Environment.NewLine +
-                "[Hook:] Force applications to use PeaRoxy by injecting a code into them. Modifying them on the fly in other word"
-                );
-
-            SmartPearGrid.ToolTip = new UserControls.Tooltip("SmartPear!",
-                "[Enable:] Check direct connection before using Server for forwarding traffic" + Environment.NewLine +
-                "[Disable:] Always send traffic through Server" + Environment.NewLine +
-                "[Update:] Download latest rulesets for improving SmartPear behavior"
-                );
-
-            ToolTipService.SetShowDuration(ReConfigGrid, 60000);
-            ToolTipService.SetShowDuration(GrabberGrid, 60000);
-            ToolTipService.SetShowDuration(SmartPearGrid, 60000);
+            remove
+            {
+                this.RemoveHandler(ReConfigClickEvent, value);
+            }
         }
 
-        
+        /// <summary>
+        ///     The smart pear selected changed.
+        /// </summary>
+        public event RoutedEventHandler SmartPearSelectedChanged
+        {
+            add
+            {
+                this.AddHandler(SmartPearSelectedChangedEvent, value);
+            }
 
-        private void SetEllipseColor(Ellipse e, Color color)
+            remove
+            {
+                this.RemoveHandler(SmartPearSelectedChangedEvent, value);
+            }
+        }
+
+        /// <summary>
+        ///     The smart pear update click.
+        /// </summary>
+        // ReSharper disable once EventNeverSubscribedTo.Global
+        public event RoutedEventHandler SmartPearUpdateClick
+        {
+            add
+            {
+                this.AddHandler(SmartPearUpdateClickEvent, value);
+            }
+
+            remove
+            {
+                this.RemoveHandler(SmartPearUpdateClickEvent, value);
+            }
+        }
+
+        #endregion
+
+        #region Enums
+
+        /// <summary>
+        ///     The color.
+        /// </summary>
+        public enum Color
+        {
+            /// <summary>
+            ///     The white.
+            /// </summary>
+            White, 
+
+            /// <summary>
+            ///     The red.
+            /// </summary>
+            Red, 
+
+            /// <summary>
+            ///     The blue.
+            /// </summary>
+            Blue, 
+
+            /// <summary>
+            ///     The yellow.
+            /// </summary>
+            Yellow
+        }
+
+        /// <summary>
+        ///     The state.
+        /// </summary>
+        public enum State
+        {
+            /// <summary>
+            ///     The back.
+            /// </summary>
+            Back, 
+
+            /// <summary>
+            ///     The option.
+            /// </summary>
+            Option
+        }
+
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        ///     Gets or sets the grabber color.
+        /// </summary>
+        // ReSharper disable once UnusedMember.Global
+        public Color GrabberColor
+        {
+            get
+            {
+                return this.GetEllipseColor(this.EQbGrabber);
+            }
+
+            set
+            {
+                SetEllipseColor(this.EQbGrabber, value);
+            }
+        }
+
+        /// <summary>
+        ///     Gets or sets a value indicating whether grabber is enable.
+        /// </summary>
+        // ReSharper disable once UnusedMember.Global
+        public bool GrabberIsEnable
+        {
+            get
+            {
+                return this.GrabberGrid.IsEnabled;
+            }
+
+            set
+            {
+                this.GrabberGrid.IsEnabled = value;
+            }
+        }
+
+        /// <summary>
+        ///     Gets or sets the navigator state.
+        /// </summary>
+        public State NavigatorState
+        {
+            get
+            {
+                return this.navigatorState;
+            }
+
+            set
+            {
+                const double Time = 1;
+                DoubleAnimation alignTopButtonsAnimation;
+                TranslateTransform alignTopButtonsTransform;
+                RotateTransform rotateTransform;
+                DoubleAnimation rotateBackImageAnimation;
+                if (this.navigatorState == value)
+                {
+                    return;
+                }
+
+                this.navigatorState = value;
+                switch (value)
+                {
+                    case State.Back:
+                        alignTopButtonsAnimation = new DoubleAnimation(0, 50, new Duration(TimeSpan.FromSeconds(Time)));
+                        alignTopButtonsTransform = new TranslateTransform();
+                        alignTopButtonsAnimation.EasingFunction = new ElasticEase();
+                        ((ElasticEase)alignTopButtonsAnimation.EasingFunction).EasingMode = EasingMode.EaseOut;
+                        ((ElasticEase)alignTopButtonsAnimation.EasingFunction).Oscillations = 1;
+                        ((ElasticEase)alignTopButtonsAnimation.EasingFunction).Springiness = 6;
+                        this.NavigatorGrid.RenderTransform = alignTopButtonsTransform;
+                        alignTopButtonsTransform.BeginAnimation(TranslateTransform.XProperty, alignTopButtonsAnimation);
+                        DoubleAnimation hideOptionsButAnimation = new DoubleAnimation(
+                            1, 
+                            0, 
+                            new Duration(TimeSpan.FromSeconds(Time)));
+                        DoubleAnimation showBackButAnimation = new DoubleAnimation(
+                            0, 
+                            1, 
+                            new Duration(TimeSpan.FromSeconds(Time)));
+                        hideOptionsButAnimation.RepeatBehavior = new RepeatBehavior(1);
+                        showBackButAnimation.RepeatBehavior = new RepeatBehavior(1);
+                        this.BackButton.Visibility = Visibility.Visible;
+                        this.OptionButton.BeginAnimation(OpacityProperty, hideOptionsButAnimation);
+                        this.BackButton.BeginAnimation(OpacityProperty, showBackButAnimation);
+
+                        rotateBackImageAnimation = this.ImgOptionsButton.Tag as DoubleAnimation
+                                                   ?? new DoubleAnimation(90, 0, Duration.Automatic);
+
+                        rotateBackImageAnimation.RepeatBehavior = new RepeatBehavior(1);
+                        rotateBackImageAnimation.Duration = new Duration(TimeSpan.FromSeconds(Time));
+                        rotateTransform = this.ImgBackButton.RenderTransform as RotateTransform;
+                        if (rotateTransform != null)
+                        {
+                            rotateTransform.BeginAnimation(RotateTransform.AngleProperty, rotateBackImageAnimation);
+                        }
+
+                        break;
+                    default:
+                        DoubleAnimation showOptionsButAnimation = new DoubleAnimation(
+                            0, 
+                            1, 
+                            new Duration(TimeSpan.FromSeconds(Time)));
+                        DoubleAnimation hideBackButAnimation = new DoubleAnimation(
+                            1, 
+                            0, 
+                            new Duration(TimeSpan.FromSeconds(Time)));
+                        showOptionsButAnimation.RepeatBehavior = new RepeatBehavior(1);
+                        hideBackButAnimation.RepeatBehavior = new RepeatBehavior(1);
+                        this.OptionButton.Visibility = Visibility.Visible;
+                        this.OptionButton.BeginAnimation(OpacityProperty, showOptionsButAnimation);
+                        this.BackButton.BeginAnimation(OpacityProperty, hideBackButAnimation);
+
+                        rotateBackImageAnimation = this.ImgOptionsButton.Tag as DoubleAnimation
+                                                   ?? new DoubleAnimation(90, 0, Duration.Automatic);
+
+                        rotateBackImageAnimation.RepeatBehavior = new RepeatBehavior(1);
+                        rotateBackImageAnimation.Duration = new Duration(TimeSpan.FromSeconds(Time));
+                        rotateTransform = this.ImgBackButton.RenderTransform as RotateTransform;
+                        if (rotateTransform != null)
+                        {
+                            rotateTransform.BeginAnimation(RotateTransform.AngleProperty, rotateBackImageAnimation);
+                        }
+
+                        alignTopButtonsAnimation = new DoubleAnimation(
+                            50, 
+                            0, 
+                            new Duration(TimeSpan.FromSeconds(Time * 0.5)));
+                        alignTopButtonsTransform = new TranslateTransform();
+                        alignTopButtonsAnimation.EasingFunction = new PowerEase();
+                        ((PowerEase)alignTopButtonsAnimation.EasingFunction).EasingMode = EasingMode.EaseOut;
+                        this.NavigatorGrid.RenderTransform = alignTopButtonsTransform;
+                        alignTopButtonsTransform.BeginAnimation(TranslateTransform.XProperty, alignTopButtonsAnimation);
+                        break;
+                }
+
+                new Thread(
+                    delegate()
+                        {
+                            Thread.Sleep((int)(Time * 1000));
+                            this.Dispatcher.Invoke(
+                                (App.SimpleVoidDelegate)delegate
+                                    {
+                                        if (this.navigatorState == State.Back)
+                                        {
+                                            this.OptionButton.Visibility = Visibility.Hidden;
+                                        }
+                                        else
+                                        {
+                                            this.BackButton.Visibility = Visibility.Hidden;
+                                        }
+                                    }, 
+                                new object[] { });
+                        }) {
+                              IsBackground = true 
+                           }.Start();
+            }
+        }
+
+        /// <summary>
+        ///     Gets or sets the re config color.
+        /// </summary>
+        // ReSharper disable once UnusedMember.Global
+        public Color ReConfigColor
+        {
+            get
+            {
+                return this.GetEllipseColor(this.EQbReconfig);
+            }
+
+            set
+            {
+                SetEllipseColor(this.EQbReconfig, value);
+            }
+        }
+
+        /// <summary>
+        ///     Gets or sets a value indicating whether re config is enable.
+        /// </summary>
+        public bool ReConfigIsEnable
+        {
+            // ReSharper disable once UnusedMember.Global
+            get
+            {
+                return this.ReConfigGrid.IsEnabled;
+            }
+
+            set
+            {
+                this.ReConfigGrid.IsEnabled = value;
+            }
+        }
+
+        /// <summary>
+        ///     Gets or sets the smart pear color.
+        /// </summary>
+        public Color SmartPearColor
+        {
+            // ReSharper disable once UnusedMember.Global
+            get
+            {
+                return this.GetEllipseColor(this.EQbSmartpear);
+            }
+
+            set
+            {
+                SetEllipseColor(this.EQbSmartpear, value);
+            }
+        }
+
+        /// <summary>
+        ///     Gets or sets a value indicating whether smart pear is enable.
+        /// </summary>
+        public bool SmartPearIsEnable
+        {
+            get
+            {
+                return this.SmartPearGrid.IsEnabled;
+            }
+
+            set
+            {
+                this.SmartPearGrid.IsEnabled = value;
+            }
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The set ellipse color.
+        /// </summary>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        /// <param name="color">
+        /// The color.
+        /// </param>
+        private static void SetEllipseColor(Ellipse e, Color color)
         {
             if (e.Stroke.IsFrozen)
+            {
                 e.Stroke = e.Stroke.CloneCurrentValue();
+            }
+
             System.Windows.Media.Color c;
             switch (color)
             {
@@ -189,145 +517,267 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
                 case Color.Yellow:
                     c = System.Windows.Media.Color.FromRgb(230, 220, 60);
                     break;
-                case Color.White:
                 default:
-                    c = System.Windows.Media.Colors.White;
+                    c = Colors.White;
                     break;
             }
-            ColorAnimation ca_changesm = new ColorAnimation(c, new Duration(TimeSpan.FromSeconds(0.4)));
-            ((SolidColorBrush)e.Stroke).BeginAnimation(SolidColorBrush.ColorProperty, ca_changesm);
+
+            ColorAnimation changesmAnimation = new ColorAnimation(c, new Duration(TimeSpan.FromSeconds(0.4)));
+            e.Stroke.BeginAnimation(SolidColorBrush.ColorProperty, changesmAnimation);
         }
 
+        /// <summary>
+        /// The btn_back_ click.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void BtnBackClick(object sender, RoutedEventArgs e)
+        {
+            this.RaiseEvent(new RoutedEventArgs(BackClickEvent));
+        }
+
+        /// <summary>
+        /// The btn_options_ click.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void BtnOptionsClick(object sender, RoutedEventArgs e)
+        {
+            this.RaiseEvent(new RoutedEventArgs(OptionClickEvent));
+        }
+
+        /// <summary>
+        /// The btn_qb_ click.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void BtnQbClick(object sender, RoutedEventArgs e)
+        {
+            ((Button)sender).ContextMenu.PlacementTarget = (Button)sender;
+            ((Button)sender).ContextMenu.Placement = PlacementMode.Bottom;
+            ((Button)sender).ContextMenu.IsOpen = true;
+        }
+
+        /// <summary>
+        /// The btn_qb_reconfig_ click.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void BtnQbReconfigClick(object sender, RoutedEventArgs e)
+        {
+            this.RaiseEvent(new RoutedEventArgs(ReConfigClickEvent));
+        }
+
+        /// <summary>
+        /// The get ellipse color.
+        /// </summary>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        /// <returns>
+        /// The <see cref="Color"/>.
+        /// </returns>
         private Color GetEllipseColor(Ellipse e)
         {
             System.Windows.Media.Color c = ((SolidColorBrush)e.Stroke).Color;
             if (c == System.Windows.Media.Color.FromRgb(180, 0, 0))
+            {
                 return Color.Red;
-            else if (c == System.Windows.Media.Color.FromRgb(0, 160, 220))
+            }
+
+            if (c == System.Windows.Media.Color.FromRgb(0, 160, 220))
+            {
                 return Color.Blue;
-            else if (c == System.Windows.Media.Color.FromRgb(230, 220, 60))
+            }
+
+            if (c == System.Windows.Media.Color.FromRgb(230, 220, 60))
+            {
                 return Color.Yellow;
+            }
+
             return Color.White;
         }
 
-        public Boolean GrabberIsEnable
+        /// <summary>
+        /// The img options button_ mouse enter.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void ImgOptionsButtonMouseEnter(object sender, MouseEventArgs e)
         {
-            get { return GrabberGrid.IsEnabled; }
-            set { GrabberGrid.IsEnabled = value; }
-        }
-        public Boolean SmartPearIsEnable
-        {
-            get { return SmartPearGrid.IsEnabled; }
-            set { SmartPearGrid.IsEnabled = value; }
-        }
-        public Boolean ReConfigIsEnable
-        {
-            get { return ReConfigGrid.IsEnabled; }
-            set { ReConfigGrid.IsEnabled = value; }
-        }
+            DoubleAnimation animation = this.ImgOptionsButton.Tag as DoubleAnimation
+                                        ?? new DoubleAnimation(0, 360, TimeSpan.FromSeconds(2));
 
-        public Color GrabberColor
-        {
-            get { return GetEllipseColor(e_qb_grabber); }
-            set { SetEllipseColor(e_qb_grabber, value); }
-        }
-        public Color SmartPearColor
-        {
-            get { return GetEllipseColor(e_qb_smartpear); }
-            set { SetEllipseColor(e_qb_smartpear, value); }
-        }
-        public Color ReConfigColor
-        {
-            get { return GetEllipseColor(e_qb_reconfig); }
-            set { SetEllipseColor(e_qb_reconfig, value); }
-        }
-
-        State navigatorState = State.Option;
-        public State NavigatorState
-        {
-            get
+            animation.Duration = new Duration(TimeSpan.FromSeconds(2));
+            animation.RepeatBehavior = RepeatBehavior.Forever;
+            RotateTransform rotateTransform = this.ImgOptionsButton.RenderTransform as RotateTransform;
+            if (rotateTransform != null)
             {
-                return navigatorState;
+                rotateTransform.BeginAnimation(RotateTransform.AngleProperty, animation);
             }
-            set
+
+            this.ImgOptionsButton.Tag = animation;
+        }
+
+        /// <summary>
+        /// The img options button_ mouse leave.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void ImgOptionsButtonMouseLeave(object sender, MouseEventArgs e)
+        {
+            DoubleAnimation animation = this.ImgOptionsButton.Tag as DoubleAnimation;
+            if (animation == null)
             {
-                double time = 1;
-                DoubleAnimation da_alignTopButtons;
-                TranslateTransform tt_alignTopButtons;
-                RotateTransform rt;
-                DoubleAnimation da_RotateBackImage;
-                if (navigatorState == value)
-                    return;
-                else
-                    navigatorState = value;
-                switch (value)
-                {
-                    case State.Back:
-                        da_alignTopButtons = new DoubleAnimation(0, 50, new Duration(TimeSpan.FromSeconds(time)));
-                        tt_alignTopButtons = new TranslateTransform();
-                        da_alignTopButtons.EasingFunction = new ElasticEase();
-                        ((ElasticEase)da_alignTopButtons.EasingFunction).EasingMode = EasingMode.EaseOut;
-                        ((ElasticEase)da_alignTopButtons.EasingFunction).Oscillations = 1;
-                        ((ElasticEase)da_alignTopButtons.EasingFunction).Springiness = 6;
-                        NavigatorGrid.RenderTransform = tt_alignTopButtons;
-                        tt_alignTopButtons.BeginAnimation(TranslateTransform.XProperty, da_alignTopButtons);
-                        DoubleAnimation da_HideOptionsBut = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(time)));
-                        DoubleAnimation da_ShowBackBut = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(time)));
-                        da_HideOptionsBut.RepeatBehavior = new RepeatBehavior(1);
-                        da_ShowBackBut.RepeatBehavior = new RepeatBehavior(1);
-                        BackButton.Visibility = System.Windows.Visibility.Visible;
-                        OptionButton.BeginAnimation(Button.OpacityProperty, da_HideOptionsBut);
-                        BackButton.BeginAnimation(Button.OpacityProperty, da_ShowBackBut);
-
-                        if (img_backButton.Tag == null)
-                            da_RotateBackImage = new DoubleAnimation(90, 0, Duration.Automatic);
-                        else
-                            da_RotateBackImage = img_optionsButton.Tag as DoubleAnimation;
-                        da_RotateBackImage.RepeatBehavior = new RepeatBehavior(1);
-                        da_RotateBackImage.Duration = new Duration(TimeSpan.FromSeconds(time));
-                        rt = img_backButton.RenderTransform as RotateTransform;
-                        rt.BeginAnimation(RotateTransform.AngleProperty, da_RotateBackImage);
-                        break;
-                    case State.Option:
-                    default:
-                        DoubleAnimation da_ShowOptionsBut = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromSeconds(time)));
-                        DoubleAnimation da_HideBackBut = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(time)));
-                        da_ShowOptionsBut.RepeatBehavior = new RepeatBehavior(1);
-                        da_HideBackBut.RepeatBehavior = new RepeatBehavior(1);
-                        OptionButton.Visibility = System.Windows.Visibility.Visible;
-                        OptionButton.BeginAnimation(Button.OpacityProperty, da_ShowOptionsBut);
-                        BackButton.BeginAnimation(Button.OpacityProperty, da_HideBackBut);
-
-                        if (img_backButton.Tag == null)
-                            da_RotateBackImage = new DoubleAnimation(0, 90, Duration.Automatic);
-                        else
-                            da_RotateBackImage = img_optionsButton.Tag as DoubleAnimation;
-                        da_RotateBackImage.RepeatBehavior = new RepeatBehavior(1);
-                        da_RotateBackImage.Duration = new Duration(TimeSpan.FromSeconds(time));
-                        rt = img_backButton.RenderTransform as RotateTransform;
-                        rt.BeginAnimation(RotateTransform.AngleProperty, da_RotateBackImage);
-
-
-                        da_alignTopButtons = new DoubleAnimation(50, 0, new Duration(TimeSpan.FromSeconds(time * 0.5)));
-                        tt_alignTopButtons = new TranslateTransform();
-                        da_alignTopButtons.EasingFunction = new PowerEase();
-                        ((PowerEase)da_alignTopButtons.EasingFunction).EasingMode = EasingMode.EaseOut;
-                        NavigatorGrid.RenderTransform = tt_alignTopButtons;
-                        tt_alignTopButtons.BeginAnimation(TranslateTransform.XProperty, da_alignTopButtons);
-                        break;
-                }
-                new System.Threading.Thread(delegate()
-                {
-                    System.Threading.Thread.Sleep((int)(time * 1000));
-                    this.Dispatcher.Invoke((App.SimpleVoid_Delegate)delegate()
-                    {
-                        if (navigatorState == State.Back)
-                            OptionButton.Visibility = System.Windows.Visibility.Hidden;
-                        else
-                            BackButton.Visibility = System.Windows.Visibility.Hidden;
-                    }, new object[] { });
-                }) { IsBackground = true }.Start();
+                return;
             }
+
+            animation.RepeatBehavior = new RepeatBehavior(1);
+            animation.Duration = new Duration(TimeSpan.FromSeconds(1));
+            RotateTransform rotateTransform = this.ImgOptionsButton.RenderTransform as RotateTransform;
+            if (rotateTransform != null)
+            {
+                rotateTransform.BeginAnimation(RotateTransform.AngleProperty, animation);
+            }
+        }
+
+        /// <summary>
+        /// The mi_grabber_ click.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void MiGrabberClick(object sender, RoutedEventArgs e)
+        {
+            this.RaiseEvent(new MenuItemEventArgs(GrabberSelectedChangedEvent, sender as MenuItem));
+        }
+
+        /// <summary>
+        /// The mi_smartpear_ click.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void MiSmartpearClick(object sender, RoutedEventArgs e)
+        {
+            this.RaiseEvent(new MenuItemEventArgs(SmartPearSelectedChangedEvent, sender as MenuItem));
+        }
+
+        /// <summary>
+        /// The mi_smartpear_update_ click.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void MiSmartpearUpdateClick(object sender, RoutedEventArgs e)
+        {
+            this.RaiseEvent(new RoutedEventArgs(SmartPearUpdateClickEvent));
+        }
+
+        /// <summary>
+        /// The user control_ loaded.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1118:ParameterMustNotSpanMultipleLines", 
+            Justification = "Reviewed. Suppression is OK here.")]
+        private void UserControlLoaded(object sender, RoutedEventArgs e)
+        {
+            this.ReConfigGrid.ToolTip = new Tooltip(
+                "Reconfigure Windows/Applications", 
+                "Configure Windows and Firefox to use PeaRoxy Client as proxy server.");
+
+            this.GrabberGrid.ToolTip = new Tooltip(
+                "Traffic Grabber", 
+                "Select how you want us to grab traffic from applications:" + Environment.NewLine + string.Empty
+                + "[None:] No grabbing, applications and Windows use PeaRoxy as proxy if they want"
+                + Environment.NewLine
+                + "[TAP Adapter:] Force Windows and applications to use PeaRoxy using a Virtual Network Adapter"
+                + Environment.NewLine
+                + "[Hook:] Force applications to use PeaRoxy by injecting a code into them. Modifying them on the fly in other word");
+
+            this.SmartPearGrid.ToolTip = new Tooltip(
+                "SmartPear!", 
+                "[Enable:] Check direct connection before using Server for forwarding traffic" + Environment.NewLine
+                + "[Disable:] Always send traffic through Server" + Environment.NewLine
+                + "[Update:] Download latest rulesets for improving SmartPear behavior");
+
+            ToolTipService.SetShowDuration(this.ReConfigGrid, 60000);
+            ToolTipService.SetShowDuration(this.GrabberGrid, 60000);
+            ToolTipService.SetShowDuration(this.SmartPearGrid, 60000);
+        }
+
+        #endregion
+
+        /// <summary>
+        ///     The menu item event args.
+        /// </summary>
+        public class MenuItemEventArgs : RoutedEventArgs
+        {
+            #region Constructors and Destructors
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="MenuItemEventArgs"/> class.
+            /// </summary>
+            /// <param name="routedEvent">
+            /// The routed event.
+            /// </param>
+            /// <param name="sender">
+            /// The sender.
+            /// </param>
+            public MenuItemEventArgs(RoutedEvent routedEvent, MenuItem sender)
+                : base(routedEvent)
+            {
+                this.SenderMenuItem = sender;
+            }
+
+            #endregion
+
+            #region Public Properties
+
+            /// <summary>
+            ///     Gets the sender menu item.
+            /// </summary>
+            public MenuItem SenderMenuItem { get; private set; }
+
+            #endregion
         }
     }
 }

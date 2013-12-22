@@ -1,167 +1,275 @@
-﻿using LukeSw.Windows.Forms;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Protocol.xaml.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   Interaction logic for Protocol.xaml
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.Windows.WPFClient.SettingTabs
 {
+    #region
+
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
+    using System.Threading;
+    using System.Windows;
+    using System.Windows.Forms;
+
+    using LukeSw.Windows.Forms;
+
+    using PeaRoxy.Windows.WPFClient.Properties;
+
+    #endregion
+
     /// <summary>
-    /// Interaction logic for Protocol.xaml
+    ///     Interaction logic for Protocol.xaml
     /// </summary>
-    public partial class Protocol : Base
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
+    public partial class Protocol
     {
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Protocol"/> class.
+        /// </summary>
         public Protocol()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
 
-        public override void SaveSettings()
-        {
-            if (isLoading) return;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_NoDataTimeout = Convert.ToUInt16(txt_Connection_NoDataTimeout.Text);
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_SendPacketSize = Convert.ToUInt32(txt_Connection_SendPacketSize.Text);
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_RecPacketSize = Convert.ToUInt32(txt_Connection_RecPacketSize.Text);
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_StopOnInterrupt = (bool)cb_Connection_stopOninterrupt.IsChecked;
+        #endregion
 
-            if ((bool)rb_Connection_EncryptionNone.IsChecked)
-                PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_Encryption = 0;
-            else if ((bool)rb_Connection_EncryptionTripleDES.IsChecked)
-                PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_Encryption = 1;
-            else if ((bool)rb_Connection_EncryptionSimpleXor.IsChecked)
-                PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_Encryption = 2;
+        #region Public Methods and Operators
 
-            if ((bool)rb_Connection_CompressionNone.IsChecked)
-                PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_Compression = 0;
-            else if ((bool)rb_Connection_CompressiongZip.IsChecked)
-                PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_Compression = 1;
-            else if ((bool)rb_Connection_CompressionDeflate.IsChecked)
-                PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_Compression = 2;
-
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Save();
-        }
-
-        private void txt_TextBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            SaveSettings();
-        }
-
-        private void txt_Connection_SendPacketSize_LostFocus(object sender, RoutedEventArgs e)
-        {
-            uint u;
-            if (!uint.TryParse(txt_Connection_SendPacketSize.Text, out u))
-            {
-                VDialog.Show("Value is not acceptable.", "Data Validation", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                txt_Connection_SendPacketSize.Text = 1024.ToString();
-                new System.Threading.Thread(delegate()
-                {
-                    System.Threading.Thread.Sleep((int)(10));
-                    this.Dispatcher.Invoke((App.SimpleVoid_Delegate)delegate()
-                    {
-                        txt_Connection_SendPacketSize.Focus();
-                    }, new object[] { });
-                }) { IsBackground = true }.Start();
-            }
-            else
-                txt_Connection_SendPacketSize.Text = u.ToString();
-
-            SaveSettings();
-        }
-
-        private void txt_Connection_RecPacketSize_LostFocus(object sender, RoutedEventArgs e)
-        {
-            uint u;
-            if (!uint.TryParse(txt_Connection_RecPacketSize.Text, out u))
-            {
-                VDialog.Show("Value is not acceptable.", "Data Validation", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                txt_Connection_RecPacketSize.Text = 10240.ToString();
-                new System.Threading.Thread(delegate()
-                {
-                    System.Threading.Thread.Sleep((int)(10));
-                    this.Dispatcher.Invoke((App.SimpleVoid_Delegate)delegate()
-                    {
-                        txt_Connection_RecPacketSize.Focus();
-                    }, new object[] { });
-                }) { IsBackground = true }.Start();
-            }
-            else
-                txt_Connection_RecPacketSize.Text = u.ToString();
-
-            SaveSettings();
-        }
-        private void txt_Connection_NoDataTimeout_LostFocus(object sender, EventArgs e)
-        {
-            short u;
-            if (!short.TryParse(txt_Connection_NoDataTimeout.Text, out u))
-            {
-                VDialog.Show("Value is not acceptable.", "Data Validation", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                txt_Connection_NoDataTimeout.Text = 600.ToString();
-                new System.Threading.Thread(delegate()
-                {
-                    System.Threading.Thread.Sleep((int)(10));
-                    this.Dispatcher.Invoke((App.SimpleVoid_Delegate)delegate()
-                    {
-                        txt_Connection_NoDataTimeout.Focus();
-                    }, new object[] { });
-                }) { IsBackground = true }.Start();
-            }
-            else
-                txt_Connection_NoDataTimeout.Text = u.ToString();
-
-            SaveSettings();
-        }
-
+        /// <summary>
+        /// The load settings.
+        /// </summary>
         public override void LoadSettings()
         {
-            isLoading = true;
-            txt_Connection_NoDataTimeout.Text = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_NoDataTimeout.ToString();
-            txt_Connection_SendPacketSize.Text = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_SendPacketSize.ToString();
-            txt_Connection_RecPacketSize.Text = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_RecPacketSize.ToString();
-            cb_Connection_stopOninterrupt.IsChecked = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_StopOnInterrupt;
+            this.IsLoading = true;
+            this.txt_Connection_NoDataTimeout.Text = Settings.Default.Connection_NoDataTimeout.ToString(CultureInfo.InvariantCulture);
+            this.txt_Connection_SendPacketSize.Text = Settings.Default.Connection_SendPacketSize.ToString(CultureInfo.InvariantCulture);
+            this.txt_Connection_RecPacketSize.Text = Settings.Default.Connection_RecPacketSize.ToString(CultureInfo.InvariantCulture);
+            this.cb_Connection_stopOninterrupt.IsChecked = Settings.Default.Connection_StopOnInterrupt;
 
-            rb_Connection_EncryptionNone.IsChecked = false;
-            rb_Connection_EncryptionTripleDES.IsChecked = false;
-            rb_Connection_EncryptionSimpleXor.IsChecked = false;
-            switch (PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_Encryption)
+            this.rb_Connection_EncryptionNone.IsChecked = false;
+            this.rb_Connection_EncryptionTripleDES.IsChecked = false;
+            this.rb_Connection_EncryptionSimpleXor.IsChecked = false;
+            switch (Settings.Default.Connection_Encryption)
             {
                 case 0:
-                    rb_Connection_EncryptionNone.IsChecked = true;
+                    this.rb_Connection_EncryptionNone.IsChecked = true;
                     break;
                 case 1:
-                    rb_Connection_EncryptionTripleDES.IsChecked = true;
+                    this.rb_Connection_EncryptionTripleDES.IsChecked = true;
                     break;
                 case 2:
-                    rb_Connection_EncryptionSimpleXor.IsChecked = true;
+                    this.rb_Connection_EncryptionSimpleXor.IsChecked = true;
                     break;
             }
 
-
-            rb_Connection_CompressionNone.IsChecked = false;
-            rb_Connection_CompressiongZip.IsChecked = false;
-            rb_Connection_CompressionDeflate.IsChecked = false;
-            switch (PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Connection_Compression)
+            this.rb_Connection_CompressionNone.IsChecked = false;
+            this.rb_Connection_CompressiongZip.IsChecked = false;
+            this.rb_Connection_CompressionDeflate.IsChecked = false;
+            switch (Settings.Default.Connection_Compression)
             {
                 case 0:
-                    rb_Connection_CompressionNone.IsChecked = true;
+                    this.rb_Connection_CompressionNone.IsChecked = true;
                     break;
                 case 1:
-                    rb_Connection_CompressiongZip.IsChecked = true;
+                    this.rb_Connection_CompressiongZip.IsChecked = true;
                     break;
                 case 2:
-                    rb_Connection_CompressionDeflate.IsChecked = true;
+                    this.rb_Connection_CompressionDeflate.IsChecked = true;
                     break;
             }
 
-            isLoading = false;
+            this.IsLoading = false;
         }
+
+        /// <summary>
+        /// The save settings.
+        /// </summary>
+        public override void SaveSettings()
+        {
+            if (this.IsLoading)
+            {
+                return;
+            }
+
+            Settings.Default.Connection_NoDataTimeout = Convert.ToUInt16(this.txt_Connection_NoDataTimeout.Text);
+            Settings.Default.Connection_SendPacketSize = Convert.ToUInt32(this.txt_Connection_SendPacketSize.Text);
+            Settings.Default.Connection_RecPacketSize = Convert.ToUInt32(this.txt_Connection_RecPacketSize.Text);
+            Settings.Default.Connection_StopOnInterrupt = this.cb_Connection_stopOninterrupt.IsChecked ?? false;
+
+            if (this.rb_Connection_EncryptionNone.IsChecked ?? false)
+            {
+                Settings.Default.Connection_Encryption = 0;
+            }
+            else if (this.rb_Connection_EncryptionTripleDES.IsChecked ?? false)
+            {
+                Settings.Default.Connection_Encryption = 1;
+            }
+            else if (this.rb_Connection_EncryptionSimpleXor.IsChecked ?? false)
+            {
+                Settings.Default.Connection_Encryption = 2;
+            }
+
+            if (this.rb_Connection_CompressionNone.IsChecked ?? false)
+            {
+                Settings.Default.Connection_Compression = 0;
+            }
+            else if (this.rb_Connection_CompressiongZip.IsChecked ?? false)
+            {
+                Settings.Default.Connection_Compression = 1;
+            }
+            else if (this.rb_Connection_CompressionDeflate.IsChecked ?? false)
+            {
+                Settings.Default.Connection_Compression = 2;
+            }
+
+            Settings.Default.Save();
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The txt_ connection_ no data timeout_ lost focus.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void TxtConnectionNoDataTimeoutLostFocus(object sender, EventArgs e)
+        {
+            short u;
+            if (!short.TryParse(this.txt_Connection_NoDataTimeout.Text, out u))
+            {
+                VDialog.Show(
+                    "Value is not acceptable.", 
+                    "Data Validation", 
+                    MessageBoxButtons.OK, 
+                    MessageBoxIcon.Exclamation);
+                this.txt_Connection_NoDataTimeout.Text = 600.ToString(CultureInfo.InvariantCulture);
+                new Thread(
+                    delegate()
+                        {
+                            Thread.Sleep(10);
+                            this.Dispatcher.Invoke(
+                                (App.SimpleVoidDelegate)(() => this.txt_Connection_NoDataTimeout.Focus()), 
+                                new object[] { });
+                        }) {
+                              IsBackground = true 
+                           }.Start();
+            }
+            else
+            {
+                this.txt_Connection_NoDataTimeout.Text = u.ToString(CultureInfo.InvariantCulture);
+            }
+
+            this.SaveSettings();
+        }
+
+        /// <summary>
+        /// The txt_ connection_ rec packet size_ lost focus.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void TxtConnectionRecPacketSizeLostFocus(object sender, RoutedEventArgs e)
+        {
+            uint u;
+            if (!uint.TryParse(this.txt_Connection_RecPacketSize.Text, out u))
+            {
+                VDialog.Show(
+                    "Value is not acceptable.", 
+                    "Data Validation", 
+                    MessageBoxButtons.OK, 
+                    MessageBoxIcon.Exclamation);
+                this.txt_Connection_RecPacketSize.Text = 10240.ToString(CultureInfo.InvariantCulture);
+                new Thread(
+                    delegate()
+                        {
+                            Thread.Sleep(10);
+                            this.Dispatcher.Invoke(
+                                (App.SimpleVoidDelegate)(() => this.txt_Connection_RecPacketSize.Focus()), 
+                                new object[] { });
+                        }) {
+                              IsBackground = true 
+                           }.Start();
+            }
+            else
+            {
+                this.txt_Connection_RecPacketSize.Text = u.ToString(CultureInfo.InvariantCulture);
+            }
+
+            this.SaveSettings();
+        }
+
+        /// <summary>
+        /// The txt_ connection_ send packet size_ lost focus.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void TxtConnectionSendPacketSizeLostFocus(object sender, RoutedEventArgs e)
+        {
+            uint u;
+            if (!uint.TryParse(this.txt_Connection_SendPacketSize.Text, out u))
+            {
+                VDialog.Show(
+                    "Value is not acceptable.", 
+                    "Data Validation", 
+                    MessageBoxButtons.OK, 
+                    MessageBoxIcon.Exclamation);
+                this.txt_Connection_SendPacketSize.Text = 1024.ToString(CultureInfo.InvariantCulture);
+                new Thread(
+                    delegate()
+                        {
+                            Thread.Sleep(10);
+                            this.Dispatcher.Invoke(
+                                (App.SimpleVoidDelegate)(() => this.txt_Connection_SendPacketSize.Focus()), 
+                                new object[] { });
+                        }) {
+                              IsBackground = true 
+                           }.Start();
+            }
+            else
+            {
+                this.txt_Connection_SendPacketSize.Text = u.ToString(CultureInfo.InvariantCulture);
+            }
+
+            this.SaveSettings();
+        }
+
+        /// <summary>
+        /// The txt_ text box_ lost focus.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void TxtTextBoxLostFocus(object sender, RoutedEventArgs e)
+        {
+            this.SaveSettings();
+        }
+
+        #endregion
     }
 }

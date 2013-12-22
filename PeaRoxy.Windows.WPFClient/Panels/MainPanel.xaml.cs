@@ -1,421 +1,652 @@
-﻿using LukeSw.Windows.Forms;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="MainPanel.xaml.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   Interaction logic for MainPanel.xaml
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
-namespace PeaRoxy.Windows.WPFClient
+namespace PeaRoxy.Windows.WPFClient.Panels
 {
+    #region
+
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
+    using System.Threading;
+    using System.Windows;
+    using System.Windows.Controls;
+    using System.Windows.Forms;
+    using System.Windows.Media.Animation;
+
+    using LukeSw.Windows.Forms;
+
+    using PeaRoxy.Windows.WPFClient.Properties;
+    using PeaRoxy.Windows.WPFClient.UserControls;
+
+    using Thriple.Controls;
+
+    #endregion
+
     /// <summary>
-    /// Interaction logic for MainPanel.xaml
+    ///     Interaction logic for MainPanel.xaml
     /// </summary>
-    public partial class MainPanel : UserControl
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
+    public partial class MainPanel
     {
-        public new MainWindow Parent;
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MainPanel"/> class.
+        /// </summary>
         public MainPanel()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
 
-        private void txt_serverAddress_LostFocus(object sender, RoutedEventArgs e)
+        #endregion
+
+        #region Public Properties
+
+        /// <summary>
+        /// Sets a value indicating whether connecetd.
+        /// </summary>
+        public bool Connecetd
         {
-            if (txt_serverAddress.Text == "")
-                return;
-            try
+            set
             {
-                txt_serverAddress.Text = txt_serverAddress.Text.Replace("\\", "/");
-                if (txt_serverAddress.Text.IndexOf("://") == -1)
-                    txt_serverAddress.Text = "http://" + txt_serverAddress.Text;
-                Uri uri = new Uri(txt_serverAddress.Text);
-                if (!(txt_serverAddress.Text.LastIndexOf(":") == -1 || txt_serverAddress.Text.LastIndexOf(":") == txt_serverAddress.Text.IndexOf(":")))
-                    txt_serverPort.Text = uri.Port.ToString();
-                txt_serverAddress.Text = uri.Host;
-                txt_serverPort_TextChanged(sender, null);
-            }
-            catch (Exception ex)
-            {
-                VDialog.Show("Value is not acceptable.\r\n" + ex.Message, "Data Validation", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                txt_serverAddress.Text = "";
-                new System.Threading.Thread(delegate()
+                DoubleAnimation showImageAnimation = new DoubleAnimation(
+                    (!value).GetHashCode(), 
+                    value.GetHashCode(), 
+                    new Duration(TimeSpan.FromSeconds(0.5)));
+                DoubleAnimation hideImageAnimation = new DoubleAnimation(
+                    value.GetHashCode(), 
+                    (!value).GetHashCode(), 
+                    TimeSpan.FromSeconds(0.5));
+                if (Math.Abs(this.ImgConnected.Opacity - value.GetHashCode()) > 0.01)
                 {
-                    System.Threading.Thread.Sleep((int)(10));
-                    this.Dispatcher.Invoke((App.SimpleVoid_Delegate)delegate()
-                    {
-                        txt_serverAddress.Focus();
-                    }, new object[] { });
-                }) { IsBackground = true }.Start();
-            }
-
-            SaveSettings();
-        }
-
-        private void txt_TextBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            SaveSettings();
-        }
-
-        private void AnimatedExpender_Expanded(object sender, RoutedEventArgs e)
-        {
-            Expander ex = sender as Expander;
-            if (ex.Parent.GetType().Name == typeof(WrapPanel).Name)
-            {
-                WrapPanel wr = ex.Parent as WrapPanel;
-                foreach (var exP in wr.Children)
-                {
-                    Expander wEx = exP as Expander;
-                    if (!wEx.Equals(ex) && wEx.IsExpanded == true)
-                        wEx.IsExpanded = false;
+                    this.ImgConnected.BeginAnimation(OpacityProperty, showImageAnimation);
                 }
-                if (wr.Equals(wp_Servers))
+
+                if (Math.Abs(this.ImgDisconnected.Opacity - (!value).GetHashCode()) > 0.01)
                 {
-                    if (ex_self.IsExpanded)
-                    {
-                        ex_usernameandpass.IsEnabled = false;
-                        if (!ex_open.IsExpanded)
-                            ex_open.IsExpanded = true;
-                    }
-                    else if (ex_server.IsExpanded)
-                        ex_usernameandpass.IsEnabled = true;
-                    else if (ex_web.IsExpanded)
-                        ex_usernameandpass.IsEnabled = true;
-                    else if (ex_proxy.IsExpanded)
-                        ex_usernameandpass.IsEnabled = true;
-                    else if (ex_ns.IsExpanded)
-                        ex_usernameandpass.IsEnabled = true;
+                    this.ImgDisconnected.BeginAnimation(OpacityProperty, hideImageAnimation);
+                }
+
+                if (Math.Abs(this.RActive.Opacity - value.GetHashCode()) > 0.01)
+                {
+                    this.RActive.BeginAnimation(OpacityProperty, showImageAnimation);
+                }
+
+                if (Math.Abs(this.RInactive.Opacity - (!value).GetHashCode()) > 0.01)
+                {
+                    this.RInactive.BeginAnimation(OpacityProperty, hideImageAnimation);
                 }
             }
-            if (ex.Content == null)
-                return;
-
-            DoubleAnimation da = new DoubleAnimation(25, ((Grid)ex.Content).Height + 25, new Duration(TimeSpan.FromSeconds(0.4)));
-            ex.BeginAnimation(Button.HeightProperty, da);
-
-            SaveSettings();
         }
 
-
-
-        private void AnimatedExpender_Collapsed(object sender, RoutedEventArgs e)
-        {
-            Expander ex = sender as Expander;
-            if (ex.Parent.GetType().Name == typeof(WrapPanel).Name)
-            {
-                WrapPanel wr = ex.Parent as WrapPanel;
-                bool OnIsEnable = false;
-                foreach (var exP in wr.Children)
-                {
-                    Expander wEx = exP as Expander;
-                    if (!wEx.Equals(ex) && wEx.IsExpanded == true)
-                        OnIsEnable = true;
-                }
-                if (!OnIsEnable)
-                {
-                    ex.IsExpanded = true;
-                    return;
-                }
-            }
-
-            if (ex.Content == null)
-                return;
-
-            DoubleAnimation da = new DoubleAnimation(((Grid)ex.Content).Height + 25, 25, new Duration(TimeSpan.FromSeconds(0.2)));
-            ex.BeginAnimation(Button.HeightProperty, da);
-
-        }
-
-
-        private void txt_web_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (txt_web.Text == "")
-                return;
-            try
-            {
-                txt_web.Text = txt_web.Text.Replace("\\", "/");
-                if (txt_web.Text.IndexOf("://") == -1)
-                    txt_web.Text = "http://" + txt_web.Text;
-                Uri uri = new Uri(txt_web.Text);
-                if (uri.Scheme != Uri.UriSchemeHttp)
-                    throw new Exception("PeaRoxyWeb: Supporting only HTTP protocol.");
-                txt_web.Text = uri.ToString();
-            }
-            catch (Exception ex)
-            {
-                VDialog.Show("Value is not acceptable.\r\n" + ex.Message, "Data Validation", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                txt_web.Text = "";
-                new System.Threading.Thread(delegate()
-                {
-                    System.Threading.Thread.Sleep((int)(10));
-                    this.Dispatcher.Invoke((App.SimpleVoid_Delegate)delegate()
-                    {
-                        txt_web.Focus();
-                    }, new object[] { });
-                }) { IsBackground = true }.Start();
-            }
-
-            SaveSettings();
-        }
-
-        private void txt_proxyAddress_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (txt_proxyAddress.Text == "")
-                return;
-            try
-            {
-                txt_proxyAddress.Text = txt_proxyAddress.Text.Replace("\\", "/");
-                if (txt_proxyAddress.Text.IndexOf("://") == -1)
-                    txt_proxyAddress.Text = "http://" + txt_proxyAddress.Text;
-                Uri uri = new Uri(txt_proxyAddress.Text);
-                if (!(txt_proxyAddress.Text.LastIndexOf(":") == -1 || txt_proxyAddress.Text.LastIndexOf(":") == txt_proxyAddress.Text.IndexOf(":")))
-                    txt_proxyPort.Text = uri.Port.ToString();
-                txt_proxyAddress.Text = uri.Host;
-                txt_proxyPort_TextChanged(sender, null);
-            }
-            catch (Exception ex)
-            {
-                VDialog.Show("Value is not acceptable.\r\n" + ex.Message, "Data Validation", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                txt_proxyAddress.Text = "";
-                new System.Threading.Thread(delegate()
-                {
-                    System.Threading.Thread.Sleep((int)(10));
-                    this.Dispatcher.Invoke((App.SimpleVoid_Delegate)delegate()
-                    {
-                        txt_proxyAddress.Focus();
-                    }, new object[] { });
-                }) { IsBackground = true }.Start();
-            }
-
-            SaveSettings();
-        }
-
-        private void txt_proxyPort_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            ushort port;
-            if (!ushort.TryParse(txt_proxyPort.Text, out port))
-            {
-                VDialog.Show("Port Value is not acceptable.", "Data Validation", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                port = 1080;
-            }
-
-            txt_proxyPort.Text = port.ToString();
-            s_proxyPort.Value = port;
-        }
-
-        private void s_proxyPort_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            txt_proxyPort.Text = ((ushort)s_proxyPort.Value).ToString();
-        }
-
-        private void s_serverPort_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            txt_serverPort.Text = ((ushort)s_serverPort.Value).ToString();
-        }
-        private void txt_serverPort_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            ushort port;
-            if (!ushort.TryParse(txt_serverPort.Text, out port))
-            {
-                VDialog.Show("Port Value is not acceptable.", "Data Validation", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                port = 1080;
-            }
-
-            txt_serverPort.Text = port.ToString();
-            s_serverPort.Value = port;
-        }
-
-        private void UserControl_Loaded(object sender, RoutedEventArgs e)
-        {
-            Parent = (MainWindow)Window.GetWindow(this);
-            btn_ex_pearoxy.ToolTip = new UserControls.Tooltip("PeaRoxy Server",
-                "PeaRoxy Server is part of PeaRoxy Suit and best available proxy solution supported by this software." + Environment.NewLine +
-                "" + Environment.NewLine +
-                "[Advantages:]" + Environment.NewLine +
-                "-- Supports encryption and compression" + Environment.NewLine +
-                "-- Data can not be retrieved by firewalls" + Environment.NewLine +
-                "-- Undetectable, Traffic transfers like normal HTTP traffic" + Environment.NewLine +
-                "" + Environment.NewLine +
-                "[Disadvantages:]" + Environment.NewLine +
-                "-- Non known"
-                );
-
-            btn_ex_web.ToolTip = new UserControls.Tooltip("PeaRoxy Web (PHPear, ASPear)",
-                "PeaRoxy Web is part of PeaRoxy Suit as a lightweight version of PeaRoxy Server but with more limitations." + Environment.NewLine +
-                "" + Environment.NewLine +
-                "[Advantages:]" + Environment.NewLine +
-                "-- Supports encryption" + Environment.NewLine +
-                "-- Data can not be retrieved by firewalls easily" + Environment.NewLine +
-                "-- Undetectable, Traffic transfers like normal HTTP traffic" + Environment.NewLine +
-                "" + Environment.NewLine +
-                "[Disadvantages:]" + Environment.NewLine +
-                "-- No support for non-http connections" + Environment.NewLine +
-                "-- SmartPear limitation (No support for HTTPS SmartPear)" + Environment.NewLine +
-                "-- Incompatible with TAP Adapter" + Environment.NewLine +
-                "-- Low security for HTTPS connections"
-                );
-
-            btn_ex_proxy.ToolTip = new UserControls.Tooltip("Proxy Server (HTTPS, SOCKS 5)",
-                "Proxy servers are most common, basic and popular way of forwarding traffic through firewalls and filtering systems." + Environment.NewLine +
-                "" + Environment.NewLine +
-                "[Advantages:]" + Environment.NewLine +
-                "-- There are lot of providers out there!" + Environment.NewLine +
-                "-- Lot of free (but poor quality) servers" + Environment.NewLine +
-                "" + Environment.NewLine +
-                "[Disadvantages:]" + Environment.NewLine +
-                "-- No encryption support for data of password" + Environment.NewLine +
-                "-- Can be blocked or limited by firewalls of filtering systems" + Environment.NewLine +
-                "-- Data can be retrieved by hackers and firewalls"
-                );
-
-            btn_ex_self.ToolTip = new UserControls.Tooltip("Direct",
-                "Send traffic directly via your internet connection."
-                );
-
-            ToolTipService.SetInitialShowDelay(btn_ex_pearoxy, 0);
-            ToolTipService.SetShowDuration(btn_ex_pearoxy, 60000);
-
-            ToolTipService.SetInitialShowDelay(btn_ex_web, 0);
-            ToolTipService.SetShowDuration(btn_ex_web, 60000);
-
-            ToolTipService.SetInitialShowDelay(btn_ex_proxy, 0);
-            ToolTipService.SetShowDuration(btn_ex_proxy, 60000);
-
-            ToolTipService.SetInitialShowDelay(btn_ex_self, 0);
-            ToolTipService.SetShowDuration(btn_ex_self, 60000);
-        }
-
-        public void SaveSettings()
-        {
-            if (Parent == null || !Parent.inFormLoaded)
-                return;
-
-            if (ex_self.IsExpanded)
-                PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Server_Type = 0;
-            else if (ex_server.IsExpanded)
-                PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Server_Type = 1;
-            else if (ex_web.IsExpanded)
-                PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Server_Type = 2;
-            else if (ex_proxy.IsExpanded)
-                PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Server_Type = 3;
-            else if (ex_ns.IsExpanded)
-                PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Server_Type = 4;
-
-            if ((bool)rb_proxyType_https.IsChecked)
-                PeaRoxy.Windows.WPFClient.Properties.Settings.Default.ProxyServer_Type = 0;
-            else if ((bool)rb_proxyType_socket.IsChecked)
-                PeaRoxy.Windows.WPFClient.Properties.Settings.Default.ProxyServer_Type = 1;
-
-            if (ex_open.IsExpanded)
-                PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Auth_Type = 0;
-            else if (ex_usernameandpass.IsExpanded)
-                PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Auth_Type = 2;
-
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.ProxyServer_Address = txt_proxyAddress.Text;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.ProxyServer_Port = (ushort)s_proxyPort.Value;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.PeaRoxySocks_Address = txt_serverAddress.Text;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.PeaRoxySocks_Port = (ushort)s_serverPort.Value;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.PeaRoxyWeb_Address = txt_web.Text;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.PeaRoxySocks_Domain = txt_serverdomain.Text;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.UserAndPassword_User = txt_username.Text;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.UserAndPassword_Pass = txt_password.Password;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Save();
-        }
-
-        public void ReloadSettings()
-        {
-            switch (PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Server_Type)
-            {
-                case 0:
-                    ex_self.IsExpanded = true;
-                    break;
-                case 1:
-                    ex_server.IsExpanded = true;
-                    break;
-                case 2:
-                    ex_web.IsExpanded = true;
-                    break;
-                case 3:
-                    ex_proxy.IsExpanded = true;
-                    break;
-                case 4:
-                    ex_ns.IsExpanded = true;
-                    break;
-            }
-            switch (PeaRoxy.Windows.WPFClient.Properties.Settings.Default.ProxyServer_Type)
-            {
-                case 0:
-                    rb_proxyType_https.IsChecked = true;
-                    rb_proxyType_socket.IsChecked = false;
-                    break;
-                case 1:
-                    rb_proxyType_https.IsChecked = false;
-                    rb_proxyType_socket.IsChecked = true;
-                    break;
-            }
-            switch (PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Auth_Type)
-            {
-                case 0:
-                    ex_open.IsExpanded = true;
-                    break;
-                case 2:
-                    ex_usernameandpass.IsExpanded = true;
-                    break;
-            }
-            txt_proxyAddress.Text = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.ProxyServer_Address;
-            s_proxyPort.Value = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.ProxyServer_Port;
-            txt_serverAddress.Text = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.PeaRoxySocks_Address;
-            s_serverPort.Value = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.PeaRoxySocks_Port;
-            txt_web.Text = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.PeaRoxyWeb_Address;
-            txt_serverdomain.Text = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.PeaRoxySocks_Domain;
-            txt_username.Text = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.UserAndPassword_User;
-            txt_password.Password = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.UserAndPassword_Pass;
-        }
-
+        /// <summary>
+        /// Sets a value indicating whether show title.
+        /// </summary>
         public bool ShowTitle
         {
             set
             {
                 if (value)
                 {
-                    cc3.RotationDirection = Thriple.Controls.RotationDirection.BottomToTop;
-                    cc3.BringBackSideIntoView();
+                    this.TitleControl3D.RotationDirection = RotationDirection.BottomToTop;
+                    this.TitleControl3D.BringBackSideIntoView();
                 }
                 else
                 {
-                    cc3.RotationDirection = Thriple.Controls.RotationDirection.TopToBottom;
-                    cc3.BringFrontSideIntoView();
+                    this.TitleControl3D.RotationDirection = RotationDirection.TopToBottom;
+                    this.TitleControl3D.BringFrontSideIntoView();
                 }
             }
         }
 
-        public bool isLoading
-        {
-            set { loadingBox.IsVisible = value; }
-        }
-
-        public bool Connecetd
+        /// <summary>
+        /// Sets a value indicating whether is loading.
+        /// </summary>
+        public bool IsLoading
         {
             set
             {
-                DoubleAnimation da_ShowImage = new DoubleAnimation((!value).GetHashCode(), value.GetHashCode(), new Duration(TimeSpan.FromSeconds(0.5)));
-                DoubleAnimation da_HideImage = new DoubleAnimation(value.GetHashCode(), (!value).GetHashCode(), TimeSpan.FromSeconds(0.5));
-                if (img_Connected.Opacity != value.GetHashCode())
-                    img_Connected.BeginAnimation(Image.OpacityProperty, da_ShowImage);
-                if (img_Disconnected.Opacity != (!value).GetHashCode())
-                    img_Disconnected.BeginAnimation(Image.OpacityProperty, da_HideImage);
-                if (r_active.Opacity != value.GetHashCode())
-                    r_active.BeginAnimation(Image.OpacityProperty, da_ShowImage);
-                if (r_inactive.Opacity != (!value).GetHashCode())
-                    r_inactive.BeginAnimation(Image.OpacityProperty, da_HideImage);
+                this.LoadingBox.IsVisible = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the parent.
+        /// </summary>
+        private new MainWindow Parent { get; set; }
+
+        #endregion
+
+        #region Public Methods and Operators
+
+        /// <summary>
+        /// The reload settings.
+        /// </summary>
+        public void ReloadSettings()
+        {
+            switch (Settings.Default.Server_Type)
+            {
+                case 0:
+                    this.ExSelf.IsExpanded = true;
+                    break;
+                case 1:
+                    this.ExServer.IsExpanded = true;
+                    break;
+                case 2:
+                    this.ExWeb.IsExpanded = true;
+                    break;
+                case 3:
+                    this.ExProxy.IsExpanded = true;
+                    break;
+            }
+
+            switch (Settings.Default.ProxyServer_Type)
+            {
+                case 0:
+                    this.RbProxyTypeHttps.IsChecked = true;
+                    this.RbProxyTypeSocket.IsChecked = false;
+                    break;
+                case 1:
+                    this.RbProxyTypeHttps.IsChecked = false;
+                    this.RbProxyTypeSocket.IsChecked = true;
+                    break;
+            }
+
+            switch (Settings.Default.Auth_Type)
+            {
+                case 0:
+                    this.ExOpen.IsExpanded = true;
+                    break;
+                case 2:
+                    this.ExUsernameAndPass.IsExpanded = true;
+                    break;
+            }
+
+            this.TxtProxyAddress.Text = Settings.Default.ProxyServer_Address;
+            this.TxtServerAddress.Text = Settings.Default.PeaRoxySocks_Address;
+            this.TxtWeb.Text = Settings.Default.PeaRoxyWeb_Address;
+            this.TxtServerdomain.Text = Settings.Default.PeaRoxySocks_Domain;
+            this.TxtUsername.Text = Settings.Default.UserAndPassword_User;
+            this.TxtPassword.Password = Settings.Default.UserAndPassword_Pass;
+        }
+
+        /// <summary>
+        /// The save settings.
+        /// </summary>
+        public void SaveSettings()
+        {
+            if (this.Parent == null || !this.Parent.IsFormLoaded)
+            {
+                return;
+            }
+
+            if (this.ExSelf.IsExpanded)
+            {
+                Settings.Default.Server_Type = 0;
+            }
+            else if (this.ExServer.IsExpanded)
+            {
+                Settings.Default.Server_Type = 1;
+            }
+            else if (this.ExWeb.IsExpanded)
+            {
+                Settings.Default.Server_Type = 2;
+            }
+            else if (this.ExProxy.IsExpanded)
+            {
+                Settings.Default.Server_Type = 3;
+            }
+
+            if (this.RbProxyTypeHttps.IsChecked ?? false)
+            {
+                Settings.Default.ProxyServer_Type = 0;
+            }
+            else if (this.RbProxyTypeSocket.IsChecked ?? false)
+            {
+                Settings.Default.ProxyServer_Type = 1;
+            }
+
+            if (this.ExOpen.IsExpanded)
+            {
+                Settings.Default.Auth_Type = 0;
+            }
+            else if (this.ExUsernameAndPass.IsExpanded)
+            {
+                Settings.Default.Auth_Type = 2;
+            }
+
+            Settings.Default.ProxyServer_Address = this.TxtProxyAddress.Text;
+            Settings.Default.ProxyServer_Port = Convert.ToUInt16(this.TxtProxyPort.Text);
+            Settings.Default.PeaRoxySocks_Address = this.TxtServerAddress.Text;
+            Settings.Default.PeaRoxySocks_Port = Convert.ToUInt16(this.TxtServerPort.Text);
+            Settings.Default.PeaRoxyWeb_Address = this.TxtWeb.Text;
+            Settings.Default.PeaRoxySocks_Domain = this.TxtServerdomain.Text;
+            Settings.Default.UserAndPassword_User = this.TxtUsername.Text;
+            Settings.Default.UserAndPassword_Pass = this.TxtPassword.Password;
+            Settings.Default.Save();
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The animated expender_ collapsed.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void AnimatedExpenderCollapsed(object sender, RoutedEventArgs e)
+        {
+            Expander ex = sender as Expander;
+            if (ex != null && ex.Parent.GetType().Name == typeof(WrapPanel).Name)
+            {
+                WrapPanel wr = ex.Parent as WrapPanel;
+                bool onIsEnable = false;
+                if (wr != null)
+                {
+                    foreach (var exP in wr.Children)
+                    {
+                        Expander wEx = exP as Expander;
+                        if (wEx != null && (!wEx.Equals(ex) && wEx.IsExpanded))
+                        {
+                            onIsEnable = true;
+                        }
+                    }
+                }
+
+                if (!onIsEnable)
+                {
+                    ex.IsExpanded = true;
+                    return;
+                }
+            }
+
+            if (ex == null || ex.Content == null)
+            {
+                return;
+            }
+
+            DoubleAnimation animation = new DoubleAnimation(
+                ((Grid)ex.Content).Height + 25, 
+                25, 
+                new Duration(TimeSpan.FromSeconds(0.2)));
+            ex.BeginAnimation(HeightProperty, animation);
+        }
+
+        /// <summary>
+        /// The animated expender_ expanded.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void AnimatedExpenderExpanded(object sender, RoutedEventArgs e)
+        {
+            Expander ex = sender as Expander;
+            if (ex != null && ex.Parent.GetType().Name == typeof(WrapPanel).Name)
+            {
+                WrapPanel wr = ex.Parent as WrapPanel;
+                if (wr != null)
+                {
+                    foreach (var exP in wr.Children)
+                    {
+                        Expander wEx = exP as Expander;
+                        if (wEx != null && (!wEx.Equals(ex) && wEx.IsExpanded))
+                        {
+                            wEx.IsExpanded = false;
+                        }
+                    }
+
+                    if (wr.Equals(this.WpServers))
+                    {
+                        if (this.ExSelf.IsExpanded)
+                        {
+                            this.ExUsernameAndPass.IsEnabled = false;
+                            if (!this.ExOpen.IsExpanded)
+                            {
+                                this.ExOpen.IsExpanded = true;
+                            }
+                        }
+                        else if (this.ExServer.IsExpanded)
+                        {
+                            this.ExUsernameAndPass.IsEnabled = true;
+                        }
+                        else if (this.ExWeb.IsExpanded)
+                        {
+                            this.ExUsernameAndPass.IsEnabled = true;
+                        }
+                        else if (this.ExProxy.IsExpanded)
+                        {
+                            this.ExUsernameAndPass.IsEnabled = true;
+                        }
+                    }
+                }
+            }
+
+            if (ex == null || ex.Content == null)
+            {
+                return;
+            }
+
+            DoubleAnimation animation = new DoubleAnimation(
+                25, 
+                ((Grid)ex.Content).Height + 25, 
+                new Duration(TimeSpan.FromSeconds(0.4)));
+            ex.BeginAnimation(HeightProperty, animation);
+
+            this.SaveSettings();
+        }
+
+        /// <summary>
+        /// The user control_ loaded.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1118:ParameterMustNotSpanMultipleLines", Justification = "Reviewed. Suppression is OK here.")]
+        private void UserControlLoaded(object sender, RoutedEventArgs e)
+        {
+            this.Parent = (MainWindow)Window.GetWindow(this);
+            this.btn_ex_pearoxy.ToolTip = new Tooltip(
+                "PeaRoxy Server", 
+                "PeaRoxy Server is part of PeaRoxy Suit and best available proxy solution supported by this software."
+                + Environment.NewLine + string.Empty + Environment.NewLine + "[Advantages:]" + Environment.NewLine
+                + "-- Supports encryption and compression" + Environment.NewLine
+                + "-- Data can not be retrieved by firewalls" + Environment.NewLine
+                + "-- Undetectable, Traffic transfers like normal HTTP traffic" + Environment.NewLine + string.Empty
+                + Environment.NewLine + "[Disadvantages:]" + Environment.NewLine + "-- Non known");
+
+            this.BtnExWeb.ToolTip = new Tooltip(
+                "PeaRoxy Web (PHPear, ASPear)", 
+                "PeaRoxy Web is part of PeaRoxy Suit as a lightweight version of PeaRoxy Server but with more limitations."
+                + Environment.NewLine + string.Empty + Environment.NewLine + "[Advantages:]" + Environment.NewLine
+                + "-- Supports encryption" + Environment.NewLine + "-- Data can not be retrieved by firewalls easily"
+                + Environment.NewLine + "-- Undetectable, Traffic transfers like normal HTTP traffic"
+                + Environment.NewLine + string.Empty + Environment.NewLine + "[Disadvantages:]" + Environment.NewLine
+                + "-- No support for non-http connections" + Environment.NewLine
+                + "-- SmartPear limitation (No support for HTTPS SmartPear)" + Environment.NewLine
+                + "-- Incompatible with TAP Adapter" + Environment.NewLine + "-- Low security for HTTPS connections");
+
+            this.BtnExProxy.ToolTip = new Tooltip(
+                "Proxy Server (HTTPS, SOCKS 5)", 
+                "Proxy servers are most common, basic and popular way of forwarding traffic through firewalls and filtering systems."
+                + Environment.NewLine + string.Empty + Environment.NewLine + "[Advantages:]" + Environment.NewLine
+                + "-- There are lot of providers out there!" + Environment.NewLine
+                + "-- Lot of free (but poor quality) servers" + Environment.NewLine + string.Empty + Environment.NewLine
+                + "[Disadvantages:]" + Environment.NewLine + "-- No encryption support for data of password"
+                + Environment.NewLine + "-- Can be blocked or limited by firewalls of filtering systems"
+                + Environment.NewLine + "-- Data can be retrieved by hackers and firewalls");
+
+            this.BtnExSelf.ToolTip = new Tooltip("Direct", "Send traffic directly via your internet connection.");
+
+            ToolTipService.SetInitialShowDelay(this.btn_ex_pearoxy, 0);
+            ToolTipService.SetShowDuration(this.btn_ex_pearoxy, 60000);
+
+            ToolTipService.SetInitialShowDelay(this.BtnExWeb, 0);
+            ToolTipService.SetShowDuration(this.BtnExWeb, 60000);
+
+            ToolTipService.SetInitialShowDelay(this.BtnExProxy, 0);
+            ToolTipService.SetShowDuration(this.BtnExProxy, 60000);
+
+            ToolTipService.SetInitialShowDelay(this.BtnExSelf, 0);
+            ToolTipService.SetShowDuration(this.BtnExSelf, 60000);
+        }
+
+        /// <summary>
+        /// The txt_ text box_ lost focus.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void TxtTextBoxLostFocus(object sender, RoutedEventArgs e)
+        {
+            this.SaveSettings();
+        }
+
+        /// <summary>
+        /// The txt_proxy address_ lost focus.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void TxtProxyAddressLostFocus(object sender, RoutedEventArgs e)
+        {
+            if (this.TxtProxyAddress.Text == string.Empty)
+            {
+                return;
+            }
+
+            try
+            {
+                this.TxtProxyAddress.Text = this.TxtProxyAddress.Text.Replace("\\", "/");
+                if (this.TxtProxyAddress.Text.IndexOf("://", StringComparison.Ordinal) == -1)
+                {
+                    this.TxtProxyAddress.Text = "http://" + this.TxtProxyAddress.Text;
+                }
+
+                Uri uri = new Uri(this.TxtProxyAddress.Text);
+                if (
+                    !(this.TxtProxyAddress.Text.LastIndexOf(":", StringComparison.Ordinal) == -1
+                      || this.TxtProxyAddress.Text.LastIndexOf(":", StringComparison.Ordinal) == this.TxtProxyAddress.Text.IndexOf(":", StringComparison.Ordinal)))
+                {
+                    this.TxtProxyPort.Text = uri.Port.ToString(CultureInfo.InvariantCulture);
+                }
+
+                this.TxtProxyAddress.Text = uri.Host;
+                this.TxtProxyPortTextChanged(sender, null);
+            }
+            catch (Exception ex)
+            {
+                VDialog.Show(
+                    "Value is not acceptable.\r\n" + ex.Message, 
+                    "Data Validation", 
+                    MessageBoxButtons.OK, 
+                    MessageBoxIcon.Exclamation);
+                this.TxtProxyAddress.Text = string.Empty;
+                new Thread(
+                    delegate()
+                        {
+                            Thread.Sleep(10);
+                            this.Dispatcher.Invoke(
+                                (App.SimpleVoidDelegate)(() => this.TxtProxyAddress.Focus()), 
+                                new object[] { });
+                        }) {
+                              IsBackground = true 
+                           }.Start();
+            }
+
+            this.SaveSettings();
+        }
+
+        /// <summary>
+        /// The txt_proxy port_ text changed.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void TxtProxyPortTextChanged(object sender, TextChangedEventArgs e)
+        {
+            ushort port;
+            if (!ushort.TryParse(this.TxtProxyPort.Text, out port))
+            {
+                VDialog.Show(
+                    "Port Value is not acceptable.", 
+                    "Data Validation", 
+                    MessageBoxButtons.OK, 
+                    MessageBoxIcon.Exclamation);
+                port = 1080;
+            }
+
+            this.TxtProxyPort.Text = port.ToString(CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// The txt_server address_ lost focus.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void TxtServerAddressLostFocus(object sender, RoutedEventArgs e)
+        {
+            if (this.TxtServerAddress.Text == string.Empty)
+            {
+                return;
+            }
+
+            try
+            {
+                this.TxtServerAddress.Text = this.TxtServerAddress.Text.Replace("\\", "/");
+                if (this.TxtServerAddress.Text.IndexOf("://", StringComparison.Ordinal) == -1)
+                {
+                    this.TxtServerAddress.Text = "http://" + this.TxtServerAddress.Text;
+                }
+
+                Uri uri = new Uri(this.TxtServerAddress.Text);
+                if (
+                    !(this.TxtServerAddress.Text.LastIndexOf(":", StringComparison.Ordinal) == -1
+                      || this.TxtServerAddress.Text.LastIndexOf(":", StringComparison.Ordinal) == this.TxtServerAddress.Text.IndexOf(":", StringComparison.Ordinal)))
+                {
+                    this.TxtServerPort.Text = uri.Port.ToString(CultureInfo.InvariantCulture);
+                }
+
+                this.TxtServerAddress.Text = uri.Host;
+                this.TxtServerPortTextChanged(sender, null);
+            }
+            catch (Exception ex)
+            {
+                VDialog.Show(
+                    "Value is not acceptable.\r\n" + ex.Message, 
+                    "Data Validation", 
+                    MessageBoxButtons.OK, 
+                    MessageBoxIcon.Exclamation);
+                this.TxtServerAddress.Text = string.Empty;
+                new Thread(
+                    delegate()
+                        {
+                            Thread.Sleep(10);
+                            this.Dispatcher.Invoke(
+                                (App.SimpleVoidDelegate)(() => this.TxtServerAddress.Focus()), 
+                                new object[] { });
+                        }) {
+                              IsBackground = true 
+                           }.Start();
+            }
+
+            this.SaveSettings();
+        }
+
+        /// <summary>
+        /// The txt_server port_ text changed.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void TxtServerPortTextChanged(object sender, TextChangedEventArgs e)
+        {
+            ushort port;
+            if (!ushort.TryParse(this.TxtServerPort.Text, out port))
+            {
+                VDialog.Show(
+                    "Port Value is not acceptable.", 
+                    "Data Validation", 
+                    MessageBoxButtons.OK, 
+                    MessageBoxIcon.Exclamation);
+                port = 1080;
+            }
+
+            this.TxtServerPort.Text = port.ToString(CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// The txt_web_ lost focus.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        /// <exception cref="Exception">
+        /// No https support
+        /// </exception>
+        private void TxtWebLostFocus(object sender, RoutedEventArgs e)
+        {
+            if (this.TxtWeb.Text == string.Empty)
+            {
+                return;
+            }
+
+            try
+            {
+                this.TxtWeb.Text = this.TxtWeb.Text.Replace("\\", "/");
+                if (this.TxtWeb.Text.IndexOf("://", StringComparison.Ordinal) == -1)
+                {
+                    this.TxtWeb.Text = "http://" + this.TxtWeb.Text;
+                }
+
+                Uri uri = new Uri(this.TxtWeb.Text);
+                if (uri.Scheme != Uri.UriSchemeHttp)
+                {
+                    throw new Exception("PeaRoxyWeb: Supporting only HTTP protocol.");
+                }
+
+                this.TxtWeb.Text = uri.ToString();
+            }
+            catch (Exception ex)
+            {
+                VDialog.Show(
+                    "Value is not acceptable.\r\n" + ex.Message, 
+                    "Data Validation", 
+                    MessageBoxButtons.OK, 
+                    MessageBoxIcon.Exclamation);
+                this.TxtWeb.Text = string.Empty;
+                new Thread(
+                    delegate()
+                        {
+                            Thread.Sleep(10);
+                            this.Dispatcher.Invoke(
+                                (App.SimpleVoidDelegate)(() => this.TxtWeb.Focus()), 
+                                new object[] { });
+                        }) {
+                              IsBackground = true 
+                           }.Start();
+            }
+
+            this.SaveSettings();
+        }
+
+        #endregion
     }
 }

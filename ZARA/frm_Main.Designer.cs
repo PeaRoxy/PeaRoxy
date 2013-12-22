@@ -1,6 +1,6 @@
 ﻿namespace ZARA
 {
-    partial class frm_Main
+    sealed partial class frm_Main
     {
         /// <summary>
         /// Required designer variable.
@@ -38,11 +38,18 @@
             this.btn_minimize = new System.Windows.Forms.Button();
             this.panel6 = new System.Windows.Forms.Panel();
             this.btn_disconnect = new System.Windows.Forms.Button();
+            this.lbl_stat_uploaded_v = new ZARA.MyLabel();
+            this.lbl_stat_uploaded = new ZARA.MyLabel();
+            this.lbl_stat_downloaded_v = new ZARA.MyLabel();
+            this.lbl_stat_downloaded = new ZARA.MyLabel();
             this.panel5 = new System.Windows.Forms.Panel();
+            this.lbl_status = new ZARA.MyLabel();
+            this.label6 = new ZARA.MyLabel();
             this.pb_status = new System.Windows.Forms.PictureBox();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.pnl_login = new System.Windows.Forms.Panel();
+            this.label13 = new ZARA.MyLabel();
             this.btn_login = new System.Windows.Forms.Button();
             this.pnl_host = new System.Windows.Forms.Panel();
             this.pictureBox6 = new System.Windows.Forms.PictureBox();
@@ -53,16 +60,6 @@
             this.pnl_username = new System.Windows.Forms.Panel();
             this.pictureBox4 = new System.Windows.Forms.PictureBox();
             this.pnl_details = new System.Windows.Forms.Panel();
-            this.panel9 = new System.Windows.Forms.Panel();
-            this.cpb_stat_uploadrate = new CircularProgressBar.CircularProgressBar();
-            this.cpb_stat_downloadrate = new CircularProgressBar.CircularProgressBar();
-            this.lbl_stat_uploaded_v = new ZARA.MyLabel();
-            this.lbl_stat_uploaded = new ZARA.MyLabel();
-            this.lbl_stat_downloaded_v = new ZARA.MyLabel();
-            this.lbl_stat_downloaded = new ZARA.MyLabel();
-            this.lbl_status = new ZARA.MyLabel();
-            this.label6 = new ZARA.MyLabel();
-            this.label13 = new ZARA.MyLabel();
             this.label4 = new ZARA.MyLabel();
             this.label3 = new ZARA.MyLabel();
             this.label12 = new ZARA.MyLabel();
@@ -70,8 +67,11 @@
             this.lbl_stat_acceptingthreads = new ZARA.MyLabel();
             this.label7 = new ZARA.MyLabel();
             this.lbl_stat_activeconnections = new ZARA.MyLabel();
+            this.panel9 = new System.Windows.Forms.Panel();
             this.label2 = new ZARA.MyLabel();
             this.label1 = new ZARA.MyLabel();
+            this.cpb_stat_uploadrate = new CircularProgressBar.CircularProgressBar();
+            this.cpb_stat_downloadrate = new CircularProgressBar.CircularProgressBar();
             this.pnl_main.SuspendLayout();
             this.pnl_status.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pb_status)).BeginInit();
@@ -91,7 +91,7 @@
             // 
             this.statTimer.Enabled = true;
             this.statTimer.Interval = 1000;
-            this.statTimer.Tick += new System.EventHandler(this.statTimer_Tick);
+            this.statTimer.Tick += new System.EventHandler(this.StatTimerTick);
             // 
             // txt_username
             // 
@@ -107,7 +107,7 @@
             this.txt_username.Size = new System.Drawing.Size(131, 16);
             this.txt_username.TabIndex = 0;
             this.txt_username.Text = "Username";
-            this.txt_username.Leave += new System.EventHandler(this.txt_Leave);
+            this.txt_username.Leave += new System.EventHandler(this.TxtLeave);
             // 
             // pnl_main
             // 
@@ -142,7 +142,7 @@
             this.pnl_status.Name = "pnl_status";
             this.pnl_status.Size = new System.Drawing.Size(280, 300);
             this.pnl_status.TabIndex = 1;
-            this.pnl_status.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
+            this.pnl_status.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
             // 
             // btn_exit
             // 
@@ -162,7 +162,7 @@
             this.btn_exit.TabIndex = 8;
             this.btn_exit.Text = "EXIT";
             this.btn_exit.UseVisualStyleBackColor = false;
-            this.btn_exit.Click += new System.EventHandler(this.btn_Exit_Click);
+            this.btn_exit.Click += new System.EventHandler(this.BtnExitClick);
             // 
             // btn_minimize
             // 
@@ -183,7 +183,7 @@
             this.btn_minimize.TabIndex = 7;
             this.btn_minimize.Text = "MINIMIZE";
             this.btn_minimize.UseVisualStyleBackColor = false;
-            this.btn_minimize.Click += new System.EventHandler(this.btn_minimize_Click);
+            this.btn_minimize.Click += new System.EventHandler(this.BtnMinimizeClick);
             // 
             // panel6
             // 
@@ -194,7 +194,7 @@
             this.panel6.Name = "panel6";
             this.panel6.Size = new System.Drawing.Size(223, 1);
             this.panel6.TabIndex = 10;
-            this.panel6.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
+            this.panel6.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
             // 
             // btn_disconnect
             // 
@@ -215,7 +215,61 @@
             this.btn_disconnect.TabIndex = 6;
             this.btn_disconnect.Text = "DISCONNECT";
             this.btn_disconnect.UseVisualStyleBackColor = false;
-            this.btn_disconnect.Click += new System.EventHandler(this.btn_disconnect_Click);
+            this.btn_disconnect.Click += new System.EventHandler(this.BtnDisconnectClick);
+            // 
+            // lbl_stat_uploaded_v
+            // 
+            this.lbl_stat_uploaded_v.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_stat_uploaded_v.AutoSize = true;
+            this.lbl_stat_uploaded_v.DisabledForeColor = System.Drawing.Color.Empty;
+            this.lbl_stat_uploaded_v.Font = new System.Drawing.Font("Arial Black", 6F, System.Drawing.FontStyle.Bold);
+            this.lbl_stat_uploaded_v.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
+            this.lbl_stat_uploaded_v.Location = new System.Drawing.Point(185, 158);
+            this.lbl_stat_uploaded_v.Name = "lbl_stat_uploaded_v";
+            this.lbl_stat_uploaded_v.Size = new System.Drawing.Size(21, 11);
+            this.lbl_stat_uploaded_v.TabIndex = 5;
+            this.lbl_stat_uploaded_v.Text = "Bps";
+            this.lbl_stat_uploaded_v.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
+            // 
+            // lbl_stat_uploaded
+            // 
+            this.lbl_stat_uploaded.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_stat_uploaded.AutoSize = true;
+            this.lbl_stat_uploaded.DisabledForeColor = System.Drawing.Color.Empty;
+            this.lbl_stat_uploaded.Font = new System.Drawing.Font("Arial Black", 11F, System.Drawing.FontStyle.Bold);
+            this.lbl_stat_uploaded.ForeColor = System.Drawing.Color.White;
+            this.lbl_stat_uploaded.Location = new System.Drawing.Point(183, 140);
+            this.lbl_stat_uploaded.Name = "lbl_stat_uploaded";
+            this.lbl_stat_uploaded.Size = new System.Drawing.Size(35, 22);
+            this.lbl_stat_uploaded.TabIndex = 4;
+            this.lbl_stat_uploaded.Text = "0.0";
+            this.lbl_stat_uploaded.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
+            // 
+            // lbl_stat_downloaded_v
+            // 
+            this.lbl_stat_downloaded_v.AutoSize = true;
+            this.lbl_stat_downloaded_v.DisabledForeColor = System.Drawing.Color.Empty;
+            this.lbl_stat_downloaded_v.Font = new System.Drawing.Font("Arial Black", 6F, System.Drawing.FontStyle.Bold);
+            this.lbl_stat_downloaded_v.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
+            this.lbl_stat_downloaded_v.Location = new System.Drawing.Point(69, 158);
+            this.lbl_stat_downloaded_v.Name = "lbl_stat_downloaded_v";
+            this.lbl_stat_downloaded_v.Size = new System.Drawing.Size(21, 11);
+            this.lbl_stat_downloaded_v.TabIndex = 3;
+            this.lbl_stat_downloaded_v.Text = "Bps";
+            this.lbl_stat_downloaded_v.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
+            // 
+            // lbl_stat_downloaded
+            // 
+            this.lbl_stat_downloaded.AutoSize = true;
+            this.lbl_stat_downloaded.DisabledForeColor = System.Drawing.Color.Empty;
+            this.lbl_stat_downloaded.Font = new System.Drawing.Font("Arial Black", 11F, System.Drawing.FontStyle.Bold);
+            this.lbl_stat_downloaded.ForeColor = System.Drawing.Color.White;
+            this.lbl_stat_downloaded.Location = new System.Drawing.Point(67, 140);
+            this.lbl_stat_downloaded.Name = "lbl_stat_downloaded";
+            this.lbl_stat_downloaded.Size = new System.Drawing.Size(35, 22);
+            this.lbl_stat_downloaded.TabIndex = 2;
+            this.lbl_stat_downloaded.Text = "0.0";
+            this.lbl_stat_downloaded.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
             // 
             // panel5
             // 
@@ -226,7 +280,35 @@
             this.panel5.Name = "panel5";
             this.panel5.Size = new System.Drawing.Size(223, 1);
             this.panel5.TabIndex = 9;
-            this.panel5.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
+            this.panel5.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
+            // 
+            // lbl_status
+            // 
+            this.lbl_status.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_status.AutoSize = true;
+            this.lbl_status.DisabledForeColor = System.Drawing.Color.Empty;
+            this.lbl_status.Font = new System.Drawing.Font("Arial", 15F, System.Drawing.FontStyle.Bold);
+            this.lbl_status.ForeColor = System.Drawing.Color.White;
+            this.lbl_status.Location = new System.Drawing.Point(102, 76);
+            this.lbl_status.Name = "lbl_status";
+            this.lbl_status.Size = new System.Drawing.Size(167, 24);
+            this.lbl_status.TabIndex = 1;
+            this.lbl_status.Text = "DISCONNECTED";
+            this.lbl_status.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.DisabledForeColor = System.Drawing.Color.Empty;
+            this.label6.Font = new System.Drawing.Font("Arial Black", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label6.ForeColor = System.Drawing.Color.White;
+            this.label6.Location = new System.Drawing.Point(16, 22);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(65, 18);
+            this.label6.TabIndex = 0;
+            this.label6.Text = "STATUS";
+            this.label6.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
             // 
             // pb_status
             // 
@@ -237,7 +319,7 @@
             this.pb_status.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pb_status.TabIndex = 4;
             this.pb_status.TabStop = false;
-            this.pb_status.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
+            this.pb_status.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
             // 
             // pictureBox2
             // 
@@ -249,7 +331,7 @@
             this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox2.TabIndex = 3;
             this.pictureBox2.TabStop = false;
-            this.pictureBox2.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
+            this.pictureBox2.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
             // 
             // pictureBox1
             // 
@@ -260,7 +342,7 @@
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox1.TabIndex = 2;
             this.pictureBox1.TabStop = false;
-            this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
+            this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
             // 
             // pnl_login
             // 
@@ -276,6 +358,19 @@
             this.pnl_login.Name = "pnl_login";
             this.pnl_login.Size = new System.Drawing.Size(200, 300);
             this.pnl_login.TabIndex = 0;
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.DisabledForeColor = System.Drawing.Color.Empty;
+            this.label13.Font = new System.Drawing.Font("Arial Black", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label13.ForeColor = System.Drawing.Color.White;
+            this.label13.Location = new System.Drawing.Point(16, 22);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(55, 18);
+            this.label13.TabIndex = 0;
+            this.label13.Text = "LOGIN";
+            this.label13.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
             // 
             // btn_login
             // 
@@ -295,7 +390,7 @@
             this.btn_login.TabIndex = 4;
             this.btn_login.Text = "CONNECT";
             this.btn_login.UseVisualStyleBackColor = false;
-            this.btn_login.Click += new System.EventHandler(this.btn_login_Click);
+            this.btn_login.Click += new System.EventHandler(this.BtnLoginClick);
             // 
             // pnl_host
             // 
@@ -310,7 +405,7 @@
             this.pnl_host.Name = "pnl_host";
             this.pnl_host.Size = new System.Drawing.Size(167, 28);
             this.pnl_host.TabIndex = 3;
-            this.pnl_host.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
+            this.pnl_host.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
             // 
             // pictureBox6
             // 
@@ -323,7 +418,7 @@
             this.pictureBox6.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox6.TabIndex = 15;
             this.pictureBox6.TabStop = false;
-            this.pictureBox6.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
+            this.pictureBox6.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
             // 
             // txt_server
             // 
@@ -339,6 +434,7 @@
             this.txt_server.Size = new System.Drawing.Size(131, 16);
             this.txt_server.TabIndex = 0;
             this.txt_server.Text = "Host";
+            this.txt_server.Leave += new System.EventHandler(this.TxtServerLeave);
             // 
             // pnl_password
             // 
@@ -353,7 +449,7 @@
             this.pnl_password.Name = "pnl_password";
             this.pnl_password.Size = new System.Drawing.Size(167, 28);
             this.pnl_password.TabIndex = 2;
-            this.pnl_password.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
+            this.pnl_password.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
             // 
             // pictureBox5
             // 
@@ -366,7 +462,7 @@
             this.pictureBox5.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox5.TabIndex = 15;
             this.pictureBox5.TabStop = false;
-            this.pictureBox5.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
+            this.pictureBox5.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
             // 
             // txt_password
             // 
@@ -382,7 +478,7 @@
             this.txt_password.Size = new System.Drawing.Size(131, 16);
             this.txt_password.TabIndex = 0;
             this.txt_password.Text = "Password";
-            this.txt_password.Enter += new System.EventHandler(this.txt_password_Enter);
+            this.txt_password.Enter += new System.EventHandler(this.TxtPasswordEnter);
             // 
             // pnl_username
             // 
@@ -397,7 +493,7 @@
             this.pnl_username.Name = "pnl_username";
             this.pnl_username.Size = new System.Drawing.Size(167, 28);
             this.pnl_username.TabIndex = 1;
-            this.pnl_username.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
+            this.pnl_username.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
             // 
             // pictureBox4
             // 
@@ -410,7 +506,7 @@
             this.pictureBox4.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox4.TabIndex = 15;
             this.pictureBox4.TabStop = false;
-            this.pictureBox4.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
+            this.pictureBox4.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
             // 
             // pnl_details
             // 
@@ -434,7 +530,98 @@
             this.pnl_details.Name = "pnl_details";
             this.pnl_details.Size = new System.Drawing.Size(200, 300);
             this.pnl_details.TabIndex = 2;
-            this.pnl_details.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
+            this.pnl_details.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
+            // 
+            // label4
+            // 
+            this.label4.DisabledForeColor = System.Drawing.Color.Empty;
+            this.label4.Font = new System.Drawing.Font("Arial Black", 6F, System.Drawing.FontStyle.Bold);
+            this.label4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
+            this.label4.Location = new System.Drawing.Point(102, 134);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(82, 11);
+            this.label4.TabIndex = 4;
+            this.label4.Text = "UPLOAD";
+            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.label4.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
+            // 
+            // label3
+            // 
+            this.label3.DisabledForeColor = System.Drawing.Color.Empty;
+            this.label3.Font = new System.Drawing.Font("Arial Black", 6F, System.Drawing.FontStyle.Bold);
+            this.label3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
+            this.label3.Location = new System.Drawing.Point(17, 134);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(80, 11);
+            this.label3.TabIndex = 3;
+            this.label3.Text = "DOWNLOAD";
+            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.label3.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.DisabledForeColor = System.Drawing.Color.Empty;
+            this.label12.Font = new System.Drawing.Font("Arial Black", 6F, System.Drawing.FontStyle.Bold);
+            this.label12.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
+            this.label12.Location = new System.Drawing.Point(108, 259);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(73, 11);
+            this.label12.TabIndex = 10;
+            this.label12.Text = "CONNECTIONS";
+            this.label12.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.DisabledForeColor = System.Drawing.Color.Empty;
+            this.label9.Font = new System.Drawing.Font("Arial Black", 6F, System.Drawing.FontStyle.Bold);
+            this.label9.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
+            this.label9.Location = new System.Drawing.Point(108, 198);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(73, 11);
+            this.label9.TabIndex = 7;
+            this.label9.Text = "CONNECTIONS";
+            this.label9.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
+            // 
+            // lbl_stat_acceptingthreads
+            // 
+            this.lbl_stat_acceptingthreads.AutoSize = true;
+            this.lbl_stat_acceptingthreads.DisabledForeColor = System.Drawing.Color.Empty;
+            this.lbl_stat_acceptingthreads.Font = new System.Drawing.Font("Arial Black", 18F, System.Drawing.FontStyle.Bold);
+            this.lbl_stat_acceptingthreads.ForeColor = System.Drawing.Color.White;
+            this.lbl_stat_acceptingthreads.Location = new System.Drawing.Point(35, 242);
+            this.lbl_stat_acceptingthreads.Name = "lbl_stat_acceptingthreads";
+            this.lbl_stat_acceptingthreads.Size = new System.Drawing.Size(31, 33);
+            this.lbl_stat_acceptingthreads.TabIndex = 9;
+            this.lbl_stat_acceptingthreads.Text = "0";
+            this.lbl_stat_acceptingthreads.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.DisabledForeColor = System.Drawing.Color.Empty;
+            this.label7.Font = new System.Drawing.Font("Arial Black", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label7.ForeColor = System.Drawing.Color.White;
+            this.label7.Location = new System.Drawing.Point(16, 224);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(106, 18);
+            this.label7.TabIndex = 8;
+            this.label7.Text = "CONNECTING";
+            this.label7.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
+            // 
+            // lbl_stat_activeconnections
+            // 
+            this.lbl_stat_activeconnections.AutoSize = true;
+            this.lbl_stat_activeconnections.DisabledForeColor = System.Drawing.Color.Empty;
+            this.lbl_stat_activeconnections.Font = new System.Drawing.Font("Arial Black", 18F, System.Drawing.FontStyle.Bold);
+            this.lbl_stat_activeconnections.ForeColor = System.Drawing.Color.White;
+            this.lbl_stat_activeconnections.Location = new System.Drawing.Point(35, 181);
+            this.lbl_stat_activeconnections.Name = "lbl_stat_activeconnections";
+            this.lbl_stat_activeconnections.Size = new System.Drawing.Size(31, 33);
+            this.lbl_stat_activeconnections.TabIndex = 6;
+            this.lbl_stat_activeconnections.Text = "0";
+            this.lbl_stat_activeconnections.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
             // 
             // panel9
             // 
@@ -445,12 +632,38 @@
             this.panel9.Name = "panel9";
             this.panel9.Size = new System.Drawing.Size(148, 1);
             this.panel9.TabIndex = 11;
-            this.panel9.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
+            this.panel9.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.DisabledForeColor = System.Drawing.Color.Empty;
+            this.label2.Font = new System.Drawing.Font("Arial Black", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.ForeColor = System.Drawing.Color.White;
+            this.label2.Location = new System.Drawing.Point(16, 163);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(98, 18);
+            this.label2.TabIndex = 5;
+            this.label2.Text = "CONNECTED";
+            this.label2.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.DisabledForeColor = System.Drawing.Color.Empty;
+            this.label1.Font = new System.Drawing.Font("Arial Black", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.ForeColor = System.Drawing.Color.White;
+            this.label1.Location = new System.Drawing.Point(16, 22);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(69, 18);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "DETAILS";
+            this.label1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
             // 
             // cpb_stat_uploadrate
             // 
-            this.cpb_stat_uploadrate.AnimatorDuration = 200;
-            this.cpb_stat_uploadrate.AnimatorFunction = ((WinFormAnimation.Functions.Function)(resources.GetObject("cpb_stat_uploadrate.AnimatorFunction")));
+            this.cpb_stat_uploadrate.AnimatorDuration = 1000;
+            this.cpb_stat_uploadrate.AnimatorFunction = null;
             this.cpb_stat_uploadrate.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(39)))), ((int)(((byte)(37)))));
             this.cpb_stat_uploadrate.Caption = null;
             this.cpb_stat_uploadrate.CaptionMargin = 3;
@@ -477,12 +690,12 @@
             this.cpb_stat_uploadrate.SupTextColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             this.cpb_stat_uploadrate.TabIndex = 2;
             this.cpb_stat_uploadrate.Value = 0F;
-            this.cpb_stat_uploadrate.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
+            this.cpb_stat_uploadrate.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
             // 
             // cpb_stat_downloadrate
             // 
-            this.cpb_stat_downloadrate.AnimatorDuration = 200;
-            this.cpb_stat_downloadrate.AnimatorFunction = ((WinFormAnimation.Functions.Function)(resources.GetObject("cpb_stat_downloadrate.AnimatorFunction")));
+            this.cpb_stat_downloadrate.AnimatorDuration = 1000;
+            this.cpb_stat_downloadrate.AnimatorFunction = null;
             this.cpb_stat_downloadrate.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(39)))), ((int)(((byte)(37)))));
             this.cpb_stat_downloadrate.Caption = "";
             this.cpb_stat_downloadrate.CaptionMargin = 3;
@@ -509,219 +722,7 @@
             this.cpb_stat_downloadrate.SupTextColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             this.cpb_stat_downloadrate.TabIndex = 1;
             this.cpb_stat_downloadrate.Value = 0F;
-            this.cpb_stat_downloadrate.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
-            // 
-            // lbl_stat_uploaded_v
-            // 
-            this.lbl_stat_uploaded_v.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lbl_stat_uploaded_v.AutoSize = true;
-            this.lbl_stat_uploaded_v.DisabledForeColor = System.Drawing.Color.Empty;
-            this.lbl_stat_uploaded_v.Font = new System.Drawing.Font("Arial Black", 6F, System.Drawing.FontStyle.Bold);
-            this.lbl_stat_uploaded_v.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
-            this.lbl_stat_uploaded_v.Location = new System.Drawing.Point(185, 158);
-            this.lbl_stat_uploaded_v.Name = "lbl_stat_uploaded_v";
-            this.lbl_stat_uploaded_v.Size = new System.Drawing.Size(21, 11);
-            this.lbl_stat_uploaded_v.TabIndex = 5;
-            this.lbl_stat_uploaded_v.Text = "Bps";
-            this.lbl_stat_uploaded_v.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
-            // 
-            // lbl_stat_uploaded
-            // 
-            this.lbl_stat_uploaded.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lbl_stat_uploaded.AutoSize = true;
-            this.lbl_stat_uploaded.DisabledForeColor = System.Drawing.Color.Empty;
-            this.lbl_stat_uploaded.Font = new System.Drawing.Font("Arial Black", 11F, System.Drawing.FontStyle.Bold);
-            this.lbl_stat_uploaded.ForeColor = System.Drawing.Color.White;
-            this.lbl_stat_uploaded.Location = new System.Drawing.Point(183, 140);
-            this.lbl_stat_uploaded.Name = "lbl_stat_uploaded";
-            this.lbl_stat_uploaded.Size = new System.Drawing.Size(35, 22);
-            this.lbl_stat_uploaded.TabIndex = 4;
-            this.lbl_stat_uploaded.Text = "0.0";
-            this.lbl_stat_uploaded.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
-            // 
-            // lbl_stat_downloaded_v
-            // 
-            this.lbl_stat_downloaded_v.AutoSize = true;
-            this.lbl_stat_downloaded_v.DisabledForeColor = System.Drawing.Color.Empty;
-            this.lbl_stat_downloaded_v.Font = new System.Drawing.Font("Arial Black", 6F, System.Drawing.FontStyle.Bold);
-            this.lbl_stat_downloaded_v.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
-            this.lbl_stat_downloaded_v.Location = new System.Drawing.Point(69, 158);
-            this.lbl_stat_downloaded_v.Name = "lbl_stat_downloaded_v";
-            this.lbl_stat_downloaded_v.Size = new System.Drawing.Size(21, 11);
-            this.lbl_stat_downloaded_v.TabIndex = 3;
-            this.lbl_stat_downloaded_v.Text = "Bps";
-            this.lbl_stat_downloaded_v.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
-            // 
-            // lbl_stat_downloaded
-            // 
-            this.lbl_stat_downloaded.AutoSize = true;
-            this.lbl_stat_downloaded.DisabledForeColor = System.Drawing.Color.Empty;
-            this.lbl_stat_downloaded.Font = new System.Drawing.Font("Arial Black", 11F, System.Drawing.FontStyle.Bold);
-            this.lbl_stat_downloaded.ForeColor = System.Drawing.Color.White;
-            this.lbl_stat_downloaded.Location = new System.Drawing.Point(67, 140);
-            this.lbl_stat_downloaded.Name = "lbl_stat_downloaded";
-            this.lbl_stat_downloaded.Size = new System.Drawing.Size(35, 22);
-            this.lbl_stat_downloaded.TabIndex = 2;
-            this.lbl_stat_downloaded.Text = "0.0";
-            this.lbl_stat_downloaded.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
-            // 
-            // lbl_status
-            // 
-            this.lbl_status.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.lbl_status.AutoSize = true;
-            this.lbl_status.DisabledForeColor = System.Drawing.Color.Empty;
-            this.lbl_status.Font = new System.Drawing.Font("Arial", 15F, System.Drawing.FontStyle.Bold);
-            this.lbl_status.ForeColor = System.Drawing.Color.White;
-            this.lbl_status.Location = new System.Drawing.Point(102, 76);
-            this.lbl_status.Name = "lbl_status";
-            this.lbl_status.Size = new System.Drawing.Size(167, 24);
-            this.lbl_status.TabIndex = 1;
-            this.lbl_status.Text = "DISCONNECTED";
-            this.lbl_status.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.DisabledForeColor = System.Drawing.Color.Empty;
-            this.label6.Font = new System.Drawing.Font("Arial Black", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label6.ForeColor = System.Drawing.Color.White;
-            this.label6.Location = new System.Drawing.Point(16, 22);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(65, 18);
-            this.label6.TabIndex = 0;
-            this.label6.Text = "STATUS";
-            this.label6.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
-            // 
-            // label13
-            // 
-            this.label13.AutoSize = true;
-            this.label13.DisabledForeColor = System.Drawing.Color.Empty;
-            this.label13.Font = new System.Drawing.Font("Arial Black", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label13.ForeColor = System.Drawing.Color.White;
-            this.label13.Location = new System.Drawing.Point(16, 22);
-            this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(55, 18);
-            this.label13.TabIndex = 0;
-            this.label13.Text = "LOGIN";
-            this.label13.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
-            // 
-            // label4
-            // 
-            this.label4.DisabledForeColor = System.Drawing.Color.Empty;
-            this.label4.Font = new System.Drawing.Font("Arial Black", 6F, System.Drawing.FontStyle.Bold);
-            this.label4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
-            this.label4.Location = new System.Drawing.Point(102, 134);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(82, 11);
-            this.label4.TabIndex = 4;
-            this.label4.Text = "UPLOAD";
-            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.label4.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
-            // 
-            // label3
-            // 
-            this.label3.DisabledForeColor = System.Drawing.Color.Empty;
-            this.label3.Font = new System.Drawing.Font("Arial Black", 6F, System.Drawing.FontStyle.Bold);
-            this.label3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
-            this.label3.Location = new System.Drawing.Point(17, 134);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(80, 11);
-            this.label3.TabIndex = 3;
-            this.label3.Text = "DOWNLOAD";
-            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.label3.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
-            // 
-            // label12
-            // 
-            this.label12.AutoSize = true;
-            this.label12.DisabledForeColor = System.Drawing.Color.Empty;
-            this.label12.Font = new System.Drawing.Font("Arial Black", 6F, System.Drawing.FontStyle.Bold);
-            this.label12.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
-            this.label12.Location = new System.Drawing.Point(108, 259);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(73, 11);
-            this.label12.TabIndex = 10;
-            this.label12.Text = "CONNECTIONS";
-            this.label12.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.DisabledForeColor = System.Drawing.Color.Empty;
-            this.label9.Font = new System.Drawing.Font("Arial Black", 6F, System.Drawing.FontStyle.Bold);
-            this.label9.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(141)))), ((int)(((byte)(141)))), ((int)(((byte)(141)))));
-            this.label9.Location = new System.Drawing.Point(108, 198);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(73, 11);
-            this.label9.TabIndex = 7;
-            this.label9.Text = "CONNECTIONS";
-            this.label9.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
-            // 
-            // lbl_stat_acceptingthreads
-            // 
-            this.lbl_stat_acceptingthreads.AutoSize = true;
-            this.lbl_stat_acceptingthreads.DisabledForeColor = System.Drawing.Color.Empty;
-            this.lbl_stat_acceptingthreads.Font = new System.Drawing.Font("Arial Black", 18F, System.Drawing.FontStyle.Bold);
-            this.lbl_stat_acceptingthreads.ForeColor = System.Drawing.Color.White;
-            this.lbl_stat_acceptingthreads.Location = new System.Drawing.Point(35, 242);
-            this.lbl_stat_acceptingthreads.Name = "lbl_stat_acceptingthreads";
-            this.lbl_stat_acceptingthreads.Size = new System.Drawing.Size(47, 33);
-            this.lbl_stat_acceptingthreads.TabIndex = 9;
-            this.lbl_stat_acceptingthreads.Text = "25";
-            this.lbl_stat_acceptingthreads.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.DisabledForeColor = System.Drawing.Color.Empty;
-            this.label7.Font = new System.Drawing.Font("Arial Black", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label7.ForeColor = System.Drawing.Color.White;
-            this.label7.Location = new System.Drawing.Point(16, 224);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(106, 18);
-            this.label7.TabIndex = 8;
-            this.label7.Text = "CONNECTING";
-            this.label7.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
-            // 
-            // lbl_stat_activeconnections
-            // 
-            this.lbl_stat_activeconnections.AutoSize = true;
-            this.lbl_stat_activeconnections.DisabledForeColor = System.Drawing.Color.Empty;
-            this.lbl_stat_activeconnections.Font = new System.Drawing.Font("Arial Black", 18F, System.Drawing.FontStyle.Bold);
-            this.lbl_stat_activeconnections.ForeColor = System.Drawing.Color.White;
-            this.lbl_stat_activeconnections.Location = new System.Drawing.Point(35, 181);
-            this.lbl_stat_activeconnections.Name = "lbl_stat_activeconnections";
-            this.lbl_stat_activeconnections.Size = new System.Drawing.Size(47, 33);
-            this.lbl_stat_activeconnections.TabIndex = 6;
-            this.lbl_stat_activeconnections.Text = "25";
-            this.lbl_stat_activeconnections.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.DisabledForeColor = System.Drawing.Color.Empty;
-            this.label2.Font = new System.Drawing.Font("Arial Black", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.ForeColor = System.Drawing.Color.White;
-            this.label2.Location = new System.Drawing.Point(16, 163);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(98, 18);
-            this.label2.TabIndex = 5;
-            this.label2.Text = "CONNECTED";
-            this.label2.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.DisabledForeColor = System.Drawing.Color.Empty;
-            this.label1.Font = new System.Drawing.Font("Arial Black", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.ForeColor = System.Drawing.Color.White;
-            this.label1.Location = new System.Drawing.Point(16, 22);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(69, 18);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "DETAILS";
-            this.label1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
+            this.cpb_stat_downloadrate.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
             // 
             // frm_Main
             // 
@@ -739,9 +740,9 @@
             this.MinimizeBox = false;
             this.Name = "frm_Main";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frm_Main_FormClosing);
-            this.Load += new System.EventHandler(this.frm_Main_Load);
-            this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Drag_MouseDown);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmMainFormClosing);
+            this.Load += new System.EventHandler(this.FrmMainLoad);
+            this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.DragMouseDown);
             this.pnl_main.ResumeLayout(false);
             this.pnl_status.ResumeLayout(false);
             this.pnl_status.PerformLayout();

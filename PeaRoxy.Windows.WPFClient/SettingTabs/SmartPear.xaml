@@ -1,50 +1,91 @@
 ﻿<st:Base x:Class="PeaRoxy.Windows.WPFClient.SettingTabs.SmartPear"
-             xmlns:st="clr-namespace:PeaRoxy.Windows.WPFClient.SettingTabs"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="360">
+         xmlns:st="clr-namespace:PeaRoxy.Windows.WPFClient.SettingTabs"
+         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+         mc:Ignorable="d"
+         d:DesignHeight="300" d:DesignWidth="360">
     <Grid>
-        <GroupBox Header="Smart Requests Routing" HorizontalAlignment="Left" Height="195" Margin="8,5,0,0" x:Name="SettingsGrid" VerticalAlignment="Top" Width="350" Foreground="Black">
+        <GroupBox Header="Smart Requests Routing" HorizontalAlignment="Left" Height="195" Margin="8,5,0,0"
+                  x:Name="SettingsGrid" VerticalAlignment="Top" Width="350" Foreground="Black">
             <Grid>
-                <CheckBox Content="Enable HTTP Smart Request Routing" Height="16" HorizontalAlignment="Left" Margin="7,6,0,0" Name="HTTPEnable" VerticalAlignment="Top" Checked="cb_smart_http_enable_Checked" Unchecked="cb_smart_http_enable_Checked" />
-                <CheckBox Content="Auto-Route Pattern:" Height="16" HorizontalAlignment="Left" Margin="21,26,0,0" Name="cb_smart_http_autoroute" VerticalAlignment="Top" Checked="cb_smart_http_autoroute_Checked" Unchecked="cb_smart_http_autoroute_Checked" IsEnabled="False" />
-                <TextBox Height="23" HorizontalAlignment="Right" Margin="0,23,5,0" Name="txt_smart_http_autoroute" VerticalAlignment="Top" Width="177" LostFocus="txt_TextBox_LostFocus" IsEnabled="False" />
-                <CheckBox Content="Enable HTTPS Smart Request Routing" Height="16" HorizontalAlignment="Left" Margin="7,47,0,0" Name="HTTPSEnable" VerticalAlignment="Top" Checked="cb_smart_https_enable_Checked" Unchecked="cb_smart_https_enable_Checked" />
-                <CheckBox Content="Use same settings for SOCKET connections" Height="16" HorizontalAlignment="Left" Margin="21,67,0,0" Name="SocketEnable" VerticalAlignment="Top" Checked="txt_TextBox_LostFocus" Unchecked="txt_TextBox_LostFocus" IsEnabled="False" />
-                <CheckBox Content="Also search in HTTP rules when using port 80" Height="16" HorizontalAlignment="Left" Margin="21,86,0,0" Name="cb_smart_port80ashttp" VerticalAlignment="Top" Unchecked="cb_smart_port80ashttp_Checked" IsEnabled="False" Checked="cb_smart_port80ashttp_Checked" />
-                <CheckBox Content="Recognize HTTP and check against Auto-Route Pattern" Height="16" HorizontalAlignment="Left" IsEnabled="False" Margin="21,105,0,0" Name="cb_smart_port80checkhttpautoroutepattern" VerticalAlignment="Top"  Checked="txt_TextBox_LostFocus" Unchecked="txt_TextBox_LostFocus"/>
-                <CheckBox Content="Auto-Route at timeout/interrupt, Timeout:" Height="16" HorizontalAlignment="Left" Margin="7,126,0,0" Name="cb_smart_timeout" VerticalAlignment="Top" Checked="cb_smart_timeout_Checked" Unchecked="cb_smart_timeout_Checked" />
-                <TextBox Height="23" HorizontalAlignment="Left" Margin="257,123,0,0" Name="txt_smart_timeout" VerticalAlignment="Top" Width="78" LostFocus="txt_smart_timeout_LostFocus" IsEnabled="False" />
-                <CheckBox Content="Check IP for Anti DNS-Grabbing against:" Height="16" HorizontalAlignment="Left" Margin="7,151,0,0" Name="cb_smart_antidns" VerticalAlignment="Top" Checked="cb_smart_antidns_Checked" Unchecked="cb_smart_antidns_Checked" />
-                <TextBox Height="23" HorizontalAlignment="Left" Margin="248,148,0,0" Name="txt_smart_antidns" VerticalAlignment="Top" Width="87" LostFocus="txt_TextBox_LostFocus" IsEnabled="False" />
+                <CheckBox Content="Enable HTTP Smart Request Routing" Height="16" HorizontalAlignment="Left"
+                          Margin="7,6,0,0" Name="HttpEnable" VerticalAlignment="Top"
+                          Checked="CbSmartHttpEnableChecked" Unchecked="CbSmartHttpEnableChecked" />
+                <CheckBox Content="Auto-Route Pattern:" Height="16" HorizontalAlignment="Left" Margin="21,26,0,0"
+                          Name="CbSmartHttpAutoroute" VerticalAlignment="Top"
+                          Checked="CbSmartHttpAutorouteChecked" Unchecked="CbSmartHttpAutorouteChecked"
+                          IsEnabled="False" x:FieldModifier="private" />
+                <TextBox Height="23" HorizontalAlignment="Right" Margin="0,23,5,0" Name="TxtSmartHttpAutoroute"
+                         VerticalAlignment="Top" Width="177" LostFocus="TxtTextBoxLostFocus" IsEnabled="False"
+                         x:FieldModifier="private" />
+                <CheckBox Content="Enable HTTPS Smart Request Routing" Height="16" HorizontalAlignment="Left"
+                          Margin="7,47,0,0" Name="HttpsEnable" VerticalAlignment="Top"
+                          Checked="CbSmartHttpsEnableChecked" Unchecked="CbSmartHttpsEnableChecked" />
+                <CheckBox Content="Use same settings for SOCKET connections" Height="16" HorizontalAlignment="Left"
+                          Margin="21,67,0,0" Name="SocketEnable" VerticalAlignment="Top"
+                          Checked="TxtTextBoxLostFocus" Unchecked="TxtTextBoxLostFocus" IsEnabled="False"
+                          x:FieldModifier="private" />
+                <CheckBox Content="Also search in HTTP rules when using port 80" Height="16" HorizontalAlignment="Left"
+                          Margin="21,86,0,0" Name="CbSmartPort80Ashttp" VerticalAlignment="Top"
+                          Unchecked="CbSmartPort80AshttpChecked" IsEnabled="False"
+                          Checked="CbSmartPort80AshttpChecked" x:FieldModifier="private" />
+                <CheckBox Content="Recognize HTTP and check against Auto-Route Pattern" Height="16"
+                          HorizontalAlignment="Left" IsEnabled="False" Margin="21,105,0,0"
+                          Name="CbSmartPort80Checkhttpautoroutepattern" VerticalAlignment="Top"
+                          Checked="TxtTextBoxLostFocus" Unchecked="TxtTextBoxLostFocus" />
+                <CheckBox Content="Auto-Route at timeout/interrupt, Timeout:" Height="16" HorizontalAlignment="Left"
+                          Margin="7,126,0,0" Name="CbSmartTimeout" VerticalAlignment="Top"
+                          Checked="CbSmartTimeoutChecked" Unchecked="CbSmartTimeoutChecked" x:FieldModifier="private" />
+                <TextBox Height="23" HorizontalAlignment="Left" Margin="257,123,0,0" Name="TxtSmartTimeout"
+                         VerticalAlignment="Top" Width="78" LostFocus="TxtSmartTimeoutLostFocus" IsEnabled="False" />
+                <CheckBox Content="Check IP for Anti DNS-Grabbing against:" Height="16" HorizontalAlignment="Left"
+                          Margin="7,151,0,0" Name="CbSmartAntidns" VerticalAlignment="Top"
+                          Checked="CbSmartAntidnsChecked" Unchecked="CbSmartAntidnsChecked" x:FieldModifier="private" />
+                <TextBox Height="23" HorizontalAlignment="Left" Margin="248,148,0,0" Name="TxtSmartAntidns"
+                         VerticalAlignment="Top" Width="87" LostFocus="TxtTextBoxLostFocus" IsEnabled="False"
+                         x:FieldModifier="private" />
             </Grid>
         </GroupBox>
-        <ListBox Name="lb_smart"  HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,210,0,0" Height="77" Width="291" SelectionMode="Extended">
+        <ListBox Name="SmartList" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,210,0,0" Height="77"
+                 Width="291" SelectionMode="Extended" x:FieldModifier="private">
             <ListBox.ItemContainerStyle>
                 <Style TargetType="{x:Type ListBoxItem}">
-                    <EventSetter Event="MouseDoubleClick" Handler="lb_smart_MouseDC" />
+                    <EventSetter Event="MouseDoubleClick" Handler="SmartListMouseDc" />
                 </Style>
             </ListBox.ItemContainerStyle>
         </ListBox>
-        <Button Content="Add" Height="23" HorizontalAlignment="Left" Margin="305,210,0,0" Name="AddButton" VerticalAlignment="Top" Width="53" Click="btn_smart_add_Click" />
-        <Button Content="Edit" Height="23" HorizontalAlignment="Left" Margin="305,237,0,0" Name="EditButton" VerticalAlignment="Top" Width="53" Click="btn_smart_edit_Click" />
-        <Button Content="Remove" HorizontalAlignment="Left" Margin="305,264,0,0" Name="RemoveButton" Width="53" Height="23" VerticalAlignment="Top" Click="btn_smart_remove_Click" />
-        <Grid Height="120" HorizontalAlignment="Left" Margin="58,88,0,0" Name="grid_optionsdialog" VerticalAlignment="Top" Width="250" Background="White" IsEnabled="False">
-            <Rectangle Width="250" Height="120" Margin="0,0,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Stroke="#FF7D7D7D" StrokeThickness="2" />
+        <Button Content="Add" Height="23" HorizontalAlignment="Left" Margin="305,210,0,0" Name="AddButton"
+                VerticalAlignment="Top" Width="53" Click="BtnSmartAddClick" x:FieldModifier="private" />
+        <Button Content="Edit" Height="23" HorizontalAlignment="Left" Margin="305,237,0,0" Name="EditButton"
+                VerticalAlignment="Top" Width="53" Click="BtnSmartEditClick" x:FieldModifier="private" />
+        <Button Content="Remove" HorizontalAlignment="Left" Margin="305,264,0,0" Name="RemoveButton" Width="53"
+                Height="23" VerticalAlignment="Top" Click="BtnSmartRemoveClick" x:FieldModifier="private" />
+        <Grid Height="120" HorizontalAlignment="Left" Margin="58,88,0,0" Name="GridOptionsdialog"
+              VerticalAlignment="Top" Width="250" Background="White" IsEnabled="False" x:FieldModifier="private">
+            <Rectangle Width="250" Height="120" Margin="0,0,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"
+                       Stroke="#FF7D7D7D" StrokeThickness="2" />
             <Label Content="Rule:" Height="28" HorizontalAlignment="Left" Margin="7,32,0,0" VerticalAlignment="Top" />
-            <TextBox Height="23" HorizontalAlignment="Left" Margin="81,34,0,0" Name="txt_smart_edit_rule" VerticalAlignment="Top" Width="160" />
-            <ComboBox Height="23" HorizontalAlignment="Left" Margin="81,7,0,0" Name="cb_smart_edit_type" VerticalAlignment="Top" Width="160">
+            <TextBox Height="23" HorizontalAlignment="Left" Margin="81,34,0,0" Name="TxtSmartEditRule"
+                     VerticalAlignment="Top" Width="160" x:FieldModifier="private" />
+            <ComboBox Height="23" HorizontalAlignment="Left" Margin="81,7,0,0" Name="CbSmartEditType"
+                      VerticalAlignment="Top" Width="160" x:FieldModifier="private">
                 <ComboBoxItem Content="Http" IsSelected="True" Tag="Http" />
                 <ComboBoxItem Content="Direct (Https/Socks)" IsSelected="False" Tag="Direct" />
             </ComboBox>
             <Label Content="Rule Type:" Height="28" HorizontalAlignment="Left" Margin="7,5,0,0" VerticalAlignment="Top" />
-            <Label Content="Application:" Height="28" HorizontalAlignment="Left" Margin="7,59,0,0" VerticalAlignment="Top" />
-            <TextBox Height="23" HorizontalAlignment="Left" Margin="81,61,0,0" Name="txt_smart_edit_app" VerticalAlignment="Top" Width="160" />
-            <Button Content="Save" Height="23" HorizontalAlignment="Left" Margin="191,93,0,0" Name="btn_smart_edit_ok" VerticalAlignment="Top" Width="50" Click="btn_smart_edit_ok_Click" IsDefault="True" />
-            <Button Content="Cancel" Height="23" HorizontalAlignment="Left" Margin="138,93,0,0" Name="btn_smart_edit_cancel" VerticalAlignment="Top" Width="50" Click="btn_smart_edit_cancel_Click" IsCancel="True" />
+            <Label Content="Application:" Height="28" HorizontalAlignment="Left" Margin="7,59,0,0"
+                   VerticalAlignment="Top" />
+            <TextBox Height="23" HorizontalAlignment="Left" Margin="81,61,0,0" Name="TxtSmartEditApp"
+                     VerticalAlignment="Top" Width="160" x:FieldModifier="private" />
+            <!-- ReSharper disable once UnusedMember.Global -->
+            <Button Content="Save" Height="23" HorizontalAlignment="Left" Margin="191,93,0,0" Name="BtnSmartEditOk"
+                    VerticalAlignment="Top" Width="50" Click="BtnSmartEditOkClick" IsDefault="True" />
+            <!-- ReSharper disable once UnusedMember.Global -->
+            <Button Content="Cancel" Height="23" HorizontalAlignment="Left" Margin="138,93,0,0"
+                    Name="BtnSmartEditCancel" VerticalAlignment="Top" Width="50" Click="BtnSmartEditCancelClick"
+                    IsCancel="True" />
             <Grid.RenderTransform>
                 <TranslateTransform Y="-250" />
             </Grid.RenderTransform>

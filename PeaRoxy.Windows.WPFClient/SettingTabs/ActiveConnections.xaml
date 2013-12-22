@@ -1,18 +1,20 @@
 ﻿<st:Base x:Class="PeaRoxy.Windows.WPFClient.SettingTabs.ActiveConnections"
-             xmlns:st="clr-namespace:PeaRoxy.Windows.WPFClient.SettingTabs"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="360">
+         xmlns:st="clr-namespace:PeaRoxy.Windows.WPFClient.SettingTabs"
+         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+         mc:Ignorable="d"
+         d:DesignHeight="300" d:DesignWidth="360">
     <UserControl.Resources>
+        <!-- ReSharper disable once Xaml.RedundantResource -->
         <Style x:Key="ConnectionNode" TargetType="{x:Type TreeViewItem}">
             <Setter Property="HeaderTemplate">
                 <Setter.Value>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
-                            <Image Name="img" Width="16" Height="16" Stretch="Fill" Source="../Images/SettingsPanel/Connection_def.png"/>
+                            <Image Name="img" Width="16" Height="16" Stretch="Fill"
+                                   Source="../Images/SettingsPanel/Connection_def.png" />
                             <TextBlock Text="{DynamicResource ResourceKey=Type}" Margin="5,0" Width="20" />
                             <TextBlock Text="{DynamicResource ResourceKey=Status}" Margin="5,0" Width="60" />
                             <TextBlock Text="{DynamicResource ResourceKey=Upload}" Margin="5,0" Width="90" />
@@ -23,12 +25,14 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <!-- ReSharper disable once Xaml.RedundantResource -->
         <Style x:Key="ProcessMainNode" TargetType="{x:Type TreeViewItem}">
             <Setter Property="HeaderTemplate">
                 <Setter.Value>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
-                            <Image Name="img" Width="16" Height="16" Stretch="Fill" Source="{DynamicResource ResourceKey=Img}"/>
+                            <Image Name="Image" Width="16" Height="16" Stretch="Fill"
+                                   Source="{DynamicResource ResourceKey=Img}" />
                             <TextBlock Text="{Binding}" Margin="5,0" />
                         </StackPanel>
                     </DataTemplate>
@@ -37,6 +41,7 @@
         </Style>
     </UserControl.Resources>
     <Grid>
-        <TreeView x:Name="ConnectionsListView" HorizontalAlignment="Left" Height="260" Margin="8,9,0,0" VerticalAlignment="Top" Width="350" />
+        <TreeView x:Name="ConnectionsListView" HorizontalAlignment="Left" Height="260" Margin="8,9,0,0"
+                  VerticalAlignment="Top" Width="350" />
     </Grid>
 </st:Base>

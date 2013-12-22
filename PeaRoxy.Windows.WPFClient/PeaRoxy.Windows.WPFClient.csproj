@@ -127,7 +127,7 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="chartPoint.cs" />
+    <Compile Include="ChartPoint.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -163,8 +163,8 @@
     <Compile Include="SettingTabs\Grabber.xaml.cs">
       <DependentUpon>Grabber.xaml</DependentUpon>
     </Compile>
-    <Compile Include="SettingTabs\LocalDNS.xaml.cs">
-      <DependentUpon>LocalDNS.xaml</DependentUpon>
+    <Compile Include="SettingTabs\LocalDns.xaml.cs">
+      <DependentUpon>LocalDns.xaml</DependentUpon>
     </Compile>
     <Compile Include="SettingTabs\LocalProxy.xaml.cs">
       <DependentUpon>LocalProxy.xaml</DependentUpon>
@@ -191,6 +191,7 @@
       <DependentUpon>Tooltip.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows7ShellPreviewWindowFixer.cs" />
+    <Compile Include="WpfSingleInstance.cs" />
     <Page Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -210,7 +211,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="SingleInstance.cs" />
     <Page Include="MainWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -243,7 +243,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="SettingTabs\LocalDNS.xaml">
+    <Page Include="SettingTabs\LocalDns.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

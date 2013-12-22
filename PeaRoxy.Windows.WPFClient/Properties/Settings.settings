@@ -1,5 +1,7 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="PeaRoxy.Windows.WPFClient.Properties" GeneratedClassName="Settings">
+
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)"
+              GeneratedClassNamespace="PeaRoxy.Windows.WPFClient.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
     <Setting Name="Server_Type" Type="System.Byte" Scope="User">
@@ -141,18 +143,20 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="Hook_Processes" Type="System.String" Scope="User">
-      <Value Profile="(Default)">firefox.exe
-iexplorer.exe
-chrome,exe
-opera.exe
-safari.exe
-avant.exe
-rockmelt.exe
-deepnet.exe
-maxthon.exe
-seamonkey.exe
-gameoverlayui.exe
-steam.exe</Value>
+      <Value Profile="(Default)">
+        firefox.exe
+        iexplorer.exe
+        chrome,exe
+        opera.exe
+        safari.exe
+        avant.exe
+        rockmelt.exe
+        deepnet.exe
+        maxthon.exe
+        seamonkey.exe
+        gameoverlayui.exe
+        steam.exe
+      </Value>
     </Setting>
     <Setting Name="Grabber" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>

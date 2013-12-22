@@ -1,156 +1,290 @@
-﻿using LukeSw.Windows.Forms;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="LocalProxy.xaml.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   Interaction logic for LocalProxy.xaml
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.Windows.WPFClient.SettingTabs
 {
+    #region
+
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
+    using System.Net;
+    using System.Threading;
+    using System.Windows;
+    using System.Windows.Controls;
+    using System.Windows.Forms;
+
+    using LukeSw.Windows.Forms;
+
+    using PeaRoxy.Windows.WPFClient.Properties;
+
+    #endregion
+
     /// <summary>
-    /// Interaction logic for LocalProxy.xaml
+    ///     Interaction logic for LocalProxy.xaml
     /// </summary>
-    public partial class LocalProxy : Base
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
+    public partial class LocalProxy
     {
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LocalProxy"/> class.
+        /// </summary>
         public LocalProxy()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
 
-        public override void SaveSettings()
-        {
-            if (isLoading) return;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_Port = (ushort)s_localProxyServerPort.Value;
+        #endregion
 
-            if ((bool)cb_localProxyServerAddressAny.IsChecked)
-                PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_Address = "*";
-            else
-                PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_Address = txt_localProxyServerAddress.Text;
+        #region Public Methods and Operators
 
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_SOCKS = (bool)cb_localProxyServerSOCKS.IsChecked;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_HTTP = (bool)cb_localProxyServerHTTP.IsChecked;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_HTTPS = (bool)cb_localProxyServerHTTPS.IsChecked;
-
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.AutoConfig_Enable = (bool)cb_autoConfigScriptEnable.IsChecked;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.AutoConfig_KeepRuning = (bool)cb_autoConfigScriptKeepRunning.IsChecked;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.AutoConfig_Address = txt_autoConfigScriptAddress.Text;
-
-
-            if ((bool)rb_autoConfigScriptNSMime.IsChecked)
-                PeaRoxy.Windows.WPFClient.Properties.Settings.Default.AutoConfig_Mime = 1;
-            else if ((bool)rb_autoConfigScriptJSMime.IsChecked)
-                PeaRoxy.Windows.WPFClient.Properties.Settings.Default.AutoConfig_Mime = 2;
-
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Save();
-
-        }
-
-        private void s_localProxyServerPort_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            txt_localProxyServerPort.Text = ((ushort)s_localProxyServerPort.Value).ToString();
-        }
-
-        private void txt_localProxyServerPort_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            ushort port;
-            if (!ushort.TryParse(txt_localProxyServerPort.Text, out port))
-            {
-                VDialog.Show("Port Value is not acceptable.", "Data Validation", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                port = 1080;
-            }
-            lbl_autoConfigScriptPreAddress_Refresh(null, null);
-            txt_localProxyServerPort.Text = port.ToString();
-            s_localProxyServerPort.Value = port;
-        }
-
-        private void txt_TextBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            SaveSettings();
-        }
-       
-        private void cb_localProxyServerAddressAny_Checked(object sender, RoutedEventArgs e)
-        {
-            txt_localProxyServerAddress.IsEnabled = !(bool)cb_localProxyServerAddressAny.IsChecked;
-            lbl_autoConfigScriptPreAddress_Refresh(null, null);
-            SaveSettings();
-        }
-        private void txt_localProxyServerAddress_LostFocus(object sender, RoutedEventArgs e)
-        {
-            System.Net.IPAddress ip = null;
-            if (txt_localProxyServerAddress.Text.Split('.').Length != 4 || !System.Net.IPAddress.TryParse(txt_localProxyServerAddress.Text, out ip))
-            {
-                txt_localProxyServerAddress.Text = "127.0.0.1";
-                VDialog.Show("IP address is not acceptable.", "Data Validation", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
-                new System.Threading.Thread(delegate()
-                {
-                    System.Threading.Thread.Sleep((int)(10));
-                    this.Dispatcher.Invoke((App.SimpleVoid_Delegate)delegate()
-                    {
-                        txt_localProxyServerAddress.Focus();
-                    }, new object[] { });
-                }) { IsBackground = true }.Start();
-            }
-            else
-                txt_localProxyServerAddress.Text = ip.ToString();
-
-            SaveSettings();
-        }
-        private void cb_autoConfigScriptEnable_CheckedChanged(object sender, RoutedEventArgs e)
-        {
-            cb_autoConfigScriptKeepRunning.IsEnabled = (bool)cb_autoConfigScriptEnable.IsChecked;
-            txt_autoConfigScriptAddress.IsEnabled = (bool)cb_autoConfigScriptEnable.IsChecked;
-            lbl_autoConfigScriptPreAddress.IsEnabled = (bool)cb_autoConfigScriptEnable.IsChecked;
-            rb_autoConfigScriptNSMime.IsEnabled = (bool)cb_autoConfigScriptEnable.IsChecked;
-            rb_autoConfigScriptJSMime.IsEnabled = (bool)cb_autoConfigScriptEnable.IsChecked;
-            cb_localProxyServerHTTP.IsEnabled = !(bool)cb_autoConfigScriptEnable.IsChecked;
-            cb_localProxyServerHTTP.IsChecked = (bool)cb_autoConfigScriptEnable.IsChecked || (bool)cb_localProxyServerHTTP.IsChecked;
-            SaveSettings();
-        }
-
-        private void lbl_autoConfigScriptPreAddress_Refresh(object sender, EventArgs e)
-        {
-            if (txt_localProxyServerPort == null || txt_localProxyServerAddress == null || lbl_autoConfigScriptPreAddress == null)
-                return;
-            lbl_autoConfigScriptPreAddress.Content = "http://" + (((bool)cb_localProxyServerAddressAny.IsChecked) ? Environment.MachineName : txt_localProxyServerAddress.Text) + ":" + txt_localProxyServerPort.Text + "/";
-        }
-
+        /// <summary>
+        /// The load settings.
+        /// </summary>
         public override void LoadSettings()
         {
-            isLoading = true;
-            s_localProxyServerPort.Value = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_Port;
-            if (PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_Address == "*")
-                cb_localProxyServerAddressAny.IsChecked = true;
+            this.IsLoading = true;
+            this.SLocalProxyServerPort.Value = Settings.Default.Proxy_Port;
+            if (Settings.Default.Proxy_Address == "*")
+            {
+                this.CbLocalProxyServerAddressAny.IsChecked = true;
+            }
             else
-                txt_localProxyServerAddress.Text = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_Address;
+            {
+                this.TxtLocalProxyServerAddress.Text = Settings.Default.Proxy_Address;
+            }
 
-            cb_localProxyServerSOCKS.IsChecked = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_SOCKS;
-            cb_localProxyServerHTTP.IsChecked = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_HTTP;
-            cb_localProxyServerHTTPS.IsChecked = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Proxy_HTTPS;
+            this.CbLocalProxyServerSocks.IsChecked = Settings.Default.Proxy_SOCKS;
+            this.CbLocalProxyServerHttp.IsChecked = Settings.Default.Proxy_HTTP;
+            this.CbLocalProxyServerHttps.IsChecked = Settings.Default.Proxy_HTTPS;
 
-            cb_autoConfigScriptEnable.IsChecked = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.AutoConfig_Enable;
-            cb_autoConfigScriptKeepRunning.IsChecked = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.AutoConfig_KeepRuning;
-            txt_autoConfigScriptAddress.Text = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.AutoConfig_Address;
+            this.CbAutoConfigScriptEnable.IsChecked = Settings.Default.AutoConfig_Enable;
+            this.CbAutoConfigScriptKeepRunning.IsChecked = Settings.Default.AutoConfig_KeepRuning;
+            this.TxtAutoConfigScriptAddress.Text = Settings.Default.AutoConfig_Address;
 
-            rb_autoConfigScriptJSMime.IsChecked = false;
-            rb_autoConfigScriptNSMime.IsChecked = false;
-            switch (PeaRoxy.Windows.WPFClient.Properties.Settings.Default.AutoConfig_Mime)
+            this.RbAutoConfigScriptJsMime.IsChecked = false;
+            this.RbAutoConfigScriptNsMime.IsChecked = false;
+            switch (Settings.Default.AutoConfig_Mime)
             {
                 case 1:
-                    rb_autoConfigScriptNSMime.IsChecked = true;
+                    this.RbAutoConfigScriptNsMime.IsChecked = true;
                     break;
                 case 2:
-                    rb_autoConfigScriptJSMime.IsChecked = true;
+                    this.RbAutoConfigScriptJsMime.IsChecked = true;
                     break;
             }
-            isLoading = false;
+
+            this.IsLoading = false;
         }
+
+        /// <summary>
+        /// The save settings.
+        /// </summary>
+        public override void SaveSettings()
+        {
+            if (this.IsLoading)
+            {
+                return;
+            }
+
+            Settings.Default.Proxy_Port = (ushort)this.SLocalProxyServerPort.Value;
+
+            if (this.CbLocalProxyServerAddressAny.IsChecked ?? false)
+            {
+                Settings.Default.Proxy_Address = "*";
+            }
+            else
+            {
+                Settings.Default.Proxy_Address = this.TxtLocalProxyServerAddress.Text;
+            }
+
+            Settings.Default.Proxy_SOCKS = this.CbLocalProxyServerSocks.IsChecked ?? false;
+            Settings.Default.Proxy_HTTP = this.CbLocalProxyServerHttp.IsChecked ?? false;
+            Settings.Default.Proxy_HTTPS = this.CbLocalProxyServerHttps.IsChecked ?? false;
+
+            Settings.Default.AutoConfig_Enable = this.CbAutoConfigScriptEnable.IsChecked ?? false;
+            Settings.Default.AutoConfig_KeepRuning = this.CbAutoConfigScriptKeepRunning.IsChecked ?? false;
+            Settings.Default.AutoConfig_Address = this.TxtAutoConfigScriptAddress.Text;
+
+            if (this.RbAutoConfigScriptNsMime.IsChecked ?? false)
+            {
+                Settings.Default.AutoConfig_Mime = 1;
+            }
+            else if (this.RbAutoConfigScriptJsMime.IsChecked ?? false)
+            {
+                Settings.Default.AutoConfig_Mime = 2;
+            }
+
+            Settings.Default.Save();
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The cb_auto config script enable_ checked changed.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void CbAutoConfigScriptEnableCheckedChanged(object sender, RoutedEventArgs e)
+        {
+            this.CbAutoConfigScriptKeepRunning.IsEnabled = this.CbAutoConfigScriptEnable.IsChecked ?? false;
+            this.TxtAutoConfigScriptAddress.IsEnabled = this.CbAutoConfigScriptEnable.IsChecked ?? false;
+            this.LblAutoConfigScriptPreAddress.IsEnabled = this.CbAutoConfigScriptEnable.IsChecked ?? false;
+            this.RbAutoConfigScriptNsMime.IsEnabled = this.CbAutoConfigScriptEnable.IsChecked ?? false;
+            this.RbAutoConfigScriptJsMime.IsEnabled = this.CbAutoConfigScriptEnable.IsChecked ?? false;
+            this.CbLocalProxyServerHttp.IsEnabled = !(this.CbAutoConfigScriptEnable.IsChecked ?? false);
+            this.CbLocalProxyServerHttp.IsChecked = (this.CbAutoConfigScriptEnable.IsChecked ?? false)
+                                                     || (this.CbLocalProxyServerHttp.IsChecked ?? false);
+            this.SaveSettings();
+        }
+
+        /// <summary>
+        /// The cb_local proxy server address any_ checked.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void CbLocalProxyServerAddressAnyChecked(object sender, RoutedEventArgs e)
+        {
+            this.TxtLocalProxyServerAddress.IsEnabled = !(this.CbLocalProxyServerAddressAny.IsChecked ?? false);
+            this.LblAutoConfigScriptPreAddressRefresh(null, null);
+            this.SaveSettings();
+        }
+
+        /// <summary>
+        /// The lbl_auto config script pre address_ refresh.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void LblAutoConfigScriptPreAddressRefresh(object sender, EventArgs e)
+        {
+            if (this.TxtLocalProxyServerPort == null || this.TxtLocalProxyServerAddress == null || this.LblAutoConfigScriptPreAddress == null)
+            {
+                return;
+            }
+
+            this.LblAutoConfigScriptPreAddress.Content = "http://"
+                                                          + (this.CbLocalProxyServerAddressAny.IsChecked ?? false ? Environment.MachineName : this.TxtLocalProxyServerAddress.Text) + ":"
+                                                          + this.TxtLocalProxyServerPort.Text + "/";
+        }
+
+        /// <summary>
+        /// The s_local proxy server port_ value changed.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void SLocalProxyServerPortValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            this.TxtLocalProxyServerPort.Text = ((ushort)this.SLocalProxyServerPort.Value).ToString(CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// The txt_ text box_ lost focus.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void TxtTextBoxLostFocus(object sender, RoutedEventArgs e)
+        {
+            this.SaveSettings();
+        }
+
+        /// <summary>
+        /// The txt_local proxy server address_ lost focus.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void TxtLocalProxyServerAddressLostFocus(object sender, RoutedEventArgs e)
+        {
+            IPAddress ip;
+            if (this.TxtLocalProxyServerAddress.Text.Split('.').Length != 4
+                || !IPAddress.TryParse(this.TxtLocalProxyServerAddress.Text, out ip))
+            {
+                this.TxtLocalProxyServerAddress.Text = "127.0.0.1";
+                VDialog.Show(
+                    "IP address is not acceptable.", 
+                    "Data Validation", 
+                    MessageBoxButtons.OK, 
+                    MessageBoxIcon.Exclamation);
+                new Thread(
+                    delegate()
+                        {
+                            Thread.Sleep(10);
+                            this.Dispatcher.Invoke(
+                                (App.SimpleVoidDelegate)(() => this.TxtLocalProxyServerAddress.Focus()), 
+                                new object[] { });
+                        }) {
+                              IsBackground = true 
+                           }.Start();
+            }
+            else
+            {
+                this.TxtLocalProxyServerAddress.Text = ip.ToString();
+            }
+
+            this.SaveSettings();
+        }
+
+        /// <summary>
+        /// The txt_local proxy server port_ text changed.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void TxtLocalProxyServerPortTextChanged(object sender, TextChangedEventArgs e)
+        {
+            ushort port;
+            if (!ushort.TryParse(this.TxtLocalProxyServerPort.Text, out port))
+            {
+                VDialog.Show(
+                    "Port Value is not acceptable.", 
+                    "Data Validation", 
+                    MessageBoxButtons.OK, 
+                    MessageBoxIcon.Exclamation);
+                port = 1080;
+            }
+
+            this.LblAutoConfigScriptPreAddressRefresh(null, null);
+            this.TxtLocalProxyServerPort.Text = port.ToString(CultureInfo.InvariantCulture);
+            this.SLocalProxyServerPort.Value = port;
+        }
+
+        #endregion
     }
 }

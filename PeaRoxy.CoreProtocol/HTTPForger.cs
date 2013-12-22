@@ -24,14 +24,14 @@ namespace PeaRoxy.CoreProtocol
     #endregion
 
     /// <summary>
-    /// The http forger.
+    ///     The http forger.
     /// </summary>
     public class HttpForger
     {
         #region Static Fields
 
         /// <summary>
-        /// The rnd.
+        ///     The random number generator.
         /// </summary>
         private static readonly Random Random = new Random();
 
@@ -40,57 +40,57 @@ namespace PeaRoxy.CoreProtocol
         #region Fields
 
         /// <summary>
-        /// The header bytes.
-        /// </summary>
-        public byte[] HeaderBytes = { };
-
-        /// <summary>
-        /// The async.
+        ///     The async.
         /// </summary>
         private readonly bool async;
 
         /// <summary>
-        /// The client.
+        ///     The client.
         /// </summary>
         private readonly Socket client;
 
         /// <summary>
-        /// The domain name.
+        ///     The domain name.
         /// </summary>
         private readonly byte[] domainName;
 
         /// <summary>
-        /// The host string.
+        ///     The host string.
         /// </summary>
         private readonly byte[] hostString = Encoding.ASCII.GetBytes("Host: ");
 
         /// <summary>
-        /// The timeout.
+        ///     The timeout.
         /// </summary>
         private readonly int timeout;
 
         /// <summary>
-        /// The domain pointer.
+        ///     The domain pointer.
         /// </summary>
         private int domainPointer;
 
         /// <summary>
-        /// The eof pointer.
+        ///     The EOF pointer.
         /// </summary>
         private int eofPointer;
 
         /// <summary>
-        /// The h pointer.
+        ///     The header bytes.
         /// </summary>
-        private int hPointer;
+        private byte[] headerBytes = { };
 
         /// <summary>
-        /// The max buffering.
+        ///     The max buffering.
         /// </summary>
         private int maxBuffering;
 
         /// <summary>
-        /// The timeout counter.
+        ///     The pointer.
+        /// </summary>
+        private int pointer;
+
+        /// <summary>
+        ///     The timeout counter.
         /// </summary>
         private int timeoutCounter;
 
@@ -132,14 +132,30 @@ namespace PeaRoxy.CoreProtocol
 
         #endregion
 
+        #region Public Properties
+
+        /// <summary>
+        /// Gets the header bytes.
+        /// </summary>
+        public byte[] HeaderBytes
+        {
+            get
+            {
+                return this.headerBytes;
+            }
+        }
+
+        #endregion
+
         #region Public Methods and Operators
 
         /// <summary>
-        /// The receive request.
+        ///     The receive request.
         /// </summary>
         /// <returns>
-        /// The <see cref="bool"/>.
+        ///     The <see cref="bool" />.
         /// </returns>
+        // ReSharper disable once UnusedMember.Global
         public bool ReceiveRequest()
         {
             bool p;
@@ -169,8 +185,8 @@ namespace PeaRoxy.CoreProtocol
                     int i = this.client.Receive(bytes);
                     if (i > 0)
                     {
-                        Array.Resize(ref this.HeaderBytes, this.HeaderBytes.Length + 1);
-                        this.HeaderBytes[this.HeaderBytes.Length - 1] = bytes[0];
+                        Array.Resize(ref this.headerBytes, this.headerBytes.Length + 1);
+                        this.headerBytes[this.headerBytes.Length - 1] = bytes[0];
                         if (bytes[0] == 13 || bytes[0] == 10)
                         {
                             this.eofPointer += 1;
@@ -187,7 +203,7 @@ namespace PeaRoxy.CoreProtocol
 
                     if (this.domainName.Count() > 0)
                     {
-                        if (this.hPointer == this.hostString.Count())
+                        if (this.pointer == this.hostString.Count())
                         {
                             if (this.domainPointer != this.domainName.Count())
                             {
@@ -207,13 +223,13 @@ namespace PeaRoxy.CoreProtocol
                                 }
                             }
                         }
-                        else if (bytes[0] == this.hostString[this.hPointer])
+                        else if (bytes[0] == this.hostString[this.pointer])
                         {
-                            this.hPointer++;
+                            this.pointer++;
                         }
                         else
                         {
-                            this.hPointer = 0;
+                            this.pointer = 0;
                         }
                     }
 
@@ -239,10 +255,10 @@ namespace PeaRoxy.CoreProtocol
         }
 
         /// <summary>
-        /// The receive response.
+        ///     The receive response.
         /// </summary>
         /// <returns>
-        /// The <see cref="bool"/>.
+        ///     The <see cref="bool" />.
         /// </returns>
         public bool ReceiveResponse()
         {
@@ -348,7 +364,8 @@ namespace PeaRoxy.CoreProtocol
             string header = version + " " + code + "\r\n" + "Date: "
                             + DateTime.Now.ToString("ddd, dd MMM yyyy hh\\:mm\\:ss \\G\\M\\T") + "\r\n"
                             + "Server: Apache/1.3." + Math.Round((double)Random.Next(0, 35), 1) + " "
-                            + (Random.Next(0, 1) < 0.5 ? "(Unix) (Red-Hat/Linux) " : "(Windows) (Windows 7)") + "\r\n" + "Last-Modified: "
+                            + (Random.Next(0, 1) < 0.5 ? "(Unix) (Red-Hat/Linux) " : "(Windows) (Windows 7)") + "\r\n"
+                            + "Last-Modified: "
                             + new DateTime(2000, 1, 1).AddMinutes(Random.Next(0, 6835680))
                                   .ToString("ddd, dd MMM yyyy hh\\:mm\\:ss \\G\\M\\T") + "\r\n" + "Accept-Ranges:  none"
                             + "\r\n" + "Content-Type: text/html; charset=UTF-8" + "\r\n" + "Connection: close" + "\r\n"
@@ -362,10 +379,10 @@ namespace PeaRoxy.CoreProtocol
         #region Methods
 
         /// <summary>
-        /// The random filename.
+        ///     The random filename.
         /// </summary>
         /// <returns>
-        /// The <see cref="string"/>.
+        ///     The <see cref="string" />.
         /// </returns>
         private static string RandomFilename()
         {
@@ -380,10 +397,10 @@ namespace PeaRoxy.CoreProtocol
         }
 
         /// <summary>
-        /// The random hostname.
+        ///     The random hostname.
         /// </summary>
         /// <returns>
-        /// The <see cref="string"/>.
+        ///     The <see cref="string" />.
         /// </returns>
         private static string RandomHostname()
         {

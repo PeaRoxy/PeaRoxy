@@ -145,7 +145,7 @@ namespace ZARA.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("2080")]
+        [global::System.Configuration.DefaultSettingValueAttribute("443")]
         public ushort ServerPort {
             get {
                 return ((ushort)(this["ServerPort"]));
@@ -157,7 +157,7 @@ namespace ZARA.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool UpdateSettings {
             get {
                 return ((bool)(this["UpdateSettings"]));

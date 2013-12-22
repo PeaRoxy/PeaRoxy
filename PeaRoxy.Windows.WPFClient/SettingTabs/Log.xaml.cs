@@ -1,73 +1,113 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Log.xaml.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   Interaction logic for Log.xaml
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.Windows.WPFClient.SettingTabs
 {
+    #region
+
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Windows;
+    using System.Windows.Controls;
+    using System.Windows.Media;
+
+    using PeaRoxy.ClientLibrary;
+    using PeaRoxy.Windows.WPFClient.Properties;
+
+    #endregion
+
     /// <summary>
-    /// Interaction logic for Log.xaml
+    ///     Interaction logic for Log.xaml
     /// </summary>
-    public partial class Log : Base
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
+    public partial class Log
     {
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Log"/> class.
+        /// </summary>
         public Log()
         {
-            InitializeComponent();
-            PeaRoxy.ClientLibrary.ProxyController.NewLog += NewLog;
+            this.InitializeComponent();
+            ProxyController.NewLog += this.NewLog;
         }
 
-        private void txt_TextBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            SaveSettings();
-        }
+        #endregion
 
-        public override void SetEnable(bool enable)
-        {
-            SettingsGrid.IsEnabled = enable;
-        }
+        #region Public Methods and Operators
 
-        public override void SaveSettings()
-        {
-            if (isLoading) return;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.ErrorRenderer_EnableHTTP = (bool)cb_log_errorreporting_http.IsChecked;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.ErrorRenderer_Enable80 = (bool)cb_log_errorreporting_80.IsChecked;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.ErrorRenderer_Enable443 = (bool)cb_log_errorreporting_443.IsChecked;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Save();
-        }
-
+        /// <summary>
+        /// The load settings.
+        /// </summary>
         public override void LoadSettings()
         {
-            isLoading = true;
-            cb_log_errorreporting_http.IsChecked = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.ErrorRenderer_EnableHTTP;
-            cb_log_errorreporting_80.IsChecked = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.ErrorRenderer_Enable80;
-            cb_log_errorreporting_443.IsChecked = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.ErrorRenderer_Enable443;
-            isLoading = false;
+            this.IsLoading = true;
+            this.CbLogErrorreportingHttp.IsChecked = Settings.Default.ErrorRenderer_EnableHTTP;
+            this.CbLogErrorreporting80.IsChecked = Settings.Default.ErrorRenderer_Enable80;
+            this.CbLogErrorreporting443.IsChecked = Settings.Default.ErrorRenderer_Enable443;
+            this.IsLoading = false;
         }
 
-        private void lb_Log_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        /// <summary>
+        /// The save settings.
+        /// </summary>
+        public override void SaveSettings()
         {
-            lb_Log.SelectionMode = SelectionMode.Multiple;
-            lb_Log.SelectedItems.Clear();
+            if (this.IsLoading)
+            {
+                return;
+            }
+
+            Settings.Default.ErrorRenderer_EnableHTTP = this.CbLogErrorreportingHttp.IsChecked ?? false;
+            Settings.Default.ErrorRenderer_Enable80 = this.CbLogErrorreporting80.IsChecked ?? false;
+            Settings.Default.ErrorRenderer_Enable443 = this.CbLogErrorreporting443.IsChecked ?? false;
+            Settings.Default.Save();
         }
 
+        /// <summary>
+        /// The set enable.
+        /// </summary>
+        /// <param name="enable">
+        /// The enable.
+        /// </param>
+        public override void SetEnable(bool enable)
+        {
+            this.SettingsGrid.IsEnabled = enable;
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The new log.
+        /// </summary>
+        /// <param name="message">
+        /// The message.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
         private void NewLog(string message, EventArgs e)
         {
-            lb_Log.Items.Add(message);
+            this.Logs.Items.Add(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToShortTimeString() + ": " + message);
             try
             {
-                if (System.Windows.Media.VisualTreeHelper.GetChildrenCount(lb_Log) > 0 &&
-                    System.Windows.Media.VisualTreeHelper.GetChildrenCount(System.Windows.Media.VisualTreeHelper.GetChild(lb_Log, 0)) > 0)
+                if (VisualTreeHelper.GetChildrenCount(this.Logs) <= 0
+                    || VisualTreeHelper.GetChildrenCount(VisualTreeHelper.GetChild(this.Logs, 0)) <= 0) return;
+
+                ScrollViewer scroll =
+                    VisualTreeHelper.GetChild(VisualTreeHelper.GetChild(this.Logs, 0), 0) as ScrollViewer;
+                if (scroll != null)
                 {
-                    ScrollViewer scroll = System.Windows.Media.VisualTreeHelper.GetChild(System.Windows.Media.VisualTreeHelper.GetChild(lb_Log, 0), 0) as ScrollViewer;
                     scroll.ScrollToEnd();
                 }
             }
@@ -75,5 +115,36 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
             {
             }
         }
+
+        /// <summary>
+        /// The logs selection changed.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void LbLogSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            this.Logs.SelectionMode = SelectionMode.Multiple;
+            this.Logs.SelectedItems.Clear();
+        }
+
+        /// <summary>
+        /// The txt_ text box_ lost focus.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void TxtTextBoxLostFocus(object sender, RoutedEventArgs e)
+        {
+            this.SaveSettings();
+        }
+
+        #endregion
     }
 }

@@ -1,87 +1,178 @@
-﻿using PeaRoxy.ClientLibrary;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="General.xaml.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   Interaction logic for General.xaml
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.Windows.WPFClient.SettingTabs
 {
-    /// <summary>
-    /// Interaction logic for General.xaml
-    /// </summary>
-    public partial class General : Base
-    {
+    #region
 
+    using System;
+    using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Windows;
+
+    using Microsoft.Win32;
+
+    using PeaRoxy.ClientLibrary;
+    using PeaRoxy.CommonLibrary;
+    using PeaRoxy.Windows.WPFClient.Properties;
+
+    #endregion
+
+    /// <summary>
+    ///     Interaction logic for General.xaml
+    /// </summary>
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
+    public partial class General
+    {
+        #region Constructors and Destructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="General"/> class.
+        /// </summary>
         public General()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
 
-        public void UpdateStats(ProxyController Listener, long currentDownSpeed, long currentUpSpeed)
-        {
-            lbl_stat_acceptingthreads.Content = Listener.AcceptingClock.ToString() + " - " + Listener.AcceptingConnections;
-            lbl_stat_activeconnections.Content = Listener.RoutingClock.ToString() + " - " + Listener.RoutingConnections;
-            lbl_stat_downloaded.Content = CommonLibrary.Common.FormatFileSizeAsString(Listener.ReceivedBytes);
-            lbl_stat_uploaded.Content = CommonLibrary.Common.FormatFileSizeAsString(Listener.SentBytes);
-            lbl_stat_downloadrate.Content = CommonLibrary.Common.FormatFileSizeAsString(currentDownSpeed);
-            lbl_stat_uploadrate.Content = CommonLibrary.Common.FormatFileSizeAsString(currentUpSpeed);
-        }
+        #endregion
 
-        private void cb_runAtStartup_CheckedChanged(object sender, EventArgs e)
-        {
-            cb_openProgramAtStartup.IsEnabled = (bool)cb_runAtStartup.IsChecked;
-            SaveSettings();
-        }
+        #region Public Methods and Operators
 
-        private void txt_TextBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            SaveSettings();
-        }
-
-        public override void SetEnable(bool enable)
-        {
-            CheckBoxes.IsEnabled = enable;
-        }
-
-        public override void SaveSettings()
-        {
-            if (isLoading) return;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Startup_StartServer = (bool)cb_StartServerAtStartup.IsChecked;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Startup_ShowWindow = (bool)cb_openProgramAtStartup.IsChecked;
-            PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Save();
-            try
-            {
-                if ((bool)cb_runAtStartup.IsChecked)
-                    Microsoft.Win32.Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Run", true).SetValue("PeaRoxy Client", "\"" + System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName + "\" /autoRun");
-                else
-                    Microsoft.Win32.Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Run", true).DeleteValue("PeaRoxy Client");
-            }
-            catch (Exception) { }
-        }
-
+        /// <summary>
+        /// The load settings.
+        /// </summary>
         public override void LoadSettings()
         {
-            isLoading = true;
-            cb_StartServerAtStartup.IsChecked = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Startup_StartServer;
-            cb_openProgramAtStartup.IsChecked = PeaRoxy.Windows.WPFClient.Properties.Settings.Default.Startup_ShowWindow;
+            this.IsLoading = true;
+            this.CbStartServerAtStartup.IsChecked = Settings.Default.Startup_StartServer;
+            this.CbOpenProgramAtStartup.IsChecked = Settings.Default.Startup_ShowWindow;
 
-            cb_runAtStartup.IsChecked = false;
+            this.CbRunAtStartup.IsChecked = false;
             try
             {
-                if (Microsoft.Win32.Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Run").GetValue("PeaRoxy Client") != null)
-                    cb_runAtStartup.IsChecked = true;
+                RegistryKey key = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Run");
+                if (key != null && key.GetValue("PeaRoxy Client") != null)
+                {
+                    this.CbRunAtStartup.IsChecked = true;
+                }
             }
-            catch (Exception) { }
-            isLoading = false;
+            catch (Exception)
+            {
+            }
+
+            this.IsLoading = false;
         }
+
+        /// <summary>
+        /// The save settings.
+        /// </summary>
+        public override void SaveSettings()
+        {
+            if (this.IsLoading)
+            {
+                return;
+            }
+
+            Settings.Default.Startup_StartServer = this.CbStartServerAtStartup.IsChecked ?? false;
+            Settings.Default.Startup_ShowWindow = this.CbOpenProgramAtStartup.IsChecked ?? false;
+            Settings.Default.Save();
+            try
+            {
+                RegistryKey key = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+                if (key == null)
+                {
+                    return;
+                }
+
+                if (this.CbRunAtStartup.IsChecked ?? false)
+                {
+                    key.SetValue(
+                        "PeaRoxy Client",
+                        "\"" + Process.GetCurrentProcess().MainModule.FileName + "\" /autoRun");
+                }
+                else
+                {
+                    key.DeleteValue("PeaRoxy Client");
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        /// <summary>
+        /// The set enable.
+        /// </summary>
+        /// <param name="enable">
+        /// The enable.
+        /// </param>
+        public override void SetEnable(bool enable)
+        {
+            this.CheckBoxes.IsEnabled = enable;
+        }
+
+        /// <summary>
+        /// The update stats.
+        /// </summary>
+        /// <param name="listener">
+        /// The listener.
+        /// </param>
+        /// <param name="currentDownSpeed">
+        /// The current down speed.
+        /// </param>
+        /// <param name="currentUpSpeed">
+        /// The current up speed.
+        /// </param>
+        public void UpdateStats(ProxyController listener, long currentDownSpeed, long currentUpSpeed)
+        {
+            this.LblStatAcceptingthreads.Content = listener.AcceptingClock + " - " + listener.AcceptingConnections;
+            this.LblStatActiveconnections.Content = listener.RoutingClock + " - " + listener.RoutingConnections;
+            this.LblStatDownloaded.Content = Common.FormatFileSizeAsString(listener.ReceivedBytes);
+            this.LblStatUploaded.Content = Common.FormatFileSizeAsString(listener.SentBytes);
+            this.LblStatDownloadrate.Content = Common.FormatFileSizeAsString(currentDownSpeed);
+            this.LblStatUploadrate.Content = Common.FormatFileSizeAsString(currentUpSpeed);
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The cb_run at startup_ checked changed.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void CbRunAtStartupCheckedChanged(object sender, EventArgs e)
+        {
+            this.CbOpenProgramAtStartup.IsEnabled = this.CbRunAtStartup.IsChecked ?? false;
+            this.SaveSettings();
+        }
+
+        /// <summary>
+        /// The txt_ text box_ lost focus.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// The e.
+        /// </param>
+        private void TxtTextBoxLostFocus(object sender, RoutedEventArgs e)
+        {
+            this.SaveSettings();
+        }
+
+        #endregion
     }
 }

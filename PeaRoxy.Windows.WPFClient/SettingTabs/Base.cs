@@ -1,47 +1,133 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Base.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   The base.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.Windows.WPFClient.SettingTabs
 {
-    public class Base : UserControl, ISynchronizeInvoke
-    {
-        public bool AutoSave { get; set; }
-        internal bool isLoading = true;
-        public virtual void SaveSettings() { return; }
-        public virtual void LoadSettings() { return; }
-        public virtual void SetEnable(bool enable)
-        {
-            this.IsEnabled = enable;
-        }
-        public Base() { }
+    #region
 
+    using System;
+    using System.ComponentModel;
+    using System.Windows.Controls;
+
+    #endregion
+
+    /// <summary>
+    ///     The base.
+    /// </summary>
+    public abstract class Base : UserControl, ISynchronizeInvoke
+    {
+        #region Public Properties
+
+        /// <summary>
+        ///     Gets a value indicating whether invoke required.
+        /// </summary>
+        public bool InvokeRequired
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        ///     Gets or sets a value indicating whether this control is in loading state
+        /// </summary>
+        public bool IsLoading { get; set; }
+
+        #endregion
+
+        #region Public Methods and Operators
+
+        /// <summary>
+        /// The begin invoke.
+        /// </summary>
+        /// <param name="method">
+        /// The method.
+        /// </param>
+        /// <param name="args">
+        /// The args.
+        /// </param>
+        /// <returns>
+        /// The <see cref="IAsyncResult"/>.
+        /// </returns>
+        /// <exception cref="NotSupportedException">
+        /// This operation is not supported
+        /// </exception>
         public IAsyncResult BeginInvoke(Delegate method, object[] args)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
+
+        /// <summary>
+        /// The end invoke.
+        /// </summary>
+        /// <param name="result">
+        /// The result.
+        /// </param>
+        /// <returns>
+        /// The <see cref="object"/>.
+        /// </returns>
+        /// <exception cref="NotSupportedException">
+        /// This operation is not supported
+        /// </exception>
         public object EndInvoke(IAsyncResult result)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
+
+        /// <summary>
+        /// The invoke.
+        /// </summary>
+        /// <param name="method">
+        /// The method.
+        /// </param>
+        /// <param name="args">
+        /// The args.
+        /// </param>
+        /// <returns>
+        /// The <see cref="object"/>.
+        /// </returns>
         public object Invoke(Delegate method, object[] args)
         {
             return this.Dispatcher.Invoke(method, args);
         }
-        public bool InvokeRequired
+
+        /// <summary>
+        ///     The load settings.
+        /// </summary>
+        public virtual void LoadSettings()
         {
-            get { return true; }
         }
+
+        /// <summary>
+        ///     The save settings.
+        /// </summary>
+        public virtual void SaveSettings()
+        {
+        }
+
+        /// <summary>
+        /// The set enable.
+        /// </summary>
+        /// <param name="enable">
+        /// The enable.
+        /// </param>
+        public virtual void SetEnable(bool enable)
+        {
+            this.IsEnabled = enable;
+        }
+
+        #endregion
     }
 }

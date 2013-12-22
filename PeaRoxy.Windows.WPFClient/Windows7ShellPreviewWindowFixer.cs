@@ -1,40 +1,105 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Windows7ShellPreviewWindowFixer.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// <summary>
+//   The windows 7 shell preview window fixer.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.Windows.WPFClient
 {
-    class Windows7ShellPreviewWindowFixer
+    #region
+
+    using System;
+    using System.Diagnostics;
+    using System.Runtime.InteropServices;
+
+    #endregion
+
+    /// <summary>
+    /// The windows 7 shell preview window fixer.
+    /// </summary>
+    internal static class Windows7ShellPreviewWindowFixer
     {
-        [DllImport("user32.dll")]
-        static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
-        [DllImport("user32.dll")]
-        static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
-        [DllImport("user32.dll")]
-        static extern UInt32 GetWindowLong(IntPtr hWnd, Int32 nIndex);
-        [DllImport("user32.dll")]
-        static extern UInt32 SetWindowLong(IntPtr hWnd, Int32 nIndex, UInt32 dwNewLong);
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
-        const Int32 GWL_STYLE = (-16);
-        const Int32 GWL_EXSTYLE = (-20);
-        const UInt32 WS_CAPTION = 0xC00000;
-        const UInt32 WS_SYSMENU = 0x80000;
-        const UInt32 WS_THICKFRAME = 0x40000;
-        const UInt32 WS_MINIMIZEBOX = 0x20000;
-        const UInt32 WS_MAXIMIZEBOX = 0x10000;
-        const UInt32 WS_EX_DLGMODALFRAME = 0x0001;
-        const UInt32 WS_VISIBLE = 0x10000000;
-        const UInt32 WS_DISABLED = 0x8000000;
-        const UInt32 WS_TABSTOP = 0x10000;
-        const uint SWP_FRAMECHANGED = 0x0020;
+        #region Constants
+
+        /// <summary>
+        /// The GWL_EXSTYLE
+        /// </summary>
+        private const int GwlExstyle = -20;
+
+        /// <summary>
+        /// The GWL_STYLE
+        /// </summary>
+        private const int GwlStyle = -16;
+
+        /// <summary>
+        /// The SWP_FRAMECHANGED
+        /// </summary>
+        private const uint SwpFramechanged = 0x0020;
+
+        /// <summary>
+        /// The WS_CAPTION
+        /// </summary>
+        private const uint WsCaption = 0xC00000;
+
+        /// <summary>
+        /// The WS_DISABLED
+        /// </summary>
+        private const uint WsDisabled = 0x8000000;
+
+        /// <summary>
+        /// The WS_EX_DLGMODALFRAME
+        /// </summary>
+        private const uint WsExDlgmodalframe = 0x0001;
+
+        /// <summary>
+        /// The WS_MAXIMIZEBOX
+        /// </summary>
+        private const uint WsMaximizebox = 0x10000;
+
+        /// <summary>
+        /// The WS_MINIMIZEBOX
+        /// </summary>
+        private const uint WsMinimizebox = 0x20000;
+
+        /// <summary>
+        /// The WS_SYSMENU
+        /// </summary>
+        private const uint WsSysmenu = 0x80000;
+
+        /// <summary>
+        /// The WS_TABSTOP
+        /// </summary>
+        private const uint WsTabstop = 0x10000;
+
+        /// <summary>
+        /// The WS_THICKFRAME
+        /// </summary>
+        private const uint WsThickframe = 0x40000;
+
+        /// <summary>
+        /// The WS_VISIBLE
+        /// </summary>
+        private const uint WsVisible = 0x10000000;
+
+        #endregion
+
+        #region Public Methods and Operators
+
+        /// <summary>
+        /// The fix.
+        /// </summary>
+        /// <param name="windowTitle">
+        /// The window title.
+        /// </param>
+        /// <param name="process">
+        /// The process.
+        /// </param>
         public static void Fix(string windowTitle, Process process)
         {
-
             IntPtr previewChartWindow = IntPtr.Zero;
             do
             {
@@ -44,27 +109,147 @@ namespace PeaRoxy.Windows.WPFClient
                     uint pId;
                     GetWindowThreadProcessId(previewChartWindow, out pId);
                     if (pId > 0 && pId == process.Id)
+                    {
                         if (process.MainWindowHandle != previewChartWindow)
                         {
-                            UInt32 windowLong = GetWindowLong(previewChartWindow, GWL_STYLE);
-                            windowLong = windowLong & (~WS_CAPTION);
-                            windowLong = windowLong & (~WS_SYSMENU);
-                            windowLong = windowLong & (~WS_THICKFRAME);
-                            windowLong = windowLong & (~WS_MINIMIZEBOX);
-                            windowLong = windowLong & (~WS_MAXIMIZEBOX);
-                            windowLong = windowLong & (~WS_VISIBLE);
-                            windowLong = windowLong & (~WS_TABSTOP);
-                            windowLong = windowLong & (WS_DISABLED);
-                            SetWindowLong(previewChartWindow, GWL_STYLE, windowLong);
+                            uint windowLong = GetWindowLong(previewChartWindow, GwlStyle);
+                            windowLong = windowLong & (~WsCaption);
+                            windowLong = windowLong & (~WsSysmenu);
+                            windowLong = windowLong & (~WsThickframe);
+                            windowLong = windowLong & (~WsMinimizebox);
+                            windowLong = windowLong & (~WsMaximizebox);
+                            windowLong = windowLong & (~WsVisible);
+                            windowLong = windowLong & (~WsTabstop);
+                            windowLong = windowLong & WsDisabled;
+                            SetWindowLong(previewChartWindow, GwlStyle, windowLong);
 
-                            windowLong = GetWindowLong(previewChartWindow, GWL_EXSTYLE);
-                            windowLong = windowLong | WS_EX_DLGMODALFRAME;
-                            SetWindowLong(previewChartWindow, GWL_EXSTYLE, windowLong);
+                            windowLong = GetWindowLong(previewChartWindow, GwlExstyle);
+                            windowLong = windowLong | WsExDlgmodalframe;
+                            SetWindowLong(previewChartWindow, GwlExstyle, windowLong);
 
-                            SetWindowPos(previewChartWindow, IntPtr.Zero, -500, -500, 0, 0, SWP_FRAMECHANGED);
+                            SetWindowPos(previewChartWindow, IntPtr.Zero, -500, -500, 0, 0, SwpFramechanged);
                         }
+                    }
                 }
-            } while (previewChartWindow != IntPtr.Zero);
+            }
+            while (previewChartWindow != IntPtr.Zero);
         }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The find window ex.
+        /// </summary>
+        /// <param name="hwndParent">
+        /// The parent window.
+        /// </param>
+        /// <param name="hwndChildAfter">
+        /// The next child.
+        /// </param>
+        /// <param name="lpszClass">
+        /// The class name.
+        /// </param>
+        /// <param name="lpszWindow">
+        /// The window name.
+        /// </param>
+        /// <returns>
+        /// The <see cref="IntPtr"/>.
+        /// </returns>
+        [DllImport("user32.dll")]
+        private static extern IntPtr FindWindowEx(
+            IntPtr hwndParent, 
+            IntPtr hwndChildAfter, 
+            string lpszClass, 
+            string lpszWindow);
+
+        /// <summary>
+        /// The get window long.
+        /// </summary>
+        /// <param name="windowHandler">
+        /// The window.
+        /// </param>
+        /// <param name="index">
+        /// The index.
+        /// </param>
+        /// <returns>
+        /// The <see cref="uint"/>.
+        /// </returns>
+        [DllImport("user32.dll")]
+        private static extern uint GetWindowLong(IntPtr windowHandler, int index);
+
+        /// <summary>
+        /// The get window thread process id.
+        /// </summary>
+        /// <param name="windowHandler">
+        /// The window.
+        /// </param>
+        /// <param name="processId">
+        /// The process id.
+        /// </param>
+        /// <returns>
+        /// The <see cref="uint"/>.
+        /// </returns>
+        [DllImport("user32.dll")]
+        private static extern uint GetWindowThreadProcessId(IntPtr windowHandler, out uint processId);
+
+        /// <summary>
+        /// The set window long.
+        /// </summary>
+        /// <param name="windowHandler">
+        /// The window.
+        /// </param>
+        /// <param name="index">
+        /// The index.
+        /// </param>
+        /// <param name="newLong">
+        /// The new long.
+        /// </param>
+        /// <returns>
+        /// The <see cref="uint"/>.
+        /// </returns>
+        [DllImport("user32.dll")]
+        private static extern uint SetWindowLong(IntPtr windowHandler, int index, uint newLong);
+
+        /// <summary>
+        /// The set window position.
+        /// </summary>
+        /// <param name="windowHandler">
+        /// The window
+        /// </param>
+        /// <param name="windowHandlerInsertAfter">
+        /// The window to insert after.
+        /// </param>
+        /// <param name="x">
+        /// The X.
+        /// </param>
+        /// <param name="y">
+        /// The Y.
+        /// </param>
+        /// <param name="cx">
+        /// The CX.
+        /// </param>
+        /// <param name="cy">
+        /// The CY.
+        /// </param>
+        /// <param name="flags">
+        /// The flags.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool SetWindowPos(
+            IntPtr windowHandler,
+            IntPtr windowHandlerInsertAfter, 
+            int x, 
+            int y, 
+            int cx, 
+            int cy, 
+            uint flags);
+
+        #endregion
     }
 }

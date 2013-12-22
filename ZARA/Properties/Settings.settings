@@ -1,5 +1,7 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ZARA.Properties" GeneratedClassName="Settings">
+
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)"
+              GeneratedClassNamespace="ZARA.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
     <Setting Name="FirstRun" Type="System.Boolean" Scope="User">
@@ -33,10 +35,10 @@
       <Value Profile="(Default)">11.0.0.0</Value>
     </Setting>
     <Setting Name="ServerPort" Type="System.UInt16" Scope="User">
-      <Value Profile="(Default)">2080</Value>
+      <Value Profile="(Default)">443</Value>
     </Setting>
     <Setting Name="UpdateSettings" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
+      <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="ShowHost" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>

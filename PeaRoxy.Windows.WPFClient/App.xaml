@@ -4,17 +4,22 @@
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <Style TargetType="{x:Type CheckBox}">
-            <Setter Property="SnapsToDevicePixels" Value="true"/>
-            <Setter Property="OverridesDefaultStyle" Value="true"/>
-            <Setter Property="Foreground" Value="Black"></Setter>
+            <Setter Property="SnapsToDevicePixels" Value="true" />
+            <Setter Property="OverridesDefaultStyle" Value="true" />
+            <Setter Property="Foreground" Value="Black" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
                         <BulletDecorator Background="Transparent">
                             <BulletDecorator.Bullet>
                                 <Grid>
-                                    <Border Cursor="Hand" Margin="0,0,0,1" x:Name="Border" Width="13" Height="13" CornerRadius="0" BorderThickness="1" BorderBrush="#FFBABABA" Background="#FFFFFFFF"/>
-                                    <Path Margin="5,0,0,0" Width="16" Height="16" x:Name="CheckMark" SnapsToDevicePixels="False" Stroke="#FF45B3FF" Fill="#FF5D5D5D" StrokeThickness="1" Data="
+                                    <Border Cursor="Hand" Margin="0,0,0,1" x:Name="Border" Width="13" Height="13"
+                                            CornerRadius="0" BorderThickness="1" BorderBrush="#FFBABABA"
+                                            Background="#FFFFFFFF" />
+                                    <Path Margin="5,0,0,0" Width="16" Height="16" x:Name="CheckMark"
+                                          SnapsToDevicePixels="False" Stroke="#FF45B3FF" Fill="#FF5D5D5D"
+                                          StrokeThickness="1"
+                                          Data="
                                           M 12.4227,0.00012207C 12.4867,0.126587 12.5333,0.274536 
                                           12.6787,0.321411C 9.49199,3.24792 6.704,6.57336 
                                           4.69865,10.6827C 4.04399,11.08 3.47066,11.5573 2.83199,
@@ -22,14 +27,15 @@
                                           7.33606C 0.500004,6.79871 1.31733,6.05994 1.93067,6.2428C 
                                           2.85999,6.51868 3.14,7.9054 3.60399,8.81604C 5.80133,
                                           5.5387 8.53734,2.19202 12.4227,0.00012207 Z 
-                                          "/>
+                                          " />
                                 </Grid>
                             </BulletDecorator.Bullet>
-                            <ContentPresenter Margin="4,-2,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" RecognizesAccessKey="True"/>
+                            <ContentPresenter Margin="4,-2,0,0" VerticalAlignment="Center" HorizontalAlignment="Left"
+                                              RecognizesAccessKey="True" />
                         </BulletDecorator>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="false">
-                                <Setter TargetName="CheckMark" Property="Visibility" Value="Hidden"/>
+                                <Setter TargetName="CheckMark" Property="Visibility" Value="Hidden" />
                             </Trigger>
                             <Trigger Property="IsChecked" Value="{x:Null}">
                                 <Setter TargetName="CheckMark" Property="Data" Value="M 0 7 L 7 0" />
@@ -45,8 +51,8 @@
                                 <Setter TargetName="Border" Property="Background" Value="#FFEBEBEB" />
                                 <Setter TargetName="Border" Property="BorderBrush" Value="#FFDDDDDD" />
                                 <Setter TargetName="CheckMark" Property="Stroke" Value="#FFDDDDDD" />
-                                <Setter Property="Foreground" Value="#80000000"/>
-                                <Setter Property="Opacity" TargetName="Border" Value="0.8"/>
+                                <Setter Property="Foreground" Value="#80000000" />
+                                <Setter Property="Opacity" TargetName="Border" Value="0.8" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -54,31 +60,32 @@
             </Setter>
         </Style>
         <Style TargetType="{x:Type RadioButton}">
-            <Setter Property="SnapsToDevicePixels" Value="true"/>
-            <Setter Property="OverridesDefaultStyle" Value="true"/>
-            <Setter Property="Foreground" Value="Black"></Setter>
+            <Setter Property="SnapsToDevicePixels" Value="true" />
+            <Setter Property="OverridesDefaultStyle" Value="true" />
+            <Setter Property="Foreground" Value="Black" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type RadioButton}">
                         <BulletDecorator Cursor="Hand" Background="Transparent">
                             <BulletDecorator.Bullet>
-                                <Grid Width="13" Height="13" >
-                                    <Ellipse x:Name="Border"  Fill="#FFFFFFFF" StrokeThickness="1" Stroke="#FFBABABA" />
-                                    <Ellipse x:Name="CheckMark" Margin="3" StrokeThickness="4" >
+                                <Grid Width="13" Height="13">
+                                    <Ellipse x:Name="Border" Fill="#FFFFFFFF" StrokeThickness="1" Stroke="#FFBABABA" />
+                                    <Ellipse x:Name="CheckMark" Margin="3" StrokeThickness="4">
                                         <Ellipse.Stroke>
                                             <RadialGradientBrush>
-                                                <GradientStop Color="#ff4f91be" Offset="0"/>
-                                                <GradientStop Color="#ff4f91be" Offset="1"/>
+                                                <GradientStop Color="#ff4f91be" Offset="0" />
+                                                <GradientStop Color="#ff4f91be" Offset="1" />
                                             </RadialGradientBrush>
                                         </Ellipse.Stroke>
                                     </Ellipse>
                                 </Grid>
                             </BulletDecorator.Bullet>
-                            <ContentPresenter Margin="4,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" RecognizesAccessKey="True"/>
+                            <ContentPresenter Margin="4,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left"
+                                              RecognizesAccessKey="True" />
                         </BulletDecorator>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="false">
-                                <Setter TargetName="CheckMark" Property="Visibility" Value="Hidden"/>
+                                <Setter TargetName="CheckMark" Property="Visibility" Value="Hidden" />
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="true">
                                 <Setter TargetName="Border" Property="Fill" Value="#FFEBEBEB" />
@@ -91,8 +98,8 @@
                                 <Setter TargetName="Border" Property="Fill" Value="#FFEBEBEB" />
                                 <Setter TargetName="Border" Property="Stroke" Value="#FFDDDDDD" />
                                 <Setter TargetName="CheckMark" Property="Stroke" Value="#FFDDDDDD" />
-                                <Setter Property="Foreground" Value="#80000000"/>
-                                <Setter Property="Opacity" TargetName="Border" Value="0.8"/>
+                                <Setter Property="Foreground" Value="#80000000" />
+                                <Setter Property="Opacity" TargetName="Border" Value="0.8" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -100,27 +107,28 @@
             </Setter>
         </Style>
         <Style TargetType="{x:Type PasswordBox}">
-            <Setter Property="SnapsToDevicePixels" Value="true"/>
-            <Setter Property="OverridesDefaultStyle" Value="true"/>
-            <Setter Property="KeyboardNavigation.TabNavigation" Value="None"/>
-            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-            <Setter Property="FontFamily" Value="Verdana"/>
-            <Setter Property="PasswordChar" Value="●"/>
-            <Setter Property="MinWidth" Value="120"/>
-            <Setter Property="MinHeight" Value="20"/>
-            <Setter Property="AllowDrop" Value="true"/>
+            <Setter Property="SnapsToDevicePixels" Value="true" />
+            <Setter Property="OverridesDefaultStyle" Value="true" />
+            <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="FontFamily" Value="Verdana" />
+            <Setter Property="PasswordChar" Value="●" />
+            <Setter Property="MinWidth" Value="120" />
+            <Setter Property="MinHeight" Value="20" />
+            <Setter Property="AllowDrop" Value="true" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type PasswordBox}">
-                        <Border Name="Border" CornerRadius="0" Padding="2" Background="White" BorderBrush="#FFBABABA" BorderThickness="1" >
+                        <Border Name="Border" CornerRadius="0" Padding="2" Background="White" BorderBrush="#FFBABABA"
+                                BorderThickness="1">
                             <ScrollViewer x:Name="PART_ContentHost" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="Border" Property="Background" Value="#FFEBEBEB"/>
-                                <Setter TargetName="Border" Property="BorderBrush" Value="#FFDDDDDD"/>
-                                <Setter Property="Foreground" Value="#80000000"/>
-                                <Setter Property="Opacity" TargetName="Border" Value="0.8"/>
+                                <Setter TargetName="Border" Property="Background" Value="#FFEBEBEB" />
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#FFDDDDDD" />
+                                <Setter Property="Foreground" Value="#80000000" />
+                                <Setter Property="Opacity" TargetName="Border" Value="0.8" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -128,25 +136,26 @@
             </Setter>
         </Style>
         <Style TargetType="{x:Type TextBox}">
-            <Setter Property="SnapsToDevicePixels" Value="True"/>
-            <Setter Property="OverridesDefaultStyle" Value="True"/>
-            <Setter Property="KeyboardNavigation.TabNavigation" Value="None"/>
-            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-            <Setter Property="MinHeight" Value="20"/>
-            <Setter Property="AllowDrop" Value="true"/>
-            <Setter Property="Foreground" Value="Black"></Setter>
+            <Setter Property="SnapsToDevicePixels" Value="True" />
+            <Setter Property="OverridesDefaultStyle" Value="True" />
+            <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="MinHeight" Value="20" />
+            <Setter Property="AllowDrop" Value="true" />
+            <Setter Property="Foreground" Value="Black" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type TextBoxBase}">
-                        <Border Name="Border" CornerRadius="0" Padding="2" Background="White" BorderBrush="#FFBABABA" BorderThickness="1" >
-                            <ScrollViewer Margin="0" x:Name="PART_ContentHost"/>
+                        <Border Name="Border" CornerRadius="0" Padding="2" Background="White" BorderBrush="#FFBABABA"
+                                BorderThickness="1">
+                            <ScrollViewer Margin="0" x:Name="PART_ContentHost" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="Border" Property="Background" Value="#FFEBEBEB"/>
-                                <Setter TargetName="Border" Property="BorderBrush" Value="#FFDDDDDD"/>
-                                <Setter Property="Foreground" Value="#80000000"/>
-                                <Setter Property="Opacity" TargetName="Border" Value="0.8"/>
+                                <Setter TargetName="Border" Property="Background" Value="#FFEBEBEB" />
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#FFDDDDDD" />
+                                <Setter Property="Foreground" Value="#80000000" />
+                                <Setter Property="Opacity" TargetName="Border" Value="0.8" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -164,15 +173,20 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
-                        <Border Cursor="Hand" x:Name="Chrome" Background="{TemplateBinding Background}" SnapsToDevicePixels="true" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
-                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        <Border Cursor="Hand" x:Name="Chrome" Background="{TemplateBinding Background}"
+                                SnapsToDevicePixels="true" BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              Margin="{TemplateBinding Padding}" RecognizesAccessKey="True"
+                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsEnabled" Value="false">
-                                <Setter Property="Foreground" Value="#80000000"/>
+                                <Setter Property="Foreground" Value="#80000000" />
                                 <Setter TargetName="Chrome" Property="Background" Value="#FFEBEBEB" />
                                 <Setter TargetName="Chrome" Property="BorderBrush" Value="#FFDDDDDD" />
-                                <Setter Property="Opacity" TargetName="Chrome" Value="0.8"/>
+                                <Setter Property="Opacity" TargetName="Chrome" Value="0.8" />
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="true">
                                 <Setter TargetName="Chrome" Property="Background" Value="#FFEBEBEB" />
@@ -186,17 +200,20 @@
             </Setter>
         </Style>
         <Style TargetType="{x:Type ListBox}">
-            <Setter Property="BorderBrush" Value="#FFBABABA"></Setter>
+            <Setter Property="BorderBrush" Value="#FFBABABA" />
         </Style>
         <Style TargetType="{x:Type TreeView}">
-            <Setter Property="BorderBrush" Value="#FFBABABA"></Setter>
+            <Setter Property="BorderBrush" Value="#FFBABABA" />
         </Style>
         <ControlTemplate x:Key="ExpanderToggleButton" TargetType="ToggleButton">
-            <Border Height="24" Name="Border" CornerRadius="0" Background="Transparent" BorderThickness="0" Width="220" HorizontalAlignment="Left" >
-                <Border Name="Border2" Width="25" HorizontalAlignment="Left" Height="23" CornerRadius="3" Background="Transparent" BorderBrush="#FFBABABA" BorderThickness="0,0,1,0">
-                    <Path HorizontalAlignment="Center" Name="Arrow" Stroke="#ff4f91be" StrokeThickness="2" VerticalAlignment="Center" Data="M 1,1.5 L 4.5,5 8,1.5" RenderTransformOrigin="0.5,0.5">
+            <Border Height="24" Name="Border" CornerRadius="0" Background="Transparent" BorderThickness="0" Width="220"
+                    HorizontalAlignment="Left">
+                <Border Name="Border2" Width="25" HorizontalAlignment="Left" Height="23" CornerRadius="3"
+                        Background="Transparent" BorderBrush="#FFBABABA" BorderThickness="0,0,1,0">
+                    <Path HorizontalAlignment="Center" Name="Arrow" Stroke="#ff4f91be" StrokeThickness="2"
+                          VerticalAlignment="Center" Data="M 1,1.5 L 4.5,5 8,1.5" RenderTransformOrigin="0.5,0.5">
                         <Path.RenderTransform>
-                            <RotateTransform Angle="0"/>
+                            <RotateTransform Angle="0" />
                         </Path.RenderTransform>
                     </Path>
                 </Border>
@@ -206,14 +223,18 @@
                     <Trigger.EnterActions>
                         <BeginStoryboard>
                             <Storyboard>
-                                <DoubleAnimation Storyboard.TargetName="Arrow" Storyboard.TargetProperty="(Path.RenderTransform).(RotateTransform.Angle)" To="180" Duration="0:0:0.3"/>
+                                <DoubleAnimation Storyboard.TargetName="Arrow"
+                                                 Storyboard.TargetProperty="(Path.RenderTransform).(RotateTransform.Angle)"
+                                                 To="180" Duration="0:0:0.3" />
                             </Storyboard>
                         </BeginStoryboard>
                     </Trigger.EnterActions>
                     <Trigger.ExitActions>
                         <BeginStoryboard>
                             <Storyboard>
-                                <DoubleAnimation Storyboard.TargetName="Arrow" Storyboard.TargetProperty="(Path.RenderTransform).(RotateTransform.Angle)" To="0" Duration="0:0:0.3"/>
+                                <DoubleAnimation Storyboard.TargetName="Arrow"
+                                                 Storyboard.TargetProperty="(Path.RenderTransform).(RotateTransform.Angle)"
+                                                 To="0" Duration="0:0:0.3" />
                             </Storyboard>
                         </BeginStoryboard>
                     </Trigger.ExitActions>
@@ -230,17 +251,27 @@
                     <ControlTemplate TargetType="Expander">
                         <Grid>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Name="ContentRow"/>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Name="ContentRow" />
                                 <!--Height="0"-->
                             </Grid.RowDefinitions>
-                            <Border Name="Border" Height="25" Grid.Row="0" BorderBrush="#FFBABABA" Background="#FFF8F8F8" BorderThickness="1,0.5" CornerRadius="0" >
+                            <Border Name="Border" Height="25" Grid.Row="0" BorderBrush="#FFBABABA"
+                                    Background="#FFF8F8F8" BorderThickness="1,0.5" CornerRadius="0">
                                 <Grid Margin="0,-2,0,0">
-                                    <ContentPresenter Margin="34,4,4,4" Grid.Column="1" ContentSource="Header" RecognizesAccessKey="True" />
-                                    <ToggleButton Name="ToggleButton" Margin="0,2,0,0" IsChecked="{Binding Path=IsExpanded,Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" OverridesDefaultStyle="True" Template="{StaticResource ExpanderToggleButton}"  Background="#fff" />
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <ContentPresenter Margin="34,4,4,4" Grid.Column="1" ContentSource="Header"
+                                                      RecognizesAccessKey="True" />
+                                    <ToggleButton Grid.Column="0" Name="ToggleButton" Margin="0,2,0,0"
+                                                  IsChecked="{Binding Path=IsExpanded,Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                  OverridesDefaultStyle="True"
+                                                  Template="{StaticResource ExpanderToggleButton}" Background="#fff" />
                                 </Grid>
                             </Border>
-                            <Border Name="Content" Grid.Row="1" BorderBrush="#FFBABABA" Background="#FFFFFFFF" BorderThickness="1,0,1,1" CornerRadius="0" >
+                            <Border Name="Content" Grid.Row="1" BorderBrush="#FFBABABA" Background="#FFFFFFFF"
+                                    BorderThickness="1,0,1,1" CornerRadius="0">
                                 <ContentPresenter Margin="0" />
                             </Border>
                         </Grid>
@@ -254,8 +285,8 @@
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="Border" Property="Background" Value="#FFEBEBEB" />
                                 <Setter TargetName="Border" Property="BorderBrush" Value="#FFDDDDDD" />
-                                <Setter Property="Foreground" Value="#80000000"/>
-                                <Setter Property="Opacity" Value="0.8"/>
+                                <Setter Property="Foreground" Value="#80000000" />
+                                <Setter Property="Opacity" Value="0.8" />
                             </Trigger>
                             <Trigger Property="ToggleButton.IsPressed" Value="true">
                                 <Setter TargetName="Border" Property="Background" Value="#FFDDDDDD" />
@@ -266,22 +297,25 @@
             </Setter>
         </Style>
         <Style x:Key="NoChromeButton" TargetType="{x:Type Button}">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Padding" Value="1"/>
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Padding" Value="1" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
                         <Grid x:Name="Chrome" Background="{TemplateBinding Background}" SnapsToDevicePixels="true">
-                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              Margin="{TemplateBinding Padding}" RecognizesAccessKey="True"
+                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsEnabled" Value="false">
-                                <Setter Property="Foreground" Value="#ADADAD"/>
-                                <Setter Property="Opacity" TargetName="Chrome" Value="0.5"/>
+                                <Setter Property="Foreground" Value="#ADADAD" />
+                                <Setter Property="Opacity" TargetName="Chrome" Value="0.5" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>

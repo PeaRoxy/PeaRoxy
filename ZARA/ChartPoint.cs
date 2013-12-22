@@ -1,10 +1,10 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Program.cs" company="PeaRoxy.com">
+// <copyright file="ChartPoint.cs" company="PeaRoxy.com">
 //   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
 //   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
 // </copyright>
 // <summary>
-//   The program.
+//   The chart point.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -13,37 +13,41 @@ namespace ZARA
     #region
 
     using System;
-    using System.Windows.Forms;
 
     #endregion
 
     /// <summary>
-    /// The program.
+    ///     The chart point.
     /// </summary>
-    internal static class Program
+    public class ChartPoint
     {
-        #region Public Properties
+        #region Constructors and Destructors
 
         /// <summary>
-        /// Gets the notify.
+        /// Initializes a new instance of the <see cref="ChartPoint"/> class.
         /// </summary>
-        public static NotifyIcon Notify { get; private set; }
+        /// <param name="data">
+        /// The data.
+        /// </param>
+        public ChartPoint(double data)
+        {
+            this.Data = data;
+            this.Time = new TimeSpan(Environment.TickCount);
+        }
 
         #endregion
 
-        #region Methods
+        #region Public Properties
 
         /// <summary>
-        ///     The main entry point for the application.
+        ///     Gets or sets the data.
         /// </summary>
-        [STAThread]
-        private static void Main()
-        {
-            Notify = new NotifyIcon { Visible = false };
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new frm_Main());
-        }
+        public double Data { get; set; }
+
+        /// <summary>
+        ///     Gets or sets the time.
+        /// </summary>
+        public TimeSpan Time { get; set; }
 
         #endregion
     }

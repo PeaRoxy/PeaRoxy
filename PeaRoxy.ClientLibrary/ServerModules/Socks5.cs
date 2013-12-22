@@ -78,8 +78,24 @@ namespace PeaRoxy.ClientLibrary.ServerModules
         /// </exception>
         public Socks5(string address, ushort port, string username = "", string password = "")
         {
-            if (string.IsNullOrEmpty(address))
-                throw new ArgumentException(@"Invalid value.", "address");
+            if (string.IsNullOrEmpty(address)) throw new ArgumentException(@"Invalid value.", "address");
+
+            IPAddress ip;
+            if (IPAddress.TryParse(address, out ip))
+            {
+                address = ip.ToString();
+            }
+            else
+            {
+                try
+                {
+                    ip = Dns.GetHostAddresses(address)[0];
+                    address = ip.ToString();
+                }
+                catch
+                {
+                }
+            }
 
             this.IsServerValid = false;
             this.ServerAddress = address;
