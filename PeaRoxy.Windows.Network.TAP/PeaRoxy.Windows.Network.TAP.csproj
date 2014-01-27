@@ -37,6 +37,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Dns2Socks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TapAdapter.cs" />
     <Compile Include="TapTunnel.cs" />
@@ -56,6 +57,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="TAPDriver\dns2socks.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="TAPDriver\tun2socks.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

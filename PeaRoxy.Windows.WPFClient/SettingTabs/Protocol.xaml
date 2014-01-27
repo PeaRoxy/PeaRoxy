@@ -10,41 +10,44 @@
         <Label Content="Encryption Method:" Height="28" HorizontalAlignment="Left" Margin="6,7,0,0"
                VerticalAlignment="Top" />
         <RadioButton Content="None" Height="16" HorizontalAlignment="Left" Margin="140,13,0,0"
-                     Name="rb_Connection_EncryptionNone" VerticalAlignment="Top" IsChecked="True"
-                     Checked="TxtTextBoxLostFocus" GroupName="enc" />
+                     Name="RbConnectionEncryptionNone" VerticalAlignment="Top" IsChecked="True"
+                     Checked="TxtTextBoxLostFocus" GroupName="enc" x:FieldModifier="private" />
         <RadioButton Content="TripleDES (3 Times Slower)" Height="16" HorizontalAlignment="Left" Margin="140,33,0,0"
-                     Name="rb_Connection_EncryptionTripleDES" VerticalAlignment="Top" Checked="TxtTextBoxLostFocus"
-                     GroupName="enc" />
+                     Name="RbConnectionEncryptionTripleDes" VerticalAlignment="Top" Checked="TxtTextBoxLostFocus"
+                     GroupName="enc" x:FieldModifier="private" />
         <RadioButton Content="SimpleXor (Recommended)" Height="16" HorizontalAlignment="Left" Margin="140,53,0,0"
-                     Name="rb_Connection_EncryptionSimpleXor" VerticalAlignment="Top" Checked="TxtTextBoxLostFocus"
-                     GroupName="enc" />
+                     Name="RbConnectionEncryptionSimpleXor" VerticalAlignment="Top" Checked="TxtTextBoxLostFocus"
+                     GroupName="enc" x:FieldModifier="private" />
 
         <Label Content="Compression Method:" Height="28" HorizontalAlignment="Left" Margin="6,67,0,0"
                VerticalAlignment="Top" />
         <RadioButton Content="None" Height="16" HorizontalAlignment="Left" Margin="140,73,0,0"
-                     Name="rb_Connection_CompressionNone" VerticalAlignment="Top" IsChecked="True"
-                     Checked="TxtTextBoxLostFocus" GroupName="com" />
+                     Name="RbConnectionCompressionNone" VerticalAlignment="Top" IsChecked="True"
+                     Checked="TxtTextBoxLostFocus" GroupName="com" x:FieldModifier="private" />
         <RadioButton Content="gZip (1.08-1.50 Times Slower)" Height="16" HorizontalAlignment="Left" Margin="140,93,0,0"
-                     Name="rb_Connection_CompressiongZip" VerticalAlignment="Top" Checked="TxtTextBoxLostFocus"
-                     GroupName="com" />
+                     Name="RbConnectionCompressiongZip" VerticalAlignment="Top" Checked="TxtTextBoxLostFocus"
+                     GroupName="com" x:FieldModifier="private" />
         <RadioButton Content="Deflate (Recommended)" Height="16" HorizontalAlignment="Left" Margin="140,113,0,0"
-                     Name="rb_Connection_CompressionDeflate" VerticalAlignment="Top" Checked="TxtTextBoxLostFocus"
-                     GroupName="com" />
+                     Name="RbConnectionCompressionDeflate" VerticalAlignment="Top" Checked="TxtTextBoxLostFocus"
+                     GroupName="com" x:FieldModifier="private" />
 
         <CheckBox Content="Disconnect when connection interrupted" Height="16" HorizontalAlignment="Left"
-                  Margin="11,171,0,0" Name="cb_Connection_stopOninterrupt" VerticalAlignment="Top"
-                  Checked="TxtTextBoxLostFocus" Unchecked="TxtTextBoxLostFocus" />
+                  Margin="11,171,0,0" Name="CbConnectionStopOninterrupt" VerticalAlignment="Top"
+                  Checked="TxtTextBoxLostFocus" Unchecked="TxtTextBoxLostFocus" x:FieldModifier="private" />
         <Label Content="Send packet size: (Byte)" Height="28" HorizontalAlignment="Left" Margin="6,196,0,0"
                VerticalAlignment="Top" />
-        <TextBox Height="23" HorizontalAlignment="Left" Margin="220,198,0,0" Name="txt_Connection_SendPacketSize"
-                 Text="1024" VerticalAlignment="Top" Width="130" LostFocus="TxtConnectionSendPacketSizeLostFocus" />
+        <TextBox Height="23" HorizontalAlignment="Left" Margin="220,198,0,0" Name="TxtConnectionSendPacketSize"
+                 Text="1024" VerticalAlignment="Top" Width="130" LostFocus="TxtConnectionSendPacketSizeLostFocus"
+                 x:FieldModifier="private" />
         <Label Content="Receive packet size: (Byte)" Height="28" HorizontalAlignment="Left" Margin="6,226,0,0"
                VerticalAlignment="Top" />
-        <TextBox Height="23" HorizontalAlignment="Left" Margin="220,228,0,0" Name="txt_Connection_RecPacketSize"
-                 Text="10240" VerticalAlignment="Top" Width="130" LostFocus="TxtConnectionRecPacketSizeLostFocus" />
+        <TextBox Height="23" HorizontalAlignment="Left" Margin="220,228,0,0" Name="TxtConnectionRecPacketSize"
+                 Text="10240" VerticalAlignment="Top" Width="130" LostFocus="TxtConnectionRecPacketSizeLostFocus"
+                 x:FieldModifier="private" />
         <Label Content="No data connection timeout: (Second)" Height="28" HorizontalAlignment="Left" Margin="6,256,0,0"
                VerticalAlignment="Top" />
-        <TextBox Height="23" HorizontalAlignment="Left" Margin="220,258,0,0" Name="txt_Connection_NoDataTimeout"
-                 VerticalAlignment="Top" Width="130" Text="600" LostFocus="TxtConnectionNoDataTimeoutLostFocus" />
+        <TextBox Height="23" HorizontalAlignment="Left" Margin="220,258,0,0" Name="TxtConnectionNoDataTimeout"
+                 VerticalAlignment="Top" Width="130" Text="600" LostFocus="TxtConnectionNoDataTimeoutLostFocus"
+                 x:FieldModifier="private" />
     </Grid>
 </st:Base>

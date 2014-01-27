@@ -23,6 +23,15 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
     /// </summary>
     public abstract class Base : UserControl, ISynchronizeInvoke
     {
+        #region Fields
+
+        /// <summary>
+        ///     The is loading.
+        /// </summary>
+        private bool isLoading = true;
+
+        #endregion
+
         #region Public Properties
 
         /// <summary>
@@ -43,7 +52,18 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
         /// <summary>
         ///     Gets or sets a value indicating whether this control is in loading state
         /// </summary>
-        public bool IsLoading { get; set; }
+        protected bool IsLoading
+        {
+            get
+            {
+                return this.isLoading;
+            }
+
+            set
+            {
+                this.isLoading = value;
+            }
+        }
 
         #endregion
 

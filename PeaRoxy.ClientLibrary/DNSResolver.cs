@@ -16,6 +16,7 @@ namespace PeaRoxy.ClientLibrary
     using System.Net;
     using System.Net.Sockets;
     using System.Threading;
+    using System.Threading.Tasks;
 
     using PeaRoxy.CommonLibrary;
 
@@ -99,22 +100,24 @@ namespace PeaRoxy.ClientLibrary
                 if (this.DnsResolverSupported && this.dnsTcpListenerSocket.Poll(0, SelectMode.SelectRead))
                 {
                     ProxyClient c = new ProxyClient(this.dnsTcpListenerSocket.Accept(), this.parent, true)
-                                         {
-                                             ReceivePacketSize
-                                                 =
-                                                 this
-                                                 .parent
-                                                 .ReceivePacketSize, 
-                                             SendPacketSize
-                                                 =
-                                                 this
-                                                 .parent
-                                                 .SendPacketSize, 
-                                             NoDataTimeOut
-                                                 =
-                                                 10
-                                         };
-                    c.Type = ProxyClient.ClientType.Dns;
+                                        {
+                                            ReceivePacketSize
+                                                =
+                                                this
+                                                .parent
+                                                .ReceivePacketSize,
+                                            SendPacketSize
+                                                =
+                                                this
+                                                .parent
+                                                .SendPacketSize,
+                                            NoDataTimeOut
+                                                = 10,
+                                            Type =
+                                                ProxyClient
+                                                .ClientType
+                                                .Dns
+                                        };
                     lock (this.parent.ConnectedClients) this.parent.ConnectedClients.Add(c);
                     this.parent.ActiveServer.Clone().Establish(this.DnsResolverServerIp.ToString(), 53, c);
                 }
@@ -123,11 +126,10 @@ namespace PeaRoxy.ClientLibrary
                 {
                     if (this.dnsUdpListenerSocket == null)
                     {
-                        this.dnsUdpListenerSocket = new Socket(
-                            AddressFamily.InterNetwork, 
-                            SocketType.Dgram, 
-                            ProtocolType.Udp);
-                        this.dnsUdpListenerSocket.EnableBroadcast = true;
+                        this.dnsUdpListenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp)
+                                                        {
+                                                            EnableBroadcast = true
+                                                        };
                         this.dnsUdpListenerSocket.Bind(this.localDnsIp);
                     }
 
@@ -140,44 +142,46 @@ namespace PeaRoxy.ClientLibrary
                             int i = this.dnsUdpListenerSocket.ReceiveFrom(globalBuffer, ref remoteEp);
                             byte[] buffer = new byte[i + 2];
                             Array.Copy(globalBuffer, 0, buffer, 2, i);
-                            new Thread(
-                                delegate()
+                            Task.Factory.StartNew(
+                                delegate
                                     {
                                         try
                                         {
                                             buffer[0] = (byte)Math.Floor((double)i / 256);
                                             buffer[1] = (byte)(i % 256);
+
                                             IPAddress ip = this.parent.Ip;
-                                                
-                                                // Connecting to our self on same port, But TCP
+
+                                            // Connecting to our self on same port, But TCP
                                             if (ip.Equals(IPAddress.Any))
                                             {
                                                 ip = IPAddress.Loopback;
                                             }
 
-                                            Socket tcpConnector = new Socket(
-                                                AddressFamily.InterNetwork, 
-                                                SocketType.Stream, 
+                                            Socket tcpLinkForUdp = new Socket(
+                                                AddressFamily.InterNetwork,
+                                                SocketType.Stream,
                                                 ProtocolType.Tcp);
-                                            tcpConnector.Connect(ip, 53);
-                                            tcpConnector.Send(buffer);
-                                            buffer = new byte[tcpConnector.ReceiveBufferSize];
-                                            i = tcpConnector.Receive(buffer);
+                                            tcpLinkForUdp.Connect(ip, 53);
+
+                                            tcpLinkForUdp.Send(buffer);
+                                            buffer = new byte[tcpLinkForUdp.ReceiveBufferSize];
+                                            i = tcpLinkForUdp.Receive(buffer);
                                             if (i != 0)
                                             {
                                                 int neededBytes = (buffer[0] * 256) + buffer[1] + 2;
                                                 Array.Resize(ref buffer, Math.Max(i, neededBytes));
                                                 if (i < neededBytes)
                                                 {
-                                                    int timeout = 2000;
+                                                    int timeout = Environment.TickCount + 2000;
                                                     int received = i;
-                                                    while (received < neededBytes && timeout > 0
-                                                           && Common.IsSocketConnected(tcpConnector))
+                                                    while (received < neededBytes && timeout > Environment.TickCount
+                                                           && Common.IsSocketConnected(tcpLinkForUdp))
                                                     {
-                                                        i = tcpConnector.Receive(
-                                                            buffer, 
-                                                            received, 
-                                                            buffer.Length - received, 
+                                                        i = tcpLinkForUdp.Receive(
+                                                            buffer,
+                                                            received,
+                                                            buffer.Length - received,
                                                             SocketFlags.None);
                                                         received += i;
                                                         if (i == 0)
@@ -185,27 +189,24 @@ namespace PeaRoxy.ClientLibrary
                                                             break;
                                                         }
 
-                                                        timeout--;
-                                                        Thread.Sleep(1);
+                                                        Thread.Sleep(16);
                                                     }
                                                 }
                                             }
 
-                                            tcpConnector.Close();
                                             this.dnsUdpListenerSocket.SendTo(
-                                                buffer, 
-                                                2, 
-                                                buffer.Length - 2, 
-                                                SocketFlags.None, 
+                                                buffer,
+                                                2,
+                                                buffer.Length - 2,
+                                                SocketFlags.None,
                                                 remoteEp);
                                         }
-                                        catch (Exception e)
+                                        catch (Exception
+                                            e)
                                         {
                                             ProxyController.LogIt("DNS Resolver UDP Error: " + e.Message);
                                         }
-                                    }) {
-                                          IsBackground = true 
-                                       }.Start();
+                                    });
                         }
                     }
                     catch (Exception)

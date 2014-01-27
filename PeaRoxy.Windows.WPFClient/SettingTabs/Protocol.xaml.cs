@@ -51,40 +51,40 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
         public override void LoadSettings()
         {
             this.IsLoading = true;
-            this.txt_Connection_NoDataTimeout.Text = Settings.Default.Connection_NoDataTimeout.ToString(CultureInfo.InvariantCulture);
-            this.txt_Connection_SendPacketSize.Text = Settings.Default.Connection_SendPacketSize.ToString(CultureInfo.InvariantCulture);
-            this.txt_Connection_RecPacketSize.Text = Settings.Default.Connection_RecPacketSize.ToString(CultureInfo.InvariantCulture);
-            this.cb_Connection_stopOninterrupt.IsChecked = Settings.Default.Connection_StopOnInterrupt;
+            this.TxtConnectionNoDataTimeout.Text = Settings.Default.Connection_NoDataTimeout.ToString(CultureInfo.InvariantCulture);
+            this.TxtConnectionSendPacketSize.Text = Settings.Default.Connection_SendPacketSize.ToString(CultureInfo.InvariantCulture);
+            this.TxtConnectionRecPacketSize.Text = Settings.Default.Connection_RecPacketSize.ToString(CultureInfo.InvariantCulture);
+            this.CbConnectionStopOninterrupt.IsChecked = Settings.Default.Connection_StopOnInterrupt;
 
-            this.rb_Connection_EncryptionNone.IsChecked = false;
-            this.rb_Connection_EncryptionTripleDES.IsChecked = false;
-            this.rb_Connection_EncryptionSimpleXor.IsChecked = false;
+            this.RbConnectionEncryptionNone.IsChecked = false;
+            this.RbConnectionEncryptionTripleDes.IsChecked = false;
+            this.RbConnectionEncryptionSimpleXor.IsChecked = false;
             switch (Settings.Default.Connection_Encryption)
             {
                 case 0:
-                    this.rb_Connection_EncryptionNone.IsChecked = true;
+                    this.RbConnectionEncryptionNone.IsChecked = true;
                     break;
                 case 1:
-                    this.rb_Connection_EncryptionTripleDES.IsChecked = true;
+                    this.RbConnectionEncryptionTripleDes.IsChecked = true;
                     break;
                 case 2:
-                    this.rb_Connection_EncryptionSimpleXor.IsChecked = true;
+                    this.RbConnectionEncryptionSimpleXor.IsChecked = true;
                     break;
             }
 
-            this.rb_Connection_CompressionNone.IsChecked = false;
-            this.rb_Connection_CompressiongZip.IsChecked = false;
-            this.rb_Connection_CompressionDeflate.IsChecked = false;
+            this.RbConnectionCompressionNone.IsChecked = false;
+            this.RbConnectionCompressiongZip.IsChecked = false;
+            this.RbConnectionCompressionDeflate.IsChecked = false;
             switch (Settings.Default.Connection_Compression)
             {
                 case 0:
-                    this.rb_Connection_CompressionNone.IsChecked = true;
+                    this.RbConnectionCompressionNone.IsChecked = true;
                     break;
                 case 1:
-                    this.rb_Connection_CompressiongZip.IsChecked = true;
+                    this.RbConnectionCompressiongZip.IsChecked = true;
                     break;
                 case 2:
-                    this.rb_Connection_CompressionDeflate.IsChecked = true;
+                    this.RbConnectionCompressionDeflate.IsChecked = true;
                     break;
             }
 
@@ -101,33 +101,33 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
                 return;
             }
 
-            Settings.Default.Connection_NoDataTimeout = Convert.ToUInt16(this.txt_Connection_NoDataTimeout.Text);
-            Settings.Default.Connection_SendPacketSize = Convert.ToUInt32(this.txt_Connection_SendPacketSize.Text);
-            Settings.Default.Connection_RecPacketSize = Convert.ToUInt32(this.txt_Connection_RecPacketSize.Text);
-            Settings.Default.Connection_StopOnInterrupt = this.cb_Connection_stopOninterrupt.IsChecked ?? false;
+            Settings.Default.Connection_NoDataTimeout = Convert.ToUInt16(this.TxtConnectionNoDataTimeout.Text);
+            Settings.Default.Connection_SendPacketSize = Convert.ToUInt32(this.TxtConnectionSendPacketSize.Text);
+            Settings.Default.Connection_RecPacketSize = Convert.ToUInt32(this.TxtConnectionRecPacketSize.Text);
+            Settings.Default.Connection_StopOnInterrupt = this.CbConnectionStopOninterrupt.IsChecked ?? false;
 
-            if (this.rb_Connection_EncryptionNone.IsChecked ?? false)
+            if (this.RbConnectionEncryptionNone.IsChecked ?? false)
             {
                 Settings.Default.Connection_Encryption = 0;
             }
-            else if (this.rb_Connection_EncryptionTripleDES.IsChecked ?? false)
+            else if (this.RbConnectionEncryptionTripleDes.IsChecked ?? false)
             {
                 Settings.Default.Connection_Encryption = 1;
             }
-            else if (this.rb_Connection_EncryptionSimpleXor.IsChecked ?? false)
+            else if (this.RbConnectionEncryptionSimpleXor.IsChecked ?? false)
             {
                 Settings.Default.Connection_Encryption = 2;
             }
 
-            if (this.rb_Connection_CompressionNone.IsChecked ?? false)
+            if (this.RbConnectionCompressionNone.IsChecked ?? false)
             {
                 Settings.Default.Connection_Compression = 0;
             }
-            else if (this.rb_Connection_CompressiongZip.IsChecked ?? false)
+            else if (this.RbConnectionCompressiongZip.IsChecked ?? false)
             {
                 Settings.Default.Connection_Compression = 1;
             }
-            else if (this.rb_Connection_CompressionDeflate.IsChecked ?? false)
+            else if (this.RbConnectionCompressionDeflate.IsChecked ?? false)
             {
                 Settings.Default.Connection_Compression = 2;
             }
@@ -151,20 +151,20 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
         private void TxtConnectionNoDataTimeoutLostFocus(object sender, EventArgs e)
         {
             short u;
-            if (!short.TryParse(this.txt_Connection_NoDataTimeout.Text, out u))
+            if (!short.TryParse(this.TxtConnectionNoDataTimeout.Text, out u))
             {
                 VDialog.Show(
                     "Value is not acceptable.", 
                     "Data Validation", 
                     MessageBoxButtons.OK, 
                     MessageBoxIcon.Exclamation);
-                this.txt_Connection_NoDataTimeout.Text = 600.ToString(CultureInfo.InvariantCulture);
+                this.TxtConnectionNoDataTimeout.Text = 600.ToString(CultureInfo.InvariantCulture);
                 new Thread(
                     delegate()
                         {
                             Thread.Sleep(10);
                             this.Dispatcher.Invoke(
-                                (App.SimpleVoidDelegate)(() => this.txt_Connection_NoDataTimeout.Focus()), 
+                                (App.SimpleVoidDelegate)(() => this.TxtConnectionNoDataTimeout.Focus()), 
                                 new object[] { });
                         }) {
                               IsBackground = true 
@@ -172,7 +172,7 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
             }
             else
             {
-                this.txt_Connection_NoDataTimeout.Text = u.ToString(CultureInfo.InvariantCulture);
+                this.TxtConnectionNoDataTimeout.Text = u.ToString(CultureInfo.InvariantCulture);
             }
 
             this.SaveSettings();
@@ -190,20 +190,20 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
         private void TxtConnectionRecPacketSizeLostFocus(object sender, RoutedEventArgs e)
         {
             uint u;
-            if (!uint.TryParse(this.txt_Connection_RecPacketSize.Text, out u))
+            if (!uint.TryParse(this.TxtConnectionRecPacketSize.Text, out u))
             {
                 VDialog.Show(
                     "Value is not acceptable.", 
                     "Data Validation", 
                     MessageBoxButtons.OK, 
                     MessageBoxIcon.Exclamation);
-                this.txt_Connection_RecPacketSize.Text = 10240.ToString(CultureInfo.InvariantCulture);
+                this.TxtConnectionRecPacketSize.Text = 10240.ToString(CultureInfo.InvariantCulture);
                 new Thread(
                     delegate()
                         {
                             Thread.Sleep(10);
                             this.Dispatcher.Invoke(
-                                (App.SimpleVoidDelegate)(() => this.txt_Connection_RecPacketSize.Focus()), 
+                                (App.SimpleVoidDelegate)(() => this.TxtConnectionRecPacketSize.Focus()), 
                                 new object[] { });
                         }) {
                               IsBackground = true 
@@ -211,7 +211,7 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
             }
             else
             {
-                this.txt_Connection_RecPacketSize.Text = u.ToString(CultureInfo.InvariantCulture);
+                this.TxtConnectionRecPacketSize.Text = u.ToString(CultureInfo.InvariantCulture);
             }
 
             this.SaveSettings();
@@ -229,20 +229,20 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
         private void TxtConnectionSendPacketSizeLostFocus(object sender, RoutedEventArgs e)
         {
             uint u;
-            if (!uint.TryParse(this.txt_Connection_SendPacketSize.Text, out u))
+            if (!uint.TryParse(this.TxtConnectionSendPacketSize.Text, out u))
             {
                 VDialog.Show(
                     "Value is not acceptable.", 
                     "Data Validation", 
                     MessageBoxButtons.OK, 
                     MessageBoxIcon.Exclamation);
-                this.txt_Connection_SendPacketSize.Text = 1024.ToString(CultureInfo.InvariantCulture);
+                this.TxtConnectionSendPacketSize.Text = 1024.ToString(CultureInfo.InvariantCulture);
                 new Thread(
                     delegate()
                         {
                             Thread.Sleep(10);
                             this.Dispatcher.Invoke(
-                                (App.SimpleVoidDelegate)(() => this.txt_Connection_SendPacketSize.Focus()), 
+                                (App.SimpleVoidDelegate)(() => this.TxtConnectionSendPacketSize.Focus()), 
                                 new object[] { });
                         }) {
                               IsBackground = true 
@@ -250,7 +250,7 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
             }
             else
             {
-                this.txt_Connection_SendPacketSize.Text = u.ToString(CultureInfo.InvariantCulture);
+                this.TxtConnectionSendPacketSize.Text = u.ToString(CultureInfo.InvariantCulture);
             }
 
             this.SaveSettings();

@@ -258,13 +258,9 @@
                             <Border Name="Border" Height="25" Grid.Row="0" BorderBrush="#FFBABABA"
                                     Background="#FFF8F8F8" BorderThickness="1,0.5" CornerRadius="0">
                                 <Grid Margin="0,-2,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition />
-                                        <ColumnDefinition />
-                                    </Grid.ColumnDefinitions>
-                                    <ContentPresenter Margin="34,4,4,4" Grid.Column="1" ContentSource="Header"
+                                    <ContentPresenter Margin="34,4,4,4" ContentSource="Header"
                                                       RecognizesAccessKey="True" />
-                                    <ToggleButton Grid.Column="0" Name="ToggleButton" Margin="0,2,0,0"
+                                    <ToggleButton Name="ToggleButton" Margin="0,2,0,0"
                                                   IsChecked="{Binding Path=IsExpanded,Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                                                   OverridesDefaultStyle="True"
                                                   Template="{StaticResource ExpanderToggleButton}" Background="#fff" />

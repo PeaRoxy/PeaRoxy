@@ -171,9 +171,13 @@ namespace PeaRoxy.Windows.WPFClient.Panels
             }
 
             this.TxtProxyAddress.Text = Settings.Default.ProxyServer_Address;
+            this.TxtProxyPort.Text = Settings.Default.ProxyServer_Port.ToString(CultureInfo.InvariantCulture);
+
             this.TxtServerAddress.Text = Settings.Default.PeaRoxySocks_Address;
-            this.TxtWeb.Text = Settings.Default.PeaRoxyWeb_Address;
             this.TxtServerdomain.Text = Settings.Default.PeaRoxySocks_Domain;
+            this.TxtServerPort.Text = Settings.Default.PeaRoxySocks_Port.ToString(CultureInfo.InvariantCulture);
+
+            this.TxtWeb.Text = Settings.Default.PeaRoxyWeb_Address;
             this.TxtUsername.Text = Settings.Default.UserAndPassword_User;
             this.TxtPassword.Password = Settings.Default.UserAndPassword_Pass;
         }
@@ -225,12 +229,15 @@ namespace PeaRoxy.Windows.WPFClient.Panels
 
             Settings.Default.ProxyServer_Address = this.TxtProxyAddress.Text;
             Settings.Default.ProxyServer_Port = Convert.ToUInt16(this.TxtProxyPort.Text);
+
             Settings.Default.PeaRoxySocks_Address = this.TxtServerAddress.Text;
-            Settings.Default.PeaRoxySocks_Port = Convert.ToUInt16(this.TxtServerPort.Text);
-            Settings.Default.PeaRoxyWeb_Address = this.TxtWeb.Text;
             Settings.Default.PeaRoxySocks_Domain = this.TxtServerdomain.Text;
+            Settings.Default.PeaRoxySocks_Port = Convert.ToUInt16(this.TxtServerPort.Text);
+
+            Settings.Default.PeaRoxyWeb_Address = this.TxtWeb.Text;
             Settings.Default.UserAndPassword_User = this.TxtUsername.Text;
             Settings.Default.UserAndPassword_Pass = this.TxtPassword.Password;
+
             Settings.Default.Save();
         }
 
@@ -364,7 +371,7 @@ namespace PeaRoxy.Windows.WPFClient.Panels
         private void UserControlLoaded(object sender, RoutedEventArgs e)
         {
             this.Parent = (MainWindow)Window.GetWindow(this);
-            this.btn_ex_pearoxy.ToolTip = new Tooltip(
+            this.BtnExPearoxy.ToolTip = new Tooltip(
                 "PeaRoxy Server", 
                 "PeaRoxy Server is part of PeaRoxy Suit and best available proxy solution supported by this software."
                 + Environment.NewLine + string.Empty + Environment.NewLine + "[Advantages:]" + Environment.NewLine
@@ -396,8 +403,8 @@ namespace PeaRoxy.Windows.WPFClient.Panels
 
             this.BtnExSelf.ToolTip = new Tooltip("Direct", "Send traffic directly via your internet connection.");
 
-            ToolTipService.SetInitialShowDelay(this.btn_ex_pearoxy, 0);
-            ToolTipService.SetShowDuration(this.btn_ex_pearoxy, 60000);
+            ToolTipService.SetInitialShowDelay(this.BtnExPearoxy, 0);
+            ToolTipService.SetShowDuration(this.BtnExPearoxy, 60000);
 
             ToolTipService.SetInitialShowDelay(this.BtnExWeb, 0);
             ToolTipService.SetShowDuration(this.BtnExWeb, 60000);

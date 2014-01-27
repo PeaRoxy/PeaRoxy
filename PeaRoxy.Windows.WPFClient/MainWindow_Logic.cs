@@ -84,9 +84,9 @@ namespace PeaRoxy.Windows.WPFClient
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindow"/> class.
         /// </summary>
-        public MainWindow(bool isFormLoaded)
+        public MainWindow()
         {
-            this.IsFormLoaded = isFormLoaded;
+            this.IsFormLoaded = false;
             this.InitializeComponent();
 
             if (Settings.Default.FirstRun)
@@ -986,46 +986,48 @@ namespace PeaRoxy.Windows.WPFClient
         /// </param>
         private void UpdateStats(object sender, EventArgs e)
         {
-            if (this.listener != null)
+            if (this.listener == null)
             {
-                this.downloadSpeed = (this.listener.AverageReceivingSpeed + this.downloadSpeed) / 2;
-                this.uploadSpeed = (this.listener.AverageSendingSpeed + this.uploadSpeed) / 2;
-                this.downloadPoints.Add(new ChartPoint(this.downloadSpeed / 1024d));
-                this.uploadPoints.Add(new ChartPoint(this.uploadSpeed / 1024d));
-                if (this.listener != null
-                    && (this.listener.Status == ProxyController.ControllerStatus.OnlyProxy
-                        || this.listener.Status == ProxyController.ControllerStatus.Both))
-                {
-                    App.Notify.Text = string.Format("PeaRoxy Client\r\nCurrent Transfer Rate: {0}/s", CommonLibrary.Common.FormatFileSizeAsString(this.downloadSpeed + this.uploadSpeed));
-                }
+                return;
+            }
 
-                try
+            this.downloadSpeed = (this.listener.AverageReceivingSpeed + this.downloadSpeed) / 2;
+            this.uploadSpeed = (this.listener.AverageSendingSpeed + this.uploadSpeed) / 2;
+            this.downloadPoints.Add(new ChartPoint(this.downloadSpeed / 1024d));
+            this.uploadPoints.Add(new ChartPoint(this.uploadSpeed / 1024d));
+            if (this.listener != null
+                && (this.listener.Status == ProxyController.ControllerStatus.OnlyProxy
+                    || this.listener.Status == ProxyController.ControllerStatus.Both))
+            {
+                App.Notify.Text = string.Format("PeaRoxy Client\r\nCurrent Transfer Rate: {0}/s", CommonLibrary.Common.FormatFileSizeAsString(this.downloadSpeed + this.uploadSpeed));
+            }
+
+            try
+            {
+                if (TaskbarManager.IsPlatformSupported)
                 {
-                    if (TaskbarManager.IsPlatformSupported)
+                    if (this.listener.Status == ProxyController.ControllerStatus.OnlyProxy
+                        || this.listener.Status == ProxyController.ControllerStatus.Both)
                     {
-                        if (this.listener.Status == ProxyController.ControllerStatus.OnlyProxy
-                            || this.listener.Status == ProxyController.ControllerStatus.Both)
-                        {
-                            TaskbarManager.Instance.SetOverlayIcon(this.connectedIcon, "Connected");
-                        }
-                        else
-                        {
-                            TaskbarManager.Instance.SetOverlayIcon(null, "Stopped");
-                        }
+                        TaskbarManager.Instance.SetOverlayIcon(this.connectedIcon, "Connected");
+                    }
+                    else
+                    {
+                        TaskbarManager.Instance.SetOverlayIcon(null, "Stopped");
                     }
                 }
-                catch (Exception)
-                {
-                }
+            }
+            catch (Exception)
+            {
+            }
 
-                if (this.IsVisible && this.Options.IsEnabled)
-                {
-                    ((General)this.Options.General.SettingsPage).UpdateStats(
-                        this.listener, 
-                        this.downloadSpeed, 
-                        this.uploadSpeed);
-                    ((ActiveConnections)this.Options.Connections.SettingsPage).UpdateConnections(this.listener);
-                }
+            if (this.IsVisible && this.Options.IsEnabled)
+            {
+                ((General)this.Options.General.SettingsPage).UpdateStats(
+                    this.listener, 
+                    this.downloadSpeed, 
+                    this.uploadSpeed);
+                ((ActiveConnections)this.Options.Connections.SettingsPage).UpdateConnections(this.listener);
             }
         }
 
@@ -1042,48 +1044,50 @@ namespace PeaRoxy.Windows.WPFClient
         {
             try
             {
-                if (TaskbarManager.IsPlatformSupported)
+                if (!TaskbarManager.IsPlatformSupported)
                 {
-                    // Thumbnail
-                    TabbedThumbnail tt = new TabbedThumbnail(this.Handle, this.Handle);
-                    TaskbarManager.Instance.TabbedThumbnail.AddThumbnailPreview(tt);
-                    tt.DisplayFrameAroundBitmap = false;
-                    tt.ClippingRectangle = new Rectangle(
-                        0, 
-                        0, 
-                        (int)this.MainPage.ThumbnileChart.ActualWidth, 
-                        (int)this.MainPage.ThumbnileChart.ActualHeight);
-                    tt.Title = this.Title;
-                    StreamResourceInfo streamResourceInfo =
-                        Application.GetResourceStream(
-                            new Uri(
-                                "pack://application:,,,/PeaRoxy.Windows.WPFClient;component/Images/Icons/Pear_Notify.ico"));
-                    if (streamResourceInfo != null)
-                    {
-                        Stream st = streamResourceInfo.Stream;
-                        tt.SetWindowIcon(new Icon(st));
-                    }
-
-                    tt.PeekOffset = new Vector(5000, 5000);
-                    tt.TabbedThumbnailBitmapRequested += this.TabbedThumbnailBitmapRequested;
-                    Windows7ShellPreviewWindowFixer.Fix(this.Title, Process.GetCurrentProcess());
-
-                    // JumpList
-                    JumpList jl = JumpList.CreateJumpListForIndividualWindow(string.Empty, this.Handle);
-                    jl.KnownCategoryToDisplay = JumpListKnownCategoryType.Neither;
-                    jl.ClearAllUserTasks();
-                    string ourFileName = Process.GetCurrentProcess().MainModule.FileName;
-                    JumpListLink quitLink = new JumpListLink(ourFileName, "Quit PeaRoxy")
-                                                {
-                                                    IconReference =
-                                                        new IconReference(
-                                                        ourFileName,
-                                                        1),
-                                                    Arguments = "/quit"
-                                                };
-                    jl.AddUserTasks(new JumpListTask[] { quitLink });
-                    jl.Refresh();
+                    return;
                 }
+
+                //// Thumbnail
+                //TabbedThumbnail tabbedThumbnail = new TabbedThumbnail(this.Handle, this.Handle);
+                //TaskbarManager.Instance.TabbedThumbnail.AddThumbnailPreview(tabbedThumbnail);
+                //tabbedThumbnail.DisplayFrameAroundBitmap = false;
+                //tabbedThumbnail.ClippingRectangle = new Rectangle(
+                //    0, 
+                //    0, 
+                //    (int)this.MainPage.ThumbnileChart.ActualWidth, 
+                //    (int)this.MainPage.ThumbnileChart.ActualHeight);
+                //tabbedThumbnail.Title = this.Title;
+                //StreamResourceInfo streamResourceInfo =
+                //    Application.GetResourceStream(
+                //        new Uri(
+                //            "pack://application:,,,/PeaRoxy.Windows.WPFClient;component/Images/Icons/Pear_Notify.ico"));
+                //if (streamResourceInfo != null)
+                //{
+                //    Stream st = streamResourceInfo.Stream;
+                //    tabbedThumbnail.SetWindowIcon(new Icon(st));
+                //}
+
+                //tabbedThumbnail.PeekOffset = new Vector(5000, 5000);
+                //tabbedThumbnail.TabbedThumbnailBitmapRequested += this.TabbedThumbnailBitmapRequested;
+                //Windows7ShellPreviewWindowFixer.Fix(this.Title, Process.GetCurrentProcess());
+
+                //// JumpList
+                //JumpList jl = JumpList.CreateJumpListForIndividualWindow(string.Empty, this.Handle);
+                //jl.KnownCategoryToDisplay = JumpListKnownCategoryType.Neither;
+                //jl.ClearAllUserTasks();
+                //string ourFileName = Process.GetCurrentProcess().MainModule.FileName;
+                //JumpListLink quitLink = new JumpListLink(ourFileName, "Quit PeaRoxy")
+                //                            {
+                //                                IconReference =
+                //                                    new IconReference(
+                //                                    ourFileName,
+                //                                    1),
+                //                                Arguments = "/quit"
+                //                            };
+                //jl.AddUserTasks(new JumpListTask[] { quitLink });
+                //jl.Refresh();
             }
             catch (Exception)
             {

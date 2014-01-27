@@ -47,11 +47,13 @@ namespace PeaRoxy.Windows.Network.TAP
         public TapTunnel()
         {
             this.AdapterAddressRange = IPAddress.Parse("10.0.0.0");
-            this.DnsResolvingAddress = IPAddress.Parse("8.8.8.8");
+            this.DnsResolvingAddress = null;
             this.DnsResolvingAddress2 = null;
+            this.AutoDnsResolvingAddress = IPAddress.Parse("8.8.8.8");
             this.SocksProxyEndPoint = new IPEndPoint(IPAddress.Loopback, 1080);
-            this.ExceptionIPs = new[] { IPAddress.Parse("8.8.8.8") };
-            this.TunnelName = "PeaRoxy";
+            this.ExceptionIPs = new IPAddress[0];
+            this.TunnelName = "Tap Tunnel";
+            this.AutoDnsResolving = false;
         }
 
         #endregion
@@ -72,6 +74,16 @@ namespace PeaRoxy.Windows.Network.TAP
         /// Gets or sets the DNS resolving address 2.
         /// </summary>
         public IPAddress DnsResolvingAddress2 { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether auto DNS resolving.
+        /// </summary>
+        public bool AutoDnsResolving { get; set; }
+
+        /// <summary>
+        /// Gets or sets the auto DNS resolving address.
+        /// </summary>
+        public IPAddress AutoDnsResolvingAddress { get; set; }
 
         /// <summary>
         /// Gets or sets the exception i ps.
@@ -126,12 +138,12 @@ namespace PeaRoxy.Windows.Network.TAP
             }
 
             this.AdapterAddressRange = CommonLibrary.Common.MergeIpIntoIpSubnet(
-                this.AdapterAddressRange, 
-                this.ipSubnet, 
+                this.AdapterAddressRange,
+                this.ipSubnet,
                 IPAddress.Parse("10.0.0.1"));
             IPAddress addressGateWay = CommonLibrary.Common.MergeIpIntoIpSubnet(
-                this.AdapterAddressRange, 
-                this.ipSubnet, 
+                this.AdapterAddressRange,
+                this.ipSubnet,
                 IPAddress.Parse("10.0.0.2"));
             NetworkAdapter net = TapAdapter.InstallAnAdapter(this.TunnelName);
             if (net == null)
@@ -141,10 +153,10 @@ namespace PeaRoxy.Windows.Network.TAP
 
             if (
                 !Tun2Socks.StartTun2Socks(
-                    net, 
-                    this.AdapterAddressRange, 
-                    this.ipSubnet, 
-                    addressGateWay, 
+                    net,
+                    this.AdapterAddressRange,
+                    this.ipSubnet,
+                    addressGateWay,
                     this.SocksProxyEndPoint))
             {
                 return false;
@@ -159,7 +171,13 @@ namespace PeaRoxy.Windows.Network.TAP
             int timeout = 30;
             timeout = timeout / 3;
             string dnsString = string.Empty;
-            if (this.DnsResolvingAddress != null && this.DnsResolvingAddress2 != null)
+
+            if (this.AutoDnsResolving && this.AutoDnsResolvingAddress != null)
+            {
+                Dns2Socks.StartDns2Socks(this.AutoDnsResolvingAddress, this.SocksProxyEndPoint);
+                dnsString = this.SocksProxyEndPoint.Address.ToString();
+            }
+            else if (this.DnsResolvingAddress != null && this.DnsResolvingAddress2 != null)
             {
                 dnsString = this.DnsResolvingAddress + "," + this.DnsResolvingAddress2;
             }
@@ -190,10 +208,10 @@ namespace PeaRoxy.Windows.Network.TAP
             }
 
             IP4RouteTable.AddChangeRouteRule(
-                IPAddress.Parse("0.0.0.0"), 
-                addressGateWay, 
-                2, 
-                IPAddress.Parse("0.0.0.0"), 
+                IPAddress.Parse("0.0.0.0"),
+                addressGateWay,
+                2,
+                IPAddress.Parse("0.0.0.0"),
                 (int)net.InterfaceIndex);
             int lowestMetric = 1000;
             IP4RouteTable me = null;
@@ -222,16 +240,15 @@ namespace PeaRoxy.Windows.Network.TAP
                 return false;
             }
 
-            foreach (
-                IP4RouteTable ip4 in
-                    IP4RouteTable.GetCurrentTable()
-                        .Where(
-                            ip4 =>
-                            this.ExceptionIPs.Any(
-                                ip =>
-                                ip4.Destination != null && ip4.NextHop != null && ip4.Mask != null
-                                && ip4.Destination == ip.ToString() && ip4.Mask == "255.255.255.255"
-                                && ip4.NextHop != "0.0.0.0")))
+            foreach (IP4RouteTable ip4 in
+                IP4RouteTable.GetCurrentTable()
+                    .Where(
+                        ip4 =>
+                        this.ExceptionIPs.Any(
+                            ip =>
+                            ip4.Destination != null && ip4.NextHop != null && ip4.Mask != null
+                            && ip4.Destination == ip.ToString() && ip4.Mask == "255.255.255.255"
+                            && ip4.NextHop != "0.0.0.0")))
             {
                 ip4.RemoveRouteRule();
             }
@@ -272,6 +289,8 @@ namespace PeaRoxy.Windows.Network.TAP
         {
             Tun2Socks.StopTun2Socks();
             Tun2Socks.CleanAllTun2Socks();
+            Dns2Socks.StopDns2Socks();
+            Dns2Socks.CleanAllDns2Socks();
             foreach (
                 IP4RouteTable ip4 in
                     IP4RouteTable.GetCurrentTable()

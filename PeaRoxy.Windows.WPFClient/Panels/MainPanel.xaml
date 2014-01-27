@@ -86,11 +86,12 @@
                              x:FieldModifier="private" />
                 </Grid>
                 <Expander.Header>
-                    <Grid>
-                        <Label Content="PeaRoxy Server" Height="25" HorizontalAlignment="Left" Margin="0,-3,0,0"
+                    <Grid Margin="0,0,0,0">
+                        <Label Content="PeaRoxy Server" Height="25" Width="185" HorizontalAlignment="Left" Margin="0,-3,0,0"
                                VerticalAlignment="Top" />
-                        <Button Name="btn_ex_pearoxy" Height="16" Width="16" VerticalAlignment="Top"
-                                HorizontalAlignment="Left" Margin="190,2,0,0" Style="{StaticResource NoChromeButton}">
+                        <Button Name="BtnExPearoxy" Height="16" Width="16" VerticalAlignment="Top"
+                                HorizontalAlignment="Left" Margin="190,2,0,0" Style="{StaticResource NoChromeButton}"
+                                x:FieldModifier="private">
                             <Button.Background>
                                 <ImageBrush
                                     ImageSource="/PeaRoxy.Windows.WPFClient;component/Images/MainPanel/Help.png"
@@ -111,8 +112,8 @@
                              UseLayoutRounding="False" ToolTip="Address of PeaRoxyWeb script" x:FieldModifier="private" />
                 </Grid>
                 <Expander.Header>
-                    <Grid>
-                        <Label Content="PHPear / ASPear" Height="25" HorizontalAlignment="Left" Margin="0,-3,0,0"
+                    <Grid Margin="0,0,0,0">
+                        <Label Content="PHPear / ASPear" Height="25" Width="185" HorizontalAlignment="Left" Margin="0,-3,0,0"
                                VerticalAlignment="Top" />
                         <Button Name="BtnExWeb" Height="16" Width="16" VerticalAlignment="Top"
                                 HorizontalAlignment="Left" Margin="190,2,0,0" Style="{StaticResource NoChromeButton}"
@@ -151,8 +152,8 @@
                                  x:FieldModifier="private" />
                 </Grid>
                 <Expander.Header>
-                    <Grid>
-                        <Label Content="Socks / Https Proxy" Height="25" HorizontalAlignment="Left" Margin="0,-3,0,0"
+                    <Grid Margin="0,0,0,0">
+                        <Label Content="Socks / Https Proxy" Height="25" Width="185" HorizontalAlignment="Left" Margin="0,-3,0,0"
                                VerticalAlignment="Top" />
                         <Button Name="BtnExProxy" Height="16" Width="16" VerticalAlignment="Top"
                                 HorizontalAlignment="Left" Margin="190,2,0,0" Style="{StaticResource NoChromeButton}"
@@ -174,8 +175,8 @@
                            VerticalAlignment="Top" Width="77" FontStretch="Normal" FontWeight="Bold" />
                 </Grid>
                 <Expander.Header>
-                    <Grid>
-                        <Label Content="No Server - Direct" Height="25" HorizontalAlignment="Left" Margin="0,-3,0,0"
+                    <Grid Margin="0,0,0,0">
+                        <Label Content="No Server - Direct" Height="25" Width="185" HorizontalAlignment="Left" Margin="0,-3,0,0"
                                VerticalAlignment="Top" />
                         <Button Name="BtnExSelf" Height="16" Width="16" VerticalAlignment="Top"
                                 HorizontalAlignment="Left" Margin="190,2,0,0" Style="{StaticResource NoChromeButton}"
@@ -196,11 +197,9 @@
                       Expanded="AnimatedExpenderExpanded" Foreground="Black" Height="25" Name="ExUsernameAndPass"
                       Width="220" x:FieldModifier="private">
                 <Expander.Header>
-                    <Grid>
-                        <Label Content="Username and Password" Height="25" HorizontalAlignment="Left" Margin="0,-3,0,0"
+                    <Grid Margin="0,0,0,0">
+                        <Label Content="Username and Password" Height="25" Width="185" HorizontalAlignment="Left" Margin="0,-3,0,0"
                                VerticalAlignment="Top" />
-                        <Button Height="16" Width="0" VerticalAlignment="Top" HorizontalAlignment="Left"
-                                Margin="190,2,0,0" Style="{StaticResource NoChromeButton}" />
                     </Grid>
                 </Expander.Header>
                 <Grid Height="57">
@@ -220,17 +219,15 @@
                       Expanded="AnimatedExpenderExpanded" Foreground="Black" Height="25" IsEnabled="True"
                       Name="ExOpen" Width="220" x:FieldModifier="private">
                 <Expander.Header>
-                    <Grid>
-                        <Label Content="Un-Protected" Height="25" HorizontalAlignment="Left" Margin="0,-3,0,0"
+                    <Grid Margin="0,0,0,0">
+                        <Label Content="Un-Protected" Height="25" Width="185" HorizontalAlignment="Left" Margin="0,-3,0,0"
                                VerticalAlignment="Top" />
-                        <Button Height="16" Width="0" VerticalAlignment="Top" HorizontalAlignment="Left"
-                                Margin="190,2,0,0" Style="{StaticResource NoChromeButton}" />
                     </Grid>
                 </Expander.Header>
                 <Grid Height="37">
                     <Label Content="No Settings" FontStretch="Normal" FontWeight="Bold" Height="28"
                            HorizontalAlignment="Center" Margin="0,6,0,0" VerticalAlignment="Top"
-                           Width="77" />
+                           Width="75" />
                 </Grid>
             </Expander>
         </WrapPanel>

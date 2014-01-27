@@ -215,7 +215,7 @@ namespace ZARA
                 this.listener.ErrorRenderer.OnPort443Direct = false;
 
                 this.listener.DnsResolver.DnsResolverSupported =
-                    this.listener.DnsResolver.DnsResolverUdpSupported = true;
+                    this.listener.DnsResolver.DnsResolverUdpSupported = false;
                 this.listener.DnsResolver.DnsResolverServerIp = IPAddress.Parse(Settings.Default.DNS_IPAddress);
 
                 this.listener.SmartPear.DetectorDirectPort80AsHttp = false;
@@ -270,30 +270,14 @@ namespace ZARA
                                                                  AdapterAddressRange =
                                                                      IPAddress.Parse(
                                                                          Settings.Default.TAP_IPRange),
-                                                                 DnsResolvingAddress = IPAddress.Loopback,
-                                                                 DnsResolvingAddress2 = IPAddress.Parse(Settings.Default.DNS_IPAddress),
-                                                                 ExceptionIPs =
-                                                                     new IPAddress[]
-                                                                         {
-                                                                             //// System.Net.IPAddress.Parse(ZARA.Properties.Settings.Default.DNS_IPAddress),
-                                                                         }.Concat(hostIps).ToArray(),
+                                                                 ExceptionIPs = hostIps.ToArray(),
+                                                                 AutoDnsResolving = true,
                                                                  SocksProxyEndPoint =
                                                                      new IPEndPoint(
                                                                      IPAddress.Loopback,
                                                                      this.listener.Port),
                                                                  TunnelName = "ZARA Tunnel"
                                                              };
-                                        ////try
-                                        ////{
-                                        ////    Dns.GetHostAddresses("google.com");
-                                        ////    this.tapTunnel.DNSResolvingAddress2 =
-                                        ////        IPAddress.Parse(Settings.Default.DNS_IPAddress);
-                                        ////    this.tapTunnel.DNSResolvingAddress = IPAddress.Loopback;
-                                        ////}
-                                        ////catch (Exception)
-                                        ////{
-                                        ////    this.tapTunnel.DNSResolvingAddress = IPAddress.Loopback;
-                                        ////}
 
                                         if (!this.tapTunnel.StartTunnel())
                                         {
@@ -830,19 +814,16 @@ namespace ZARA
             SplitBySpace(Common.FormatFileSizeAsString(this.downloadSpeed), this.cpb_stat_downloadrate);
             SplitBySpace(Common.FormatFileSizeAsString(this.uploadSpeed), this.cpb_stat_uploadrate);
             TimeSpan last5Min = new TimeSpan(Environment.TickCount - (4 * 60 * 1000));
-            this.cpb_stat_downloadrate.Value =
-                Math.Min(
-                    Math.Max(
-                        this.downloadSpeed / (float)this.downloadPoints.Where(t => t.Time > last5Min).Max(t => t.Data) * 100,
-                        100),
-                    0);
+            this.cpb_stat_downloadrate.Value = this.downloadSpeed
+                                               / Math.Max(
+                                                   (float)
+                                                   this.downloadPoints.Where(t => t.Time > last5Min).Max(t => t.Data),
+                                                   1) * 100;
 
-            this.cpb_stat_uploadrate.Value =
-                Math.Min(
-                    Math.Max(
-                        this.uploadSpeed / (float)this.uploadPoints.Where(t => t.Time > last5Min).Max(t => t.Data) * 100,
-                        100),
-                    0);
+            this.cpb_stat_uploadrate.Value = this.uploadSpeed
+                                             / Math.Max(
+                                                 (float)this.uploadPoints.Where(t => t.Time > last5Min).Max(t => t.Data),
+                                                 1) * 100;
         }
 
         /// <summary>

@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+Microsoft Visual Studio Solution File, Format Version 13.00
+# Visual Studio 2013
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeaRoxy.ClientLibrary", "PeaRoxy.ClientLibrary\PeaRoxy.ClientLibrary.csproj", "{EAE02F72-D535-420D-8A36-C8CE5ED607C9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeaRoxy.Server", "PeaRoxy.Server\PeaRoxy.Server.csproj", "{E84F6294-716F-4A97-A626-762DB88C31F5}"

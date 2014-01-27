@@ -1,7 +1,6 @@
 ﻿<Window
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:my="clr-namespace:PeaRoxy.Windows.WPFClient"
     xmlns:userControls="clr-namespace:PeaRoxy.Windows.WPFClient.UserControls"
     xmlns:panels="clr-namespace:PeaRoxy.Windows.WPFClient.Panels"
     x:Class="PeaRoxy.Windows.WPFClient.MainWindow"
