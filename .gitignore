@@ -1,0 +1,9 @@
+bin/*
+Packages/*/*
+*/obj/*
+*/bin/*
+*/Publish/*
+*.pdb
+*.user
+*.Cache
+*.suo
