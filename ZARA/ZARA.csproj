@@ -57,18 +57,17 @@
   <ItemGroup>
     <Reference Include="CircularProgressBar, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Reference Libraries\CircularProgressBar.dll</HintPath>
+      <HintPath>..\packages\CircularProgressBar.1.0.0.0\lib\net40\CircularProgressBar.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
     <Reference Include="VDialog">
       <HintPath>..\Reference Libraries\VDialog.dll</HintPath>
     </Reference>
-    <Reference Include="WinFormAnimation">
-      <HintPath>..\Reference Libraries\WinFormAnimation.dll</HintPath>
+    <Reference Include="WinFormAnimation, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\WinFormAnimation.1.0.0.0\lib\net40\WinFormAnimation.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -100,6 +99,7 @@
     </Compile>
     <None Include="app.config" />
     <None Include="app.manifest" />
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -118,10 +118,6 @@
     <ProjectReference Include="..\PeaRoxy.CommonLibrary\PeaRoxy.CommonLibrary.csproj">
       <Project>{0fa3ddde-8a3c-4346-8c58-4662559d8a7b}</Project>
       <Name>PeaRoxy.CommonLibrary</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PeaRoxy.CoreProtocol\PeaRoxy.CoreProtocol.csproj">
-      <Project>{033154ee-19b5-4d3a-91ec-6b0fd48a80c3}</Project>
-      <Name>PeaRoxy.CoreProtocol</Name>
     </ProjectReference>
     <ProjectReference Include="..\PeaRoxy.Platform\PeaRoxy.Platform.csproj">
       <Project>{511ca971-9fad-4bfa-9841-105cf644cf77}</Project>

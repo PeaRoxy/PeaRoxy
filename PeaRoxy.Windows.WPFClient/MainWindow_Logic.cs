@@ -1049,45 +1049,45 @@ namespace PeaRoxy.Windows.WPFClient
                     return;
                 }
 
-                //// Thumbnail
-                //TabbedThumbnail tabbedThumbnail = new TabbedThumbnail(this.Handle, this.Handle);
-                //TaskbarManager.Instance.TabbedThumbnail.AddThumbnailPreview(tabbedThumbnail);
-                //tabbedThumbnail.DisplayFrameAroundBitmap = false;
-                //tabbedThumbnail.ClippingRectangle = new Rectangle(
-                //    0, 
-                //    0, 
-                //    (int)this.MainPage.ThumbnileChart.ActualWidth, 
-                //    (int)this.MainPage.ThumbnileChart.ActualHeight);
-                //tabbedThumbnail.Title = this.Title;
-                //StreamResourceInfo streamResourceInfo =
-                //    Application.GetResourceStream(
-                //        new Uri(
-                //            "pack://application:,,,/PeaRoxy.Windows.WPFClient;component/Images/Icons/Pear_Notify.ico"));
-                //if (streamResourceInfo != null)
-                //{
-                //    Stream st = streamResourceInfo.Stream;
-                //    tabbedThumbnail.SetWindowIcon(new Icon(st));
-                //}
+                // Thumbnail
+                TabbedThumbnail tabbedThumbnail = new TabbedThumbnail(this.Handle, this.Handle);
+                TaskbarManager.Instance.TabbedThumbnail.AddThumbnailPreview(tabbedThumbnail);
+                tabbedThumbnail.DisplayFrameAroundBitmap = false;
+                tabbedThumbnail.ClippingRectangle = new Rectangle(
+                    0,
+                    0,
+                    (int)this.MainPage.ThumbnileChart.ActualWidth,
+                    (int)this.MainPage.ThumbnileChart.ActualHeight);
+                tabbedThumbnail.Title = this.Title;
+                StreamResourceInfo streamResourceInfo =
+                    Application.GetResourceStream(
+                        new Uri(
+                            "pack://application:,,,/PeaRoxy.Windows.WPFClient;component/Images/Icons/Pear_Notify.ico"));
+                if (streamResourceInfo != null)
+                {
+                    Stream st = streamResourceInfo.Stream;
+                    tabbedThumbnail.SetWindowIcon(new Icon(st));
+                }
 
-                //tabbedThumbnail.PeekOffset = new Vector(5000, 5000);
-                //tabbedThumbnail.TabbedThumbnailBitmapRequested += this.TabbedThumbnailBitmapRequested;
-                //Windows7ShellPreviewWindowFixer.Fix(this.Title, Process.GetCurrentProcess());
+                tabbedThumbnail.PeekOffset = new Vector(5000, 5000);
+                tabbedThumbnail.TabbedThumbnailBitmapRequested += this.TabbedThumbnailBitmapRequested;
+                Windows7ShellPreviewWindowFixer.Fix(this.Title, Process.GetCurrentProcess());
 
-                //// JumpList
-                //JumpList jl = JumpList.CreateJumpListForIndividualWindow(string.Empty, this.Handle);
-                //jl.KnownCategoryToDisplay = JumpListKnownCategoryType.Neither;
-                //jl.ClearAllUserTasks();
-                //string ourFileName = Process.GetCurrentProcess().MainModule.FileName;
-                //JumpListLink quitLink = new JumpListLink(ourFileName, "Quit PeaRoxy")
-                //                            {
-                //                                IconReference =
-                //                                    new IconReference(
-                //                                    ourFileName,
-                //                                    1),
-                //                                Arguments = "/quit"
-                //                            };
-                //jl.AddUserTasks(new JumpListTask[] { quitLink });
-                //jl.Refresh();
+                // JumpList
+                JumpList jl = JumpList.CreateJumpListForIndividualWindow(string.Empty, this.Handle);
+                jl.KnownCategoryToDisplay = JumpListKnownCategoryType.Neither;
+                jl.ClearAllUserTasks();
+                string ourFileName = Process.GetCurrentProcess().MainModule.FileName;
+                JumpListLink quitLink = new JumpListLink(ourFileName, "Quit PeaRoxy")
+                                            {
+                                                IconReference =
+                                                    new IconReference(
+                                                    ourFileName,
+                                                    1),
+                                                Arguments = "/quit"
+                                            };
+                jl.AddUserTasks(new JumpListTask[] { quitLink });
+                jl.Refresh();
             }
             catch (Exception)
             {

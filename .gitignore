@@ -7,3 +7,4 @@ Packages/*/*
 *.user
 *.Cache
 *.suo
+Packages/repositories.config
