@@ -1,5 +1,4 @@
 bin/*
-Packages/*/*
 */obj/*
 */bin/*
 */Publish/*
@@ -9,4 +8,5 @@ Packages/*/*
 *.suo
 Packages/repositories.config
 Binaries/*/*
+packages
 packages/*
