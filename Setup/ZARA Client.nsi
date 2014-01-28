@@ -14,7 +14,7 @@ SetCompressor /SOLID lzma
   !include "x64.nsh"
   ;Name and file
   Name "ZARA for Windows v${VERSION}"
-  OutFile "..\Packages\ZARA-Win-v${VERSION}.exe"
+  OutFile "..\Binaries\ZARA-Win-v${VERSION}.exe"
 
   ;Default installation folder
   InstallDir "$TEMP\ZARA v${VERSION}"

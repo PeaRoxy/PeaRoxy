@@ -1,2 +1,3 @@
 *.phpproj
 ZipExcludeList.txt
+*.cache

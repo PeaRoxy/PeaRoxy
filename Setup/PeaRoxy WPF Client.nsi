@@ -14,7 +14,7 @@ SetCompressor /SOLID lzma
   !include "x64.nsh"
   ;Name and file
   Name "PeaRoxy Client for Windows v${VERSION}"
-  OutFile "..\Packages\PeaRoxyClient-Win-v${VERSION}.exe"
+  OutFile "..\Binaries\PeaRoxyClient-Win-v${VERSION}.exe"
 
   ;Default installation folder
   InstallDir "$PROGRAMFILES\PeaRoxy"

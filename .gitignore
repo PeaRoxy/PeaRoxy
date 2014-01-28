@@ -8,3 +8,5 @@ Packages/*/*
 *.Cache
 *.suo
 Packages/repositories.config
+Binaries/*/*
+packages/*
