@@ -385,7 +385,6 @@
     <Resource Include="Images\Header\Close.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\Icons\Close.ico" />
     <Resource Include="Images\Icons\Connected.ico" />
     <Resource Include="Images\Icons\Pear.ico" />
     <Resource Include="Images\Icons\Pear_Notify.ico" />
