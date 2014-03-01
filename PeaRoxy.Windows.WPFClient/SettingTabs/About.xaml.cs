@@ -82,7 +82,7 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
                         Assembly.GetAssembly(typeof(ProxyController)).GetName().Version.ToString(3),
                         Assembly.GetAssembly(typeof(PeaRoxyProtocol)).GetName().Version.ToString(3),
                         Assembly.GetAssembly(typeof(WindowsModule)).GetName().Version.ToString(3),
-                        Assembly.GetAssembly(typeof(TapTunnel)).GetName().Version.ToString(3),
+                        Assembly.GetAssembly(typeof(TapTunnelModule)).GetName().Version.ToString(3),
                         Assembly.GetAssembly(typeof(Common)).GetName().Version.ToString(3),
                         Assembly.GetAssembly(typeof(Panel3D)).GetName().Version.ToString(3),
                         Assembly.GetAssembly(typeof(VDialog)).GetName().Version.ToString(3),
@@ -107,6 +107,7 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
         public override void SetEnable(bool enable)
         {
             this.ResetSettingsButton.IsEnabled = enable;
+            this.FirstTimeWizardButton.IsEnabled = enable;
         }
 
         #endregion
@@ -138,7 +139,7 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
             Settings.Default.FirstRun = false;
             Settings.Default.Save();
             VDialog.Show(
-                "Done. We will close this application now and then you can re-open and use it with default settings.", 
+                "Done. We will close this application and then you can reopen it with default settings.", 
                 "Reset Settings", 
                 MessageBoxButtons.OK, 
                 MessageBoxIcon.Information);
@@ -146,5 +147,17 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
         }
 
         #endregion
+
+        private void FirstTimeWizardButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            Settings.Default.Welcome_Shown = false;
+            Settings.Default.Save();
+            VDialog.Show(
+                "Done. We will close this application and then you can reopen it and follow the wizard.",
+                "First Time Wizard",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+            App.End();
+        }
     }
 }

@@ -17,7 +17,9 @@
                VerticalAlignment="Top" HorizontalContentAlignment="Left" FontSize="10" x:FieldModifier="private" />
         <Label Name="Libraries" Content="" Height="400" HorizontalAlignment="Left" Margin="50,120,0,0"
                VerticalAlignment="Top" HorizontalContentAlignment="Left" FontSize="10" x:FieldModifier="private" />
-        <Button Name="ResetSettingsButton" Content="Reset Settings" HorizontalAlignment="Left" Margin="275,271,0,0"
-                VerticalAlignment="Top" Width="75" Click="BtnResetsettingsClick" x:FieldModifier="private" />
+        <Button Name="ResetSettingsButton" Content="Reset Settings" HorizontalAlignment="Left" Margin="265,275,0,0"
+                VerticalAlignment="Top" Width="83" Click="BtnResetsettingsClick" x:FieldModifier="private" FontSize="11" />
+        <Button Name="FirstTimeWizardButton" Content="Show First Time Wizard" HorizontalAlignment="Left" Margin="130,275,0,0"
+                VerticalAlignment="Top" Width="130" Click="FirstTimeWizardButton_OnClick" x:FieldModifier="private" FontSize="11" />
     </Grid>
 </st:Base>
