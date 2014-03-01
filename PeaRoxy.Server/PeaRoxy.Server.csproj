@@ -124,6 +124,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if $(ConfigurationName) == Release (
+del "$(SolutionDir)Binaries\PeaRoxyServer.zip"
 "$(SolutionDir)Solution Items\7za" a -tzip "$(SolutionDir)Binaries\PeaRoxyServer.zip" "$(TargetDir)*" -mx9 -xr@"$(ProjectDir)ZipExcludeList.txt"
 )</PostBuildEvent>
   </PropertyGroup>
