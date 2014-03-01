@@ -38,7 +38,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x86\Debug\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
@@ -130,10 +130,6 @@
       <Project>{3a0f7a2e-216f-47f1-a31f-2a9a29949931}</Project>
       <Name>PeaRoxy.Windows.Network.TAP</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PeaRoxy.Windows.Updater\PeaRoxy.Windows.Updater.csproj">
-      <Project>{51a9f6fa-3d62-4f59-8e0a-ceb7b37fdc0a}</Project>
-      <Name>PeaRoxy.Windows.Updater</Name>
-    </ProjectReference>
     <ProjectReference Include="..\PeaRoxy.Windows\PeaRoxy.Windows.csproj">
       <Project>{c22fd32b-1361-42ac-8874-43a6a9424993}</Project>
       <Name>PeaRoxy.Windows</Name>
@@ -189,6 +185,7 @@
   <PropertyGroup>
     <PostBuildEvent>for /f %25%25i in ('"$(SolutionDir)Solution Items\VersionExtractor.exe" $(TargetPath)') do set version=%25%25i
 if $(ConfigurationName) == Release (
+del "$(SolutionDir)Binaries\ZARA-Win*.exe"
 "$(ProgramFiles)\NSIS\makensis.exe" /DVERSION=%25version%25 "$(SolutionDir)Setup\ZARA Client.nsi"
 )</PostBuildEvent>
   </PropertyGroup>

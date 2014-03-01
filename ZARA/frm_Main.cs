@@ -93,11 +93,6 @@ namespace ZARA
         private ProxyController listener;
 
         /// <summary>
-        ///     The tap tunnel.
-        /// </summary>
-        private TapTunnel tapTunnel;
-
-        /// <summary>
         ///     The up speed.
         /// </summary>
         private long uploadSpeed;
@@ -265,23 +260,18 @@ namespace ZARA
                                             hostIps.AddRange(Dns.GetHostEntry(serverAddress).AddressList);
                                         }
 
-                                        this.tapTunnel = new TapTunnel
-                                                             {
-                                                                 AdapterAddressRange =
-                                                                     IPAddress.Parse(
-                                                                         Settings.Default.TAP_IPRange),
-                                                                 ExceptionIPs = hostIps.ToArray(),
-                                                                 AutoDnsResolving = true,
-                                                                 SocksProxyEndPoint =
-                                                                     new IPEndPoint(
-                                                                     IPAddress.Loopback,
-                                                                     this.listener.Port),
-                                                                 TunnelName = "ZARA Tunnel"
-                                                             };
+                                        TapTunnelModule.AdapterAddressRange = IPAddress.Parse(
+                                            Settings.Default.TAP_IPRange);
+                                        TapTunnelModule.ExceptionIPs = hostIps.ToArray();
+                                        TapTunnelModule.AutoDnsResolving = true;
+                                        TapTunnelModule.SocksProxyEndPoint = new IPEndPoint(
+                                            IPAddress.Loopback,
+                                            this.listener.Port);
+                                        TapTunnelModule.TunnelName = "ZARA Tunnel";
 
-                                        if (!this.tapTunnel.StartTunnel())
+                                        if (!TapTunnelModule.StartTunnel())
                                         {
-                                            this.tapTunnel.StopTunnel();
+                                            TapTunnelModule.StopTunnel();
                                             throw new Exception("Failed to start TAP Adapter.");
                                         }
 
@@ -345,17 +335,13 @@ namespace ZARA
                 this.Enabled = false;
                 if (this.listener != null)
                 {
-                    if (this.listener.Status != ProxyController.ControllerStatus.Stopped)
+                    if (this.listener.Status != ProxyController.ControllerStatus.None)
                     {
                         this.listener.Stop();
                     }
 
                     this.Status = CurrentStatus.Disconnected;
-
-                    if (this.tapTunnel != null)
-                    {
-                        this.tapTunnel.StopTunnel();
-                    }
+                    TapTunnelModule.StopTunnel();
                 }
 
                 this.SaveSettings();
@@ -782,9 +768,7 @@ namespace ZARA
 
             this.downloadSpeed = (this.listener.AverageReceivingSpeed + this.downloadSpeed) / 2;
             this.uploadSpeed = (this.listener.AverageSendingSpeed + this.uploadSpeed) / 2;
-            if (this.listener != null
-                && (this.listener.Status == ProxyController.ControllerStatus.OnlyProxy
-                    || this.listener.Status == ProxyController.ControllerStatus.Both))
+            if (this.listener != null && this.listener.Status.HasFlag(ProxyController.ControllerStatus.Proxy))
             {
                 Program.Notify.Text = string.Format(
                     "Z A Я A\r\nCurrent Transfer Rate: {0}/s", 
