@@ -32,7 +32,7 @@
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
                             <Image Name="Image" Width="16" Height="16" Stretch="Fill"
-                                   Source="{DynamicResource ResourceKey=Img}" />
+                                   Source="{DynamicResource ResourceKey=Image}" />
                             <TextBlock Text="{Binding}" Margin="5,0" />
                         </StackPanel>
                     </DataTemplate>
