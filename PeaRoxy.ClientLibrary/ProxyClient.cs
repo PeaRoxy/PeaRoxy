@@ -364,7 +364,7 @@ namespace PeaRoxy.ClientLibrary
                             this.reqBuffer.Length - clientData.Length, 
                             clientData.Length);
                         this.IsSendingStarted = true;
-                        if (this.Controller.Status == ProxyController.ControllerStatus.Stopped)
+                        if (this.Controller.Status == ProxyController.ControllerStatus.None)
                         {
                             this.Close();
                         }
@@ -376,19 +376,9 @@ namespace PeaRoxy.ClientLibrary
                         {
                             Https.Handle(this.reqBuffer, this);
                         }
-                        else if (Socks5.IsSocks(this.reqBuffer)
-                                 && (this.Controller.Status == ProxyController.ControllerStatus.OnlyProxy
-                                     || this.Controller.Status == ProxyController.ControllerStatus.Both))
+                        else if (Socks5.IsSocks(this.reqBuffer) && this.Controller.Status.HasFlag(ProxyController.ControllerStatus.Proxy))
                         {
-                            if (this.Controller.Status == ProxyController.ControllerStatus.OnlyProxy
-                                || this.Controller.Status == ProxyController.ControllerStatus.Both)
-                            {
-                                Socks5.Handle(this.reqBuffer, this);
-                            }
-                            else
-                            {
-                                this.Close();
-                            }
+                            Socks5.Handle(this.reqBuffer, this);
                         }
                         else
                         {

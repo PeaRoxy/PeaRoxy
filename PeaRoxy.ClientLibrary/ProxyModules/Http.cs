@@ -14,6 +14,7 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
 
     using System;
     using System.Net;
+    using System.Security.Policy;
     using System.Text;
 
     using PeaRoxy.ClientLibrary.ServerModules;
@@ -191,7 +192,7 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
         public static void Handle(byte[] firstResponse, ProxyClient client, bool ignoreEnd = false)
         {
             if (!client.Controller.IsHttpSupported
-                || client.Controller.Status == ProxyController.ControllerStatus.Stopped
+                || client.Controller.Status == ProxyController.ControllerStatus.None
                 || !IsHttp(firstResponse, ignoreEnd))
             {
                 client.Close();
@@ -214,6 +215,7 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
             string[] headerlines = textData.Split('\n');
             string[] parts = headerlines[0].Split(' ');
             bool usedAsProxy = false;
+            string host = string.Empty;
             foreach (string line in headerlines)
             {
                 if (line.Trim() == string.Empty)
@@ -229,27 +231,41 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
                     int countRemove = line.Trim().Length + 2;
                     textData = textData.Remove(startRemove, countRemove);
                 }
-                else if (ls[0].Trim().ToUpper().IndexOf("CONNECTION:", StringComparison.OrdinalIgnoreCase) != -1)
+                else if (ls[0].Trim().ToUpper().IndexOf("CONNECTION", StringComparison.OrdinalIgnoreCase) != -1)
                 {
                     int startRemove = textData.IndexOf(line, StringComparison.OrdinalIgnoreCase);
                     int countRemove = line.Trim().Length;
                     textData = textData.Remove(startRemove, countRemove);
                     textData = textData.Insert(startRemove, "Connection: close");
                 }
+                else if (ls[0].Trim().ToUpper().IndexOf("HOST", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    host = ls[1].Trim();
+                }
             }
 
             if (!usedAsProxy
-                && (client.Controller.Status == ProxyController.ControllerStatus.OnlyAutoConfig
-                    || client.Controller.Status == ProxyController.ControllerStatus.Both)
+                && client.Controller.Status.HasFlag(ProxyController.ControllerStatus.AutoConfig)
                 && !string.IsNullOrEmpty(client.Controller.AutoConfigPath)
                 && parts[1].ToLower().Split('?')[0] == "/" + client.Controller.AutoConfigPath.ToLower())
             {
                 client.Write(GenerateAutoConfigScript(client));
                 client.Close();
             }
-            else if (client.Controller.Status == ProxyController.ControllerStatus.OnlyProxy
-                     || client.Controller.Status == ProxyController.ControllerStatus.Both)
+            else if (client.Controller.Status.HasFlag(ProxyController.ControllerStatus.Proxy))
             {
+                if (!Uri.IsWellFormedUriString(parts[1], UriKind.Absolute) && host != string.Empty
+                    && Uri.IsWellFormedUriString("http://" + host + parts[1], UriKind.Absolute))
+                {
+                    parts[1] = "http://" + host + parts[1];
+                }
+
+                if (!Uri.IsWellFormedUriString(parts[1], UriKind.Absolute)
+                    && Uri.IsWellFormedUriString("http://" + parts[1], UriKind.Absolute))
+                {
+                    parts[1] = "http://" + parts[1];
+                }
+
                 Uri url = new Uri(parts[1]);
                 textData = textData.Replace(headerlines[0], headerlines[0].Replace(parts[1], url.PathAndQuery));
                 string clientConnectionAddress = url.Host;
@@ -341,16 +357,16 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
         private static byte[] GenerateAutoConfigScript(ProxyClient client)
         {
             string connectionString = (client.Controller.Ip.Equals(IPAddress.Any)
-                                           ? Environment.MachineName
+                                           ? IPAddress.Loopback.ToString()
                                            : client.Controller.Ip.ToString()) + ":" + client.Controller.Port;
-            string httpConnectionType = (client.Controller.Status == ProxyController.ControllerStatus.Both)
+            string httpConnectionType = (client.Controller.Status.HasFlag(ProxyController.ControllerStatus.Proxy))
                                              ? (client.Controller.IsHttpSupported
                                                     ? "PROXY " + connectionString + ";"
                                                     : (client.Controller.IsSocksSupported
                                                            ? "SOCKS " + connectionString + ";"
                                                            : string.Empty))
                                              : string.Empty;
-            string httpsConnectionType = (client.Controller.Status == ProxyController.ControllerStatus.Both)
+            string httpsConnectionType = (client.Controller.Status.HasFlag(ProxyController.ControllerStatus.Proxy))
                                               ? (client.Controller.IsHttpsSupported
                                                      ? "PROXY " + connectionString + ";"
                                                      : (client.Controller.IsSocksSupported
@@ -360,8 +376,7 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
             const string NewLineSep = "\r\n";
             string script =
                 string.Format(
-                    "function FindProxyForURL(url, host) {{{0}   if (url.toLowerCase().indexOf('https://') === 0) {{{0}       return '{1}DIRECT';{0}   }}{0}   return '{2}DIRECT';{0}}}",
-                    NewLineSep,
+                    "function FindProxyForURL(url, host) {{if (url.toLowerCase().indexOf('https://') === 0) {{return '{0}DIRECT';}}return '{1}DIRECT';}}",
                     httpsConnectionType,
                     httpConnectionType);
 

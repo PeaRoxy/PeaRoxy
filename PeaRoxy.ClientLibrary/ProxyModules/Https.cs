@@ -124,6 +124,7 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
             // Getting Information From HTTPS Header
             string[] parts = textData.Split('\n')[0].Split(' ');
             Uri url = new Uri("https://" + parts[1].Trim());
+
             string clientConnectionAddress = url.Host;
             ushort clientConnectionPort = (ushort)url.Port;
             client.RequestAddress = "https://" + clientConnectionAddress + ":" + clientConnectionPort;
@@ -141,8 +142,7 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
             }
 
             client.IsReceivingStarted = false;
-            if (client.Controller.Status == ProxyController.ControllerStatus.OnlyProxy
-                || client.Controller.Status == ProxyController.ControllerStatus.Both)
+            if (client.Controller.Status.HasFlag(ProxyController.ControllerStatus.Proxy))
             {
                 DirectHandle(client, clientConnectionAddress, clientConnectionPort, firstResponse);
             }

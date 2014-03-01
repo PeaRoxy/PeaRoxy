@@ -504,7 +504,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                                 if (serverResponse == null)
                                 {
                                     this.Close(
-                                        "Connection timeout.", 
+                                        "Connection closed by server or timed out.", 
                                         null, 
                                         ErrorRenderer.HttpHeaderCode.C504GatewayTimeout);
                                     return;

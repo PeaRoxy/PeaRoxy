@@ -140,7 +140,7 @@ namespace PeaRoxy.ClientLibrary
             this.DnsResolver = new DnsResolver(this);
             this.Ip = ip;
             this.Port = port;
-            this.Status = ControllerStatus.Stopped;
+            this.Status = ControllerStatus.None;
             this.IsAutoConfigEnable = false;
             this.AutoConfigPath = string.Empty;
             this.ActiveServer = activeServer;
@@ -219,29 +219,18 @@ namespace PeaRoxy.ClientLibrary
         }
 
         /// <summary>
-        ///     The controller status.
+        ///     The controller status enum.
         /// </summary>
+        [Flags]
         public enum ControllerStatus
         {
-            /// <summary>
-            ///     The stopped.
-            /// </summary>
-            Stopped, 
+            None = 0,
 
-            /// <summary>
-            ///     The only proxy.
-            /// </summary>
-            OnlyProxy, 
+            Proxy = 1,
 
-            /// <summary>
-            ///     The only auto config.
-            /// </summary>
-            OnlyAutoConfig, 
+            AutoConfig = 2,
 
-            /// <summary>
-            ///     The both.
-            /// </summary>
-            Both, 
+            ProxyAndAutoConfig = Proxy | AutoConfig,
         }
 
         #endregion
@@ -360,7 +349,7 @@ namespace PeaRoxy.ClientLibrary
             set
             {
                 this.failAttempts = value;
-                if (this.AutoDisconnect && this.FailAttempts > 30 && this.Status != ControllerStatus.Stopped)
+                if (this.AutoDisconnect && this.FailAttempts > 30 && this.Status.HasFlag(ControllerStatus.Proxy))
                 {
                     this.FailAttempts = 0;
                     this.Stop();
@@ -548,13 +537,13 @@ namespace PeaRoxy.ClientLibrary
                 this.SmartPear.ForwarderHttpsEnable = false;
             }
 
-            if (this.IsAutoConfigEnable && this.Status == ControllerStatus.OnlyAutoConfig)
+            if (this.IsAutoConfigEnable && this.Status.HasFlag(ControllerStatus.AutoConfig) && !this.Status.HasFlag(ControllerStatus.Proxy))
             {
-                this.Status = ControllerStatus.Both;
+                this.Status |= ControllerStatus.Proxy;
                 return true;
             }
 
-            if (this.Status == ControllerStatus.Stopped)
+            if (this.Status == ControllerStatus.None)
             {
                 if (!this.acceptingWorker.IsBusy)
                 {
@@ -571,9 +560,9 @@ namespace PeaRoxy.ClientLibrary
                     this.acceptingWorker.RunWorkerAsync();
                     this.routingWorker.RunWorkerAsync();
                 }
-
-                this.Status = this.IsAutoConfigEnable ? ControllerStatus.Both : ControllerStatus.OnlyProxy;
-
+                this.Status = ControllerStatus.Proxy;
+                if (this.IsAutoConfigEnable)
+                    this.Status |= ControllerStatus.AutoConfig;
                 return true;
             }
 
@@ -585,23 +574,25 @@ namespace PeaRoxy.ClientLibrary
         /// </summary>
         public void Stop()
         {
-            this.Status = ControllerStatus.Stopped;
-            this.acceptingWorker.CancelAsync();
-            while (this.acceptingWorker.IsBusy)
+            if (!this.IsAutoConfigEnable)
             {
-                Application.DoEvents();
-            }
+                this.Status = ControllerStatus.None;
+                this.routingWorker.CancelAsync();
+                while (this.routingWorker.IsBusy)
+                {
+                    Application.DoEvents();
+                }
 
-            this.routingWorker.CancelAsync();
-            while (this.routingWorker.IsBusy)
-            {
-                Application.DoEvents();
+                this.acceptingWorker.CancelAsync();
+                while (this.acceptingWorker.IsBusy)
+                {
+                    Application.DoEvents();
+                }
             }
-
-            if (this.IsAutoConfigEnable)
+            else
             {
-                this.Start();
-                this.Status = ControllerStatus.OnlyAutoConfig;
+                this.Status = ControllerStatus.AutoConfig;
+                CloseAllClients();
             }
         }
 
@@ -789,7 +780,6 @@ namespace PeaRoxy.ClientLibrary
         /// </param>
         private void AcceptingWorkerDoWork(object sender, DoWorkEventArgs e)
         {
-            ProxyClient[] st;
             while (!this.acceptingWorker.CancellationPending)
             {
                 try
@@ -814,6 +804,7 @@ namespace PeaRoxy.ClientLibrary
 
                     if (this.ConnectedClients.Count > 0)
                     {
+                        ProxyClient[] st;
                         lock (this.ConnectedClients) st = this.ConnectedClients.ToArray();
                         foreach (ProxyClient t in st)
                         {
@@ -865,19 +856,44 @@ namespace PeaRoxy.ClientLibrary
                     LogIt("AcceptingWorker: " + ex.Message + "\r\n" + ex.StackTrace);
                 }
             }
-
-            this.listenerSocket.Close();
-            this.DnsResolver.Stop();
-            if (this.ConnectedClients.Count <= 0)
+            try
             {
-                return;
+                this.listenerSocket.Close();
+                this.DnsResolver.Stop();
+                CloseAllClients();
             }
-
-            st = this.ConnectedClients.ToArray();
-            foreach (ProxyClient client in st)
+            catch (Exception)
             {
-                client.Close();
+                
             }
+        }
+
+        private void CloseAllClients()
+        {
+            try
+            {
+                lock (ConnectedClients)
+                {
+                    if (this.ConnectedClients.Count > 0)
+                    {
+                        ProxyClient[] st = this.ConnectedClients.ToArray();
+                        foreach (ProxyClient client in st)
+                        {
+                            try
+                            {
+                                client.Close();
+                            }
+                            catch { }
+                        }
+                    }
+                }
+
+                lock (this.routingClients)
+                {
+                    this.routingClients.Clear();
+                }
+            }
+            catch { }
         }
 
         /// <summary>
@@ -920,7 +936,7 @@ namespace PeaRoxy.ClientLibrary
                 }
             }
 
-            lock (this.routingClients) this.routingClients.Clear();
+            CloseAllClients();
         }
 
         #endregion
