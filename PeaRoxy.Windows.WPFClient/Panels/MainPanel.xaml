@@ -63,7 +63,7 @@
         <WrapPanel HorizontalAlignment="Left" Margin="40,79,0,0" Name="WpServers" Width="249" Orientation="Horizontal"
                    Height="239" VerticalAlignment="Top" x:FieldModifier="private">
             <Expander Width="249" Foreground="Black" Expanded="AnimatedExpenderExpanded" Background="#FFF8F8F8"
-                      Collapsed="AnimatedExpenderCollapsed" Name="ExServer" Height="80" BorderThickness="1"
+                      Collapsed="AnimatedExpenderCollapsed" Name="ExServer" Height="25" BorderThickness="1"
                       ClipToBounds="False" x:FieldModifier="private">
                 <Grid Height="55">
                     <Label Content="Address:" Height="28" HorizontalAlignment="Left" Margin="6,1,0,0"
