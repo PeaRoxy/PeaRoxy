@@ -87,11 +87,13 @@
     <DelaySign>true</DelaySign>
   </PropertyGroup>
   <PropertyGroup />
-  <PropertyGroup>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-  </PropertyGroup>
+  <PropertyGroup />
   <PropertyGroup>
     <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup />
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DynamicDataDisplay">
@@ -100,10 +102,7 @@
     <Reference Include="EasyHook">
       <HintPath>..\Reference Libraries\EasyHook\EasyHook.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Windows.Shell, Version=3.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.Windows.Shell.3.0.1.0\lib\net40\Microsoft.Windows.Shell.dll</HintPath>
-    </Reference>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.WindowsAPICodePack, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Windows7APICodePack-Core.1.1.0.0\lib\Microsoft.WindowsAPICodePack.dll</HintPath>
@@ -126,6 +125,9 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="Xceed.Wpf.Toolkit">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.2.0.0\lib\net40\Xceed.Wpf.Toolkit.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ChartPoint.cs" />
@@ -190,6 +192,9 @@
     </Compile>
     <Compile Include="UserControls\Tooltip.xaml.cs">
       <DependentUpon>Tooltip.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="WelcomeWindow.xaml.cs">
+      <DependentUpon>WelcomeWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows7ShellPreviewWindowFixer.cs" />
     <Compile Include="WpfSingleInstance.cs" />
@@ -280,6 +285,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="WelcomeWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -359,21 +368,18 @@
       <Project>{511CA971-9FAD-4BFA-9841-105CF644CF77}</Project>
       <Name>PeaRoxy.Platform</Name>
     </ProjectReference>
+    <ProjectReference Include="..\PeaRoxy.Windows.Network.Hook\PeaRoxy.Windows.Network.Hook.csproj">
+      <Project>{7e227df0-7f70-45e7-999b-01811e60cab1}</Project>
+      <Name>PeaRoxy.Windows.Network.Hook</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PeaRoxy.Windows.Network.TAP\PeaRoxy.Windows.Network.TAP.csproj">
       <Project>{3A0F7A2E-216F-47F1-A31F-2A9A29949931}</Project>
       <Name>PeaRoxy.Windows.Network.TAP</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PeaRoxy.Windows.Updater\PeaRoxy.Windows.Updater.csproj">
-      <Project>{51A9F6FA-3D62-4F59-8E0A-CEB7B37FDC0A}</Project>
-      <Name>PeaRoxy.Windows.Updater</Name>
     </ProjectReference>
     <ProjectReference Include="..\PeaRoxy.Windows\PeaRoxy.Windows.csproj">
       <Project>{C22FD32B-1361-42AC-8874-43A6A9424993}</Project>
       <Name>PeaRoxy.Windows</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="TPTools\InsertIcons.exe" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Header\Close.png" />
@@ -413,11 +419,30 @@
     <Resource Include="Images\Toolbar\ReConfig.png" />
     <Resource Include="Images\Toolbar\SmartPear.png" />
   </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="Shell32">
+      <Guid>{50A7E9B0-70EF-11D1-B75A-00A0C90564FE}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="..\Setup\PeaRoxy Left.bmp">
+      <Link>Images\PeaRoxy Left.bmp</Link>
+    </Resource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="bin\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>for /f %25%25i in ('"$(SolutionDir)Solution Items\VersionExtractor.exe" $(TargetPath)') do set version=%25%25i
-"$(ProjectDir)TPTools\InsertIcons.exe" "$(TargetPath)" "$(ProjectDir)Images\Icons\Close.ico"
 if $(ConfigurationName) == Release (
+del "$(SolutionDir)Binaries\PeaRoxyClient-Win*.exe"
 "$(ProgramFiles)\NSIS\makensis.exe" /DVERSION=%25version%25 "$(SolutionDir)Setup\PeaRoxy WPF Client.nsi"
 )</PostBuildEvent>
   </PropertyGroup>
