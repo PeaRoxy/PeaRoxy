@@ -91,7 +91,7 @@ namespace PeaRoxy.Windows.Network.TAP
             CleanAllDns2Socks();
             dns2SocksProcess = Common.CreateProcess(
                 "TAPDriver\\dns2socks.exe",
-                string.Format("/q {0}:{1} {2} {3}", socksProxy.Address, socksProxy.Port, dnsIpAddress, socksProxy.Address));
+                string.Format("/q {0}:{1} {2} {3}", socksProxy.Address, socksProxy.Port, dnsIpAddress, socksProxy.Address), true, true);
 
             return true;
         }

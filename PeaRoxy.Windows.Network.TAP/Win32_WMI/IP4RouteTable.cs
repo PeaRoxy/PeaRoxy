@@ -213,7 +213,18 @@ namespace PeaRoxy.Windows.Network.TAP.Win32_WMI
         {
             Process p = Common.CreateProcess(
                 "route",
-                string.Format("{0} {1} {2}{3} " + "metric {4}{5}", change ? "CHANGE" : "ADD", destination, netMask != null ? "mask " + netMask + " " : string.Empty, gateWay, metric, (interfaceId > -1) ? " IF " + interfaceId : string.Empty));
+                string.Format(
+                    "{0} {1} {2}{3} " + "metric {4}{5}",
+                    change ? "CHANGE" : "ADD",
+                    destination,
+                    netMask != null ? "mask " + netMask + " " : string.Empty,
+                    gateWay,
+                    metric,
+                    (interfaceId > -1) ? " IF " + interfaceId : string.Empty),
+                true,
+                false,
+                false,
+                true);
             p.WaitForExit();
         }
 
@@ -306,7 +317,7 @@ namespace PeaRoxy.Windows.Network.TAP.Win32_WMI
                 str += " IF " + this.InterfaceIndex;
             }
 
-            Process p = Common.CreateProcess("route", "DELETE " + str);
+            Process p = Common.CreateProcess("route", "DELETE " + str, true, false, false, true);
             p.WaitForExit();
         }
 

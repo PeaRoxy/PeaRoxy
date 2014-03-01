@@ -107,7 +107,7 @@ namespace PeaRoxy.Windows.Network.TAP
             CleanAllTun2Socks();
             tun2SocksProcess = Common.CreateProcess(
                 "TAPDriver\\tun2socks.exe",
-                string.Format("--tundev \"{0}:{1}:{2}:{3}:{4}\" --netif-ipaddr {5} --netif-netmask {4} --socks-server-addr {6}:{7}", network.ServiceName, network.NetConnectionID, ipAddress, CommonLibrary.Common.MergeIpIntoIpSubnet(ipAddress, ipSubnet, IPAddress.Parse("10.0.0.0")), ipSubnet, ipServer, socksProxy.Address, socksProxy.Port));
+                string.Format("--tundev \"{0}:{1}:{2}:{3}:{4}\" --netif-ipaddr {5} --netif-netmask {4} --socks-server-addr {6}:{7}", network.ServiceName, network.NetConnectionID, ipAddress, CommonLibrary.Common.MergeIpIntoIpSubnet(ipAddress, ipSubnet, IPAddress.Parse("10.0.0.0")), ipSubnet, ipServer, socksProxy.Address, socksProxy.Port), true, true);
             int timeout = 120;
             timeout = timeout * 10;
             while (!network.NetEnabled && // Vista+

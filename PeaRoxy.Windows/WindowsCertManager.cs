@@ -104,36 +104,34 @@ namespace PeaRoxy.Windows
         /// </returns>
         public override bool RegisterAuthority(string name, string authorityPath, bool firefox = true)
         {
-            string currentAddress = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
-            if (currentAddress == null) return false;
-            if (!File.Exists(Path.Combine(currentAddress, authorityPath))) return false;
-            
             Process p = Common.CreateProcess(
-                Path.Combine(currentAddress, "HTTPSCerts\\certmgr.exe"), 
+                "HTTPSCerts\\certmgr.exe", 
                 "-add -c \"" + authorityPath + "\" -s -r LocalMachine root");
             if (p != null) p.WaitForExit();
-
-
-            if (!firefox) return true;
-            
-
-            string firefoxProfilesPath =
-                Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
-                    "Mozilla\\Firefox\\Profiles");
-            if (!Directory.Exists(firefoxProfilesPath)) return true;
-            
-
-            foreach (string profileAddress in Directory.GetDirectories(firefoxProfilesPath))
+            try
             {
-                Process p1 = Common.CreateProcess(
-                    Path.Combine(currentAddress, "HTTPSCerts\\certutil.exe"), 
-                    "-A -n \"" + name + "\" -t \"TCu,TCu,TCu\" -d \"" + profileAddress + "\" -i \"" + authorityPath
-                    + "\"");
-                if (p1 != null) p1.WaitForExit();
+
+                if (!firefox) return true;
+
+
+                string firefoxProfilesPath =
+                    Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                        "Mozilla\\Firefox\\Profiles");
+                if (!Directory.Exists(firefoxProfilesPath)) return true;
+
+
+                foreach (string profileAddress in Directory.GetDirectories(firefoxProfilesPath))
+                {
+                    Process p1 = Common.CreateProcess(
+                        "HTTPSCerts\\certutil.exe",
+                        "-A -n \"" + name + "\" -t \"TCu,TCu,TCu\" -d \"" + profileAddress + "\" -i \"" + authorityPath
+                        + "\"");
+                    if (p1 != null) p1.WaitForExit();
+                }
 
             }
-
+            catch { }
             return true;
         }
 
