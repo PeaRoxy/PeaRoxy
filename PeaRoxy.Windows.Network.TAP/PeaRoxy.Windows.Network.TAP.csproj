@@ -28,7 +28,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>..\bin\Windows\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -40,7 +40,7 @@
     <Compile Include="Dns2Socks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TapAdapter.cs" />
-    <Compile Include="TapTunnel.cs" />
+    <Compile Include="TapTunnelModule.cs" />
     <Compile Include="Tun2Socks.cs" />
     <Compile Include="Win32_WMI\IP4RouteTable.cs" />
     <Compile Include="Win32_WMI\NetworkAdapter.cs" />
