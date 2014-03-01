@@ -1,10 +1,10 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="WindowsProxy.cs" company="PeaRoxy.com">
+// <copyright file="ProxyModule.cs" company="PeaRoxy.com">
 //   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
 //   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
 // </copyright>
 // <summary>
-//   The windows proxy.
+//   The windows proxy module.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -16,6 +16,7 @@ namespace PeaRoxy.Windows
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Net;
     using System.Runtime.InteropServices;
     using System.Threading;
 
@@ -24,9 +25,9 @@ namespace PeaRoxy.Windows
     #endregion
 
     /// <summary>
-    /// The windows proxy.
+    /// The windows proxy module.
     /// </summary>
-    public static class WindowsProxy
+    public static class ProxyModule
     {
         #region Constants
 
@@ -64,14 +65,13 @@ namespace PeaRoxy.Windows
 
         #region Public Methods and Operators
 
-        /// <summary>
-        /// The force firefox to use system settings.
-        /// </summary>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
         public static bool ForceFirefoxToUseSystemSettings()
         {
+            if (!IsFirefoxNeedReconfig())
+            {
+                return true;
+            }
+
             bool isError = false;
             try
             {
@@ -136,13 +136,7 @@ namespace PeaRoxy.Windows
             return false;
         }
 
-        /// <summary>
-        /// The is firefox need reconfig.
-        /// </summary>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
-        public static bool IsFirefoxNeedReconfig()
+        private static bool IsFirefoxNeedReconfig()
         {
             try
             {
@@ -168,13 +162,12 @@ namespace PeaRoxy.Windows
                         while (!sr.EndOfStream)
                         {
                             string readLine = sr.ReadLine();
-                            if (readLine == null || !readLine.ToLower().Contains("\"network.proxy.type\""))
+                            if (readLine != null && readLine.ToLower().Contains("\"network.proxy.type\""))
                             {
-                                continue;
+                                sr.Close();
+                                fs.Close();
+                                return true;
                             }
-                            sr.Close();
-                            fs.Close();
-                            return true;
                         }
 
                         sr.Close();
@@ -189,24 +182,6 @@ namespace PeaRoxy.Windows
             return false;
         }
 
-        /// <summary>
-        /// The refresh proxy settings.
-        /// </summary>
-        /// <param name="rV">
-        /// The r v.
-        /// </param>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
-        public static bool RefreshProxySettings(bool rV)
-        {
-            RefreshProxySettings();
-            return rV;
-        }
-
-        /// <summary>
-        /// The refresh proxy settings.
-        /// </summary>
         public static void RefreshProxySettings()
         {
             InternetSetOption(IntPtr.Zero, InternetOptionProxySettingsChanged, IntPtr.Zero, 0);
@@ -215,19 +190,14 @@ namespace PeaRoxy.Windows
             Thread.Sleep(1000);
         }
 
-        /// <summary>
-        /// The windows_ disable proxy.
-        /// </summary>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
-        public static bool WindowsDisableProxy()
+        public static bool DisableProxy()
         {
             try
             {
-                if (!WindowsIsProxyEnable())
+                if (!IsProxyEnable())
                 {
-                    return RefreshProxySettings(true);
+                    RefreshProxySettings();
+                    return true;
                 }
 
                 StructInternetProxyInfo proxyInfo;
@@ -240,7 +210,7 @@ namespace PeaRoxy.Windows
                 if (InternetSetOption(IntPtr.Zero, InternetOptionProxy, intptrStruct, Marshal.SizeOf(proxyInfo)))
                 {
                     RefreshProxySettings();
-                    if (!WindowsIsProxyEnable())
+                    if (!IsProxyEnable())
                     {
                         return true;
                     }
@@ -258,7 +228,7 @@ namespace PeaRoxy.Windows
                     registry.Close();
                 }
                 RefreshProxySettings();
-                if (!WindowsIsProxyEnable())
+                if (!IsProxyEnable())
                 {
                     return true;
                 }
@@ -270,19 +240,14 @@ namespace PeaRoxy.Windows
             return false;
         }
 
-        /// <summary>
-        /// The windows_ disable proxy auto config.
-        /// </summary>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
-        public static bool WindowsDisableProxyAutoConfig()
+        public static bool DisableProxyAutoConfig()
         {
             try
             {
-                if (!WindowsIsProxyAutoConfigEnable())
+                if (!IsProxyAutoConfigEnable())
                 {
-                    return RefreshProxySettings(true);
+                    RefreshProxySettings();
+                    return true;
                 }
 
                 RegistryKey registry = Registry.CurrentUser.OpenSubKey(
@@ -295,7 +260,7 @@ namespace PeaRoxy.Windows
                     registry.Close();
                 }
                 RefreshProxySettings();
-                if (!WindowsIsProxyAutoConfigEnable())
+                if (!IsProxyAutoConfigEnable())
                 {
                     return true;
                 }
@@ -307,16 +272,7 @@ namespace PeaRoxy.Windows
             return false;
         }
 
-        /// <summary>
-        /// The windows_ is proxy auto config enable.
-        /// </summary>
-        /// <param name="address">
-        /// The address.
-        /// </param>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
-        public static bool WindowsIsProxyAutoConfigEnable(string address = "")
+        public static bool IsProxyAutoConfigEnable(string address = "")
         {
             try
             {
@@ -326,12 +282,10 @@ namespace PeaRoxy.Windows
                         false);
                 using (registry)
                 {
-                    if (address == string.Empty)
-                    {
-                        return false;
-                    }
-
-                    if (registry != null && registry.GetValue("AutoConfigURL", string.Empty).Equals(address))
+                    if (registry != null
+                        && ((string.IsNullOrWhiteSpace(address)
+                             && !string.IsNullOrWhiteSpace((string)registry.GetValue("AutoConfigURL", string.Empty)))
+                            || registry.GetValue("AutoConfigURL", string.Empty).Equals(address)))
                     {
                         return true;
                     }
@@ -344,16 +298,7 @@ namespace PeaRoxy.Windows
             return false;
         }
 
-        /// <summary>
-        /// The windows_ is proxy enable.
-        /// </summary>
-        /// <param name="proxyString">
-        /// The proxy string.
-        /// </param>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
-        public static bool WindowsIsProxyEnable(string proxyString = "")
+        private static bool IsProxyEnable(string proxyString = "")
         {
             try
             {
@@ -368,8 +313,6 @@ namespace PeaRoxy.Windows
                         return false;
                     }
 
-                    // if (proxyString == string.Empty)
-                    // return false;
                     if (registry != null && (string)registry.GetValue("ProxyServer", string.Empty) == proxyString)
                     {
                         return true;
@@ -383,48 +326,16 @@ namespace PeaRoxy.Windows
             return false;
         }
 
-        /// <summary>
-        /// The windows_ set active proxy.
-        /// </summary>
-        /// <param name="ip">
-        /// The ip.
-        /// </param>
-        /// <param name="port">
-        /// The port.
-        /// </param>
-        /// <param name="https">
-        /// The https.
-        /// </param>
-        /// <param name="http">
-        /// The http.
-        /// </param>
-        /// <param name="socks">
-        /// The socks.
-        /// </param>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
-        public static bool WindowsSetActiveProxy(
-            string ip, 
-            int port, 
-            bool https = false, 
-            bool http = false, 
-            bool socks = false)
+        public static bool SetActiveProxy(IPEndPoint gateway)
         {
             try
             {
-                if (!http && !https && !socks)
+                string proxyString = string.Format("{0}:{1}", gateway.Address, gateway.Port);
+                proxyString = string.Format("http={0};" + "https={0};" + "socks={0};", proxyString);
+                if (IsProxyEnable(proxyString))
                 {
-                    return WindowsDisableProxy();
-                }
-
-                string proxyString = ip + ":" + port;
-                proxyString = (http ? "http=" + proxyString + ";" : string.Empty)
-                              + (https ? "https=" + proxyString + ";" : string.Empty)
-                              + (socks ? "socks=" + proxyString + ";" : string.Empty);
-                if (WindowsIsProxyEnable(proxyString))
-                {
-                    return RefreshProxySettings(true);
+                    RefreshProxySettings();
+                    return true;
                 }
 
                 StructInternetProxyInfo proxyInfo;
@@ -440,7 +351,7 @@ namespace PeaRoxy.Windows
                     InternetSetOption(IntPtr.Zero, InternetOptionSettingsChanged, IntPtr.Zero, 0);
                     InternetSetOption(IntPtr.Zero, InternetOptionRefresh, IntPtr.Zero, 0);
                     Thread.Sleep(1000);
-                    if (WindowsIsProxyEnable(proxyString))
+                    if (IsProxyEnable(proxyString))
                     {
                         return true;
                     }
@@ -458,7 +369,7 @@ namespace PeaRoxy.Windows
                     registry.Close();
                 }
                 RefreshProxySettings();
-                if (WindowsIsProxyEnable(proxyString))
+                if (IsProxyEnable(proxyString))
                 {
                     return true;
                 }
@@ -470,27 +381,19 @@ namespace PeaRoxy.Windows
             return false;
         }
 
-        /// <summary>
-        /// The windows_ set active proxy auto config.
-        /// </summary>
-        /// <param name="address">
-        /// The address.
-        /// </param>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
-        public static bool WindowsSetActiveProxyAutoConfig(string address)
+        public static bool SetActiveAutoConfig(string address)
         {
             try
             {
                 if (address == string.Empty)
                 {
-                    return WindowsDisableProxyAutoConfig();
+                    return DisableProxyAutoConfig();
                 }
 
-                if (WindowsIsProxyAutoConfigEnable(address))
+                if (IsProxyAutoConfigEnable(address))
                 {
-                    return RefreshProxySettings(true);
+                    RefreshProxySettings();
+                    return true;
                 }
 
                 RegistryKey registry = Registry.CurrentUser.OpenSubKey(
@@ -503,7 +406,7 @@ namespace PeaRoxy.Windows
                     registry.Close();
                 }
                 RefreshProxySettings();
-                if (WindowsIsProxyAutoConfigEnable(address))
+                if (IsProxyAutoConfigEnable(address))
                 {
                     return true;
                 }
@@ -519,24 +422,6 @@ namespace PeaRoxy.Windows
 
         #region Methods
 
-        /// <summary>
-        /// The internet set option.
-        /// </summary>
-        /// <param name="hInternet">
-        /// The h internet.
-        /// </param>
-        /// <param name="dwOption">
-        /// The dw option.
-        /// </param>
-        /// <param name="lpBuffer">
-        /// The lp buffer.
-        /// </param>
-        /// <param name="dwBufferLength">
-        /// The dw buffer length.
-        /// </param>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
         [DllImport("wininet.dll")]
         private static extern bool InternetSetOption(
             IntPtr hInternet, 
@@ -546,9 +431,6 @@ namespace PeaRoxy.Windows
 
         #endregion
 
-        /// <summary>
-        /// The internet proxy info structure
-        /// </summary>
         private struct StructInternetProxyInfo
         {
             #region Fields
