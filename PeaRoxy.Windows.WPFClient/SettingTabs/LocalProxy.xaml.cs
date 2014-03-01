@@ -53,7 +53,7 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
         public override void LoadSettings()
         {
             this.IsLoading = true;
-            this.SLocalProxyServerPort.Value = Settings.Default.Proxy_Port;
+            this.TxtLocalProxyServerPort.Text = Settings.Default.Proxy_Port.ToString(CultureInfo.InvariantCulture);
             if (Settings.Default.Proxy_Address == "*")
             {
                 this.CbLocalProxyServerAddressAny.IsChecked = true;
@@ -62,10 +62,6 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
             {
                 this.TxtLocalProxyServerAddress.Text = Settings.Default.Proxy_Address;
             }
-
-            this.CbLocalProxyServerSocks.IsChecked = Settings.Default.Proxy_SOCKS;
-            this.CbLocalProxyServerHttp.IsChecked = Settings.Default.Proxy_HTTP;
-            this.CbLocalProxyServerHttps.IsChecked = Settings.Default.Proxy_HTTPS;
 
             this.CbAutoConfigScriptEnable.IsChecked = Settings.Default.AutoConfig_Enable;
             this.CbAutoConfigScriptKeepRunning.IsChecked = Settings.Default.AutoConfig_KeepRuning;
@@ -96,7 +92,7 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
                 return;
             }
 
-            Settings.Default.Proxy_Port = (ushort)this.SLocalProxyServerPort.Value;
+            Settings.Default.Proxy_Port = ushort.Parse(TxtLocalProxyServerPort.Text);
 
             if (this.CbLocalProxyServerAddressAny.IsChecked ?? false)
             {
@@ -106,10 +102,6 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
             {
                 Settings.Default.Proxy_Address = this.TxtLocalProxyServerAddress.Text;
             }
-
-            Settings.Default.Proxy_SOCKS = this.CbLocalProxyServerSocks.IsChecked ?? false;
-            Settings.Default.Proxy_HTTP = this.CbLocalProxyServerHttp.IsChecked ?? false;
-            Settings.Default.Proxy_HTTPS = this.CbLocalProxyServerHttps.IsChecked ?? false;
 
             Settings.Default.AutoConfig_Enable = this.CbAutoConfigScriptEnable.IsChecked ?? false;
             Settings.Default.AutoConfig_KeepRuning = this.CbAutoConfigScriptKeepRunning.IsChecked ?? false;
@@ -147,9 +139,6 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
             this.LblAutoConfigScriptPreAddress.IsEnabled = this.CbAutoConfigScriptEnable.IsChecked ?? false;
             this.RbAutoConfigScriptNsMime.IsEnabled = this.CbAutoConfigScriptEnable.IsChecked ?? false;
             this.RbAutoConfigScriptJsMime.IsEnabled = this.CbAutoConfigScriptEnable.IsChecked ?? false;
-            this.CbLocalProxyServerHttp.IsEnabled = !(this.CbAutoConfigScriptEnable.IsChecked ?? false);
-            this.CbLocalProxyServerHttp.IsChecked = (this.CbAutoConfigScriptEnable.IsChecked ?? false)
-                                                     || (this.CbLocalProxyServerHttp.IsChecked ?? false);
             this.SaveSettings();
         }
 
@@ -186,22 +175,8 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
             }
 
             this.LblAutoConfigScriptPreAddress.Content = "http://"
-                                                          + (this.CbLocalProxyServerAddressAny.IsChecked ?? false ? Environment.MachineName : this.TxtLocalProxyServerAddress.Text) + ":"
+                                                          + (this.CbLocalProxyServerAddressAny.IsChecked ?? false ? IPAddress.Loopback.ToString() : this.TxtLocalProxyServerAddress.Text) + ":"
                                                           + this.TxtLocalProxyServerPort.Text + "/";
-        }
-
-        /// <summary>
-        /// The s_local proxy server port_ value changed.
-        /// </summary>
-        /// <param name="sender">
-        /// The sender.
-        /// </param>
-        /// <param name="e">
-        /// The e.
-        /// </param>
-        private void SLocalProxyServerPortValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            this.TxtLocalProxyServerPort.Text = ((ushort)this.SLocalProxyServerPort.Value).ToString(CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -282,7 +257,7 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
 
             this.LblAutoConfigScriptPreAddressRefresh(null, null);
             this.TxtLocalProxyServerPort.Text = port.ToString(CultureInfo.InvariantCulture);
-            this.SLocalProxyServerPort.Value = port;
+            this.SaveSettings();
         }
 
         #endregion

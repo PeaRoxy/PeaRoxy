@@ -7,44 +7,28 @@
          mc:Ignorable="d"
          d:DesignHeight="300" d:DesignWidth="360">
     <Grid>
-        <GroupBox Header="Local Server" Height="109" Margin="8,9,0,0"
+        <GroupBox Header="Local Server" Height="54" Margin="9,9,1,0"
                   VerticalAlignment="Top" Foreground="Black" Width="350">
             <Grid>
                 <Label Content="Listening IP Address:" Height="28" HorizontalAlignment="Left" Margin="6,1,0,0"
                        VerticalAlignment="Top" />
-                <Label Content="Port:" Height="28" HorizontalAlignment="Left" Margin="6,30,0,0" VerticalAlignment="Top" />
-                <TextBox Height="23" HorizontalAlignment="Left" Margin="132,3,0,0" Name="TxtLocalProxyServerAddress"
-                         VerticalAlignment="Top" Width="153" Text="127.0.0.1" MaxLength="15"
+                <TextBox Height="23" HorizontalAlignment="Left" Margin="174,3,0,0" Name="TxtLocalProxyServerAddress"
+                         VerticalAlignment="Top" Width="97" Text="127.0.0.1" MaxLength="15"
                          LostFocus="TxtLocalProxyServerAddressLostFocus"
                          TextChanged="LblAutoConfigScriptPreAddressRefresh" x:FieldModifier="private" />
-                <TextBox Height="23" HorizontalAlignment="Left" Margin="132,32,0,0" Name="TxtLocalProxyServerPort"
+                <TextBox Height="23" HorizontalAlignment="Left" Margin="286,3,0,0" Name="TxtLocalProxyServerPort"
                          VerticalAlignment="Top" Width="42" AcceptsReturn="False"
                          TextChanged="TxtLocalProxyServerPortTextChanged" LostFocus="TxtTextBoxLostFocus"
                          x:FieldModifier="private" />
-                <Slider Height="23" HorizontalAlignment="Left" Margin="183,32,0,0" Name="SLocalProxyServerPort"
-                        VerticalAlignment="Top" Width="148" IsDirectionReversed="False" IsMoveToPointEnabled="True"
-                        Maximum="65535" Minimum="1" Orientation="Horizontal" Value="1080" TickPlacement="None"
-                        SmallChange="1" LargeChange="100" ValueChanged="SLocalProxyServerPortValueChanged"
-                        AutoToolTipPlacement="TopLeft" x:FieldModifier="private" />
-                <CheckBox Content="Any" Height="16" HorizontalAlignment="Left" Margin="290,7,0,0"
+                <CheckBox Content="Any" Height="16" HorizontalAlignment="Left" Margin="125,7,0,0"
                           Name="CbLocalProxyServerAddressAny" VerticalAlignment="Top"
                           Checked="CbLocalProxyServerAddressAnyChecked"
                           Unchecked="CbLocalProxyServerAddressAnyChecked"
                           Loaded="CbLocalProxyServerAddressAnyChecked" x:FieldModifier="private" />
-                <Label Content="Protocols:" Height="28" HorizontalAlignment="Left" Margin="6,59,0,0"
-                       VerticalAlignment="Top" />
-                <CheckBox Content="SOCKS 4/5" Height="16" HorizontalAlignment="Left" Margin="253,65,0,0"
-                          Name="CbLocalProxyServerSocks" VerticalAlignment="Top" IsChecked="True"
-                          Checked="TxtTextBoxLostFocus" Unchecked="TxtTextBoxLostFocus" x:FieldModifier="private" />
-                <CheckBox Content="HTTP 1.1" Height="16" HorizontalAlignment="Left" Margin="100,65,0,0"
-                          Name="CbLocalProxyServerHttp" VerticalAlignment="Top" IsChecked="True"
-                          Checked="TxtTextBoxLostFocus" Unchecked="TxtTextBoxLostFocus" x:FieldModifier="private" />
-                <CheckBox Content="HTTPS" Height="16" HorizontalAlignment="Left" Margin="180,65,0,0"
-                          Name="CbLocalProxyServerHttps" VerticalAlignment="Top" IsChecked="True"
-                          Checked="TxtTextBoxLostFocus" Unchecked="TxtTextBoxLostFocus" x:FieldModifier="private" />
+                <Label Content=":" HorizontalAlignment="Left" Margin="272,1,0,0" VerticalAlignment="Top" Width="14"/>
             </Grid>
         </GroupBox>
-        <GroupBox Foreground="Black" Header="Automatic Configuration Script" Height="140" Margin="6,119,0,0"
+        <GroupBox Foreground="Black" Header="Automatic Configuration Script" Height="140" Margin="8,70,2,0"
                   VerticalAlignment="Top" Width="350">
             <Grid>
                 <Label Content="Address:" Height="28" HorizontalAlignment="Left" Margin="6,44,0,0"
