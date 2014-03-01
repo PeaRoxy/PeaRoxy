@@ -14,6 +14,7 @@ namespace PeaRoxy.Windows.WPFClient
 
     using System;
     using System.Diagnostics.CodeAnalysis;
+    using System.Reflection;
     using System.Windows;
     using System.Windows.Forms;
     using System.Windows.Media.Animation;
@@ -28,22 +29,25 @@ namespace PeaRoxy.Windows.WPFClient
     /// <summary>
     ///     Interaction logic for App.xaml
     /// </summary>
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly",
+        Justification = "Reviewed. Suppression is OK here.")]
     public partial class App
     {
         #region Static Fields
 
         /// <summary>
-        /// The defualt app.
+        ///     The defualt app.
         /// </summary>
         private static App defualtApp;
+
+        private static JumpList jumpList;
 
         #endregion
 
         #region Delegates
 
         /// <summary>
-        /// The simple void_ delegate.
+        ///     The simple void_ delegate.
         /// </summary>
         public delegate void SimpleVoidDelegate();
 
@@ -52,45 +56,52 @@ namespace PeaRoxy.Windows.WPFClient
         #region Public Properties
 
         /// <summary>
-        /// Gets the args.
+        ///     Gets the args.
         /// </summary>
         public static string Args { get; private set; }
 
         /// <summary>
-        /// Gets the notify.
-        /// </summary>
-        public static NotifyIcon Notify { get; private set; }
-
-        /// <summary>
-        /// Gets a value indicating whether is executed by user.
+        ///     Gets a value indicating whether is executed by user.
         /// </summary>
         public static bool IsExecutedByUser { get; private set; }
+
+        /// <summary>
+        ///     Gets the notify.
+        /// </summary>
+        public static NotifyIcon Notify { get; private set; }
 
         #endregion
 
         #region Public Methods and Operators
 
         /// <summary>
-        /// The end.
+        ///     The end.
         /// </summary>
         public static void End()
         {
-            ApplicationRestartRecoveryManager.UnregisterApplicationRestart();
-            if (TaskbarManager.IsPlatformSupported)
+            if (jumpList != null && TaskbarManager.IsPlatformSupported)
             {
-                JumpList.CreateJumpList().ClearAllUserTasks();
-                JumpList.CreateJumpList().Refresh();
+                jumpList.ClearAllUserTasks();
+                jumpList.Refresh();
             }
-
-            Current.Shutdown();
+            ApplicationRestartRecoveryManager.UnregisterApplicationRestart();
+            if (Current != null && Current.MainWindow != null)
+            {
+                MainWindow cWindow = Current.MainWindow as MainWindow;
+                if (cWindow != null)
+                {
+                    cWindow.StopServer(true);
+                }
+                Current.Shutdown();
+            }
             Environment.Exit(0);
         }
 
         /// <summary>
-        /// The main.
+        ///     The main.
         /// </summary>
         /// <param name="args">
-        /// The args.
+        ///     The args.
         /// </param>
         [STAThread]
         public static void Main(string[] args)
@@ -102,14 +113,13 @@ namespace PeaRoxy.Windows.WPFClient
                 WpfSingleInstance.Make();
                 if (Args.Contains("/quit"))
                 {
-                    Current.Shutdown();
-                    Environment.Exit(0);
+                    End();
                 }
 
                 WpfSingleInstance.SecondInstanceCallback += SecondInstanceExecuted;
                 IsExecutedByUser = !Args.Contains("/autorun");
                 Timeline.DesiredFrameRateProperty.OverrideMetadata(
-                    typeof(Timeline), 
+                    typeof(Timeline),
                     new FrameworkPropertyMetadata { DefaultValue = 60 });
                 RunApp();
             }
@@ -119,10 +129,10 @@ namespace PeaRoxy.Windows.WPFClient
         }
 
         /// <summary>
-        /// The second instance executed.
+        ///     The second instance executed.
         /// </summary>
         /// <param name="args">
-        /// The args.
+        ///     The args.
         /// </param>
         public static void SecondInstanceExecuted(string args)
         {
@@ -131,9 +141,7 @@ namespace PeaRoxy.Windows.WPFClient
                 Args = args.ToLower().Trim();
                 if (Args.Contains("/quit"))
                 {
-                    ((MainWindow)Current.MainWindow).StopServer();
-                    Current.Shutdown();
-                    Environment.Exit(0);
+                    End();
                 }
 
                 if (((MainWindow)Current.MainWindow).IsHidden)
@@ -152,8 +160,22 @@ namespace PeaRoxy.Windows.WPFClient
 
         #region Methods
 
+        internal static void InitJumpList()
+        {
+            jumpList = JumpList.CreateJumpList();
+            jumpList.KnownCategoryToDisplay = JumpListKnownCategoryType.Neither;
+            jumpList.ClearAllUserTasks();
+            string ourFileName = Assembly.GetEntryAssembly().Location;
+            JumpListLink quitLink = new JumpListLink(ourFileName, "Quit PeaRoxy")
+                                        {
+                                            Arguments = "/quit",
+                                        };
+            jumpList.AddUserTasks(new JumpListTask[] { quitLink });
+            jumpList.Refresh();
+        }
+
         /// <summary>
-        /// The run app.
+        ///     The run app.
         /// </summary>
         private static void RunApp()
         {
@@ -167,9 +189,9 @@ namespace PeaRoxy.Windows.WPFClient
                 defualtApp.DispatcherUnhandledException += (s, e) =>
                     {
                         VDialog.Show(
-                            "FATAL Error: " + e.Exception.Message + "\r\n" + e.Exception.StackTrace, 
-                            "Start Error", 
-                            MessageBoxButtons.OK, 
+                            e.Exception.Message + "\r\n\r\n" + e.Exception.StackTrace,
+                            "FATAL ERROR",
+                            MessageBoxButtons.OK,
                             MessageBoxIcon.Error);
                         e.Handled = false;
                         End();
@@ -180,8 +202,7 @@ namespace PeaRoxy.Windows.WPFClient
             {
             }
 
-            Current.Shutdown();
-            Environment.Exit(0);
+            End();
         }
 
         #endregion

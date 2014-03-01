@@ -14,7 +14,6 @@ namespace PeaRoxy.Windows.WPFClient
 
     using System;
     using System.ComponentModel;
-    using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.Reflection;
     using System.Threading;
@@ -210,7 +209,7 @@ namespace PeaRoxy.Windows.WPFClient
         /// </param>
         private void ControlsStopClick(object sender, RoutedEventArgs e)
         {
-            this.RefreshStatus(this.StopServer());
+            this.RefreshStatus(this.StopServer(false));
         }
 
         /// <summary>
@@ -405,18 +404,14 @@ namespace PeaRoxy.Windows.WPFClient
         private void QuickButtonsRefresh()
         {
             this.Toolbar.SmartPearIsEnable = Settings.Default.Grabber != 1;
-            this.Toolbar.ReConfigIsEnable = Settings.Default.Grabber == 0 || this.listener == null
-                                            || (this.listener.Status == ProxyController.ControllerStatus.Stopped
-                                                || this.listener.Status
-                                                == ProxyController.ControllerStatus.OnlyAutoConfig);
+            this.Toolbar.ReConfigIsEnable = true;
             this.Toolbar.SmartPearEnableMenuItem.IsEnabled = true;
             if (!this.Toolbar.SmartPearIsEnable)
             {
                 this.Toolbar.SmartPearColor = ToolbarButtons.Color.White;
             }
             else if (this.listener != null
-                     && (this.listener.Status == ProxyController.ControllerStatus.Both
-                         || this.listener.Status == ProxyController.ControllerStatus.OnlyProxy)
+                     && this.listener.Status.HasFlag(ProxyController.ControllerStatus.Proxy)
                      && this.listener.ActiveServer is NoServer)
             {
                 this.Toolbar.SmartPearColor = ToolbarButtons.Color.Red;
@@ -425,8 +420,7 @@ namespace PeaRoxy.Windows.WPFClient
                 this.Toolbar.SmartPearDisableMenuItem.IsChecked = true;
             }
             else if (this.listener != null
-                     && (this.listener.Status == ProxyController.ControllerStatus.Both
-                         || this.listener.Status == ProxyController.ControllerStatus.OnlyProxy)
+                     && this.listener.Status.HasFlag(ProxyController.ControllerStatus.Proxy)
                      && (this.listener.SmartPear.ForwarderHttpEnable ^ this.listener.SmartPear.ForwarderHttpsEnable))
             {
                 this.Toolbar.SmartPearColor = ToolbarButtons.Color.Yellow;
@@ -455,13 +449,17 @@ namespace PeaRoxy.Windows.WPFClient
             this.Toolbar.GrabberNoneMenuItem.IsChecked = false;
             this.Toolbar.GrabberTapMenuItem.IsChecked = false;
             this.Toolbar.GrabberHookMenuItem.IsChecked = false;
-            switch (((Grabber)this.Options.Grabber.SettingsPage).ActiveGrabber.SelectedIndex)
+            this.Toolbar.GrabberProxyMenuItem.IsChecked = false;
+            switch (((Grabber)this.Options.Grabber.SettingsPage).SelectedGrabber)
             {
-                case 1:
+                case Grabber.GrabberType.Tap:
                     this.Toolbar.GrabberTapMenuItem.IsChecked = true;
                     break;
-                case 2:
+                case Grabber.GrabberType.Hook:
                     this.Toolbar.GrabberHookMenuItem.IsChecked = true;
+                    break;
+                case Grabber.GrabberType.Proxy:
+                    this.Toolbar.GrabberProxyMenuItem.IsChecked = true;
                     break;
                 default:
                     this.Toolbar.GrabberNoneMenuItem.IsChecked = true;
@@ -550,9 +548,9 @@ namespace PeaRoxy.Windows.WPFClient
             this.MainPage.IsEnabled = false;
             this.Options.IsEnabled = false;
             this.Controls.IsEnabled = false;
-            this.Toolbar.GrabberGrid.IsEnabled = false;
-            this.Toolbar.SmartPearGrid.IsEnabled = false;
-            this.Toolbar.ReConfigGrid.IsEnabled = false;
+            this.Toolbar.GrabberIsEnable = false;
+            this.Toolbar.SmartPearIsEnable = false;
+            this.Toolbar.ReConfigIsEnable = false;
             this.Toolbar.NavigatorState = ToolbarButtons.State.Option;
 
             DoubleAnimation alignLogoImageButtonsAnimation = new DoubleAnimation(
@@ -573,10 +571,14 @@ namespace PeaRoxy.Windows.WPFClient
             TranslateTransform showOptionsGridTransform = this.Options.RenderTransform as TranslateTransform;
             hideMainGridAnimation.EasingFunction = new PowerEase();
             ((PowerEase)hideMainGridAnimation.EasingFunction).EasingMode = EasingMode.EaseIn;
-            Debug.Assert(hideMainGridTransform != null, "hideMainGridTransform != null");
-            hideMainGridTransform.BeginAnimation(TranslateTransform.XProperty, hideMainGridAnimation);
-            Debug.Assert(showOptionsGridTransform != null, "showOptionsGridTransform != null");
-            showOptionsGridTransform.BeginAnimation(TranslateTransform.XProperty, hideMainGridAnimation);
+            if (hideMainGridTransform != null)
+            {
+                hideMainGridTransform.BeginAnimation(TranslateTransform.XProperty, hideMainGridAnimation);
+            }
+            if (showOptionsGridTransform != null)
+            {
+                showOptionsGridTransform.BeginAnimation(TranslateTransform.XProperty, hideMainGridAnimation);
+            }
 
             new Thread(
                 delegate()
@@ -614,18 +616,23 @@ namespace PeaRoxy.Windows.WPFClient
             this.Toolbar.GrabberNoneMenuItem.IsChecked = false;
             this.Toolbar.GrabberHookMenuItem.IsChecked = false;
             this.Toolbar.GrabberTapMenuItem.IsChecked = false;
+            this.Toolbar.GrabberProxyMenuItem.IsChecked = false;
             mi.IsChecked = true;
             if (this.Toolbar.GrabberTapMenuItem.IsChecked)
             {
-                ((Grabber)this.Options.Grabber.SettingsPage).ActiveGrabber.SelectedIndex = 1;
+                ((Grabber)this.Options.Grabber.SettingsPage).SelectedGrabber = Grabber.GrabberType.Tap;
             }
             else if (this.Toolbar.GrabberHookMenuItem.IsChecked)
             {
-                ((Grabber)this.Options.Grabber.SettingsPage).ActiveGrabber.SelectedIndex = 2;
+                ((Grabber)this.Options.Grabber.SettingsPage).SelectedGrabber = Grabber.GrabberType.Hook;
+            }
+            else if (this.Toolbar.GrabberProxyMenuItem.IsChecked)
+            {
+                ((Grabber)this.Options.Grabber.SettingsPage).SelectedGrabber = Grabber.GrabberType.Proxy;
             }
             else
             {
-                ((Grabber)this.Options.Grabber.SettingsPage).ActiveGrabber.SelectedIndex = 0;
+                ((Grabber)this.Options.Grabber.SettingsPage).SelectedGrabber = Grabber.GrabberType.None;
             }
 
             this.Options.SaveSettings();
@@ -655,9 +662,9 @@ namespace PeaRoxy.Windows.WPFClient
             this.MainPage.IsEnabled = false;
             this.Options.IsEnabled = false;
             this.Controls.IsEnabled = false;
-            this.Toolbar.GrabberGrid.IsEnabled = false;
-            this.Toolbar.SmartPearGrid.IsEnabled = false;
-            this.Toolbar.ReConfigGrid.IsEnabled = false;
+            this.Toolbar.GrabberIsEnable = false;
+            this.Toolbar.SmartPearIsEnable = false;
+            this.Toolbar.ReConfigIsEnable = false;
             this.Toolbar.NavigatorState = ToolbarButtons.State.Back;
 
             DoubleAnimation alignLogoImageButtonsAnimation = new DoubleAnimation(
@@ -678,10 +685,14 @@ namespace PeaRoxy.Windows.WPFClient
             TranslateTransform showOptionsGridTransform = this.Options.RenderTransform as TranslateTransform;
             hideMainGridAnimation.EasingFunction = new PowerEase();
             ((PowerEase)hideMainGridAnimation.EasingFunction).EasingMode = EasingMode.EaseOut;
-            Debug.Assert(hideMainGridTransform != null, "hideMainGridTransform != null");
-            hideMainGridTransform.BeginAnimation(TranslateTransform.XProperty, hideMainGridAnimation);
-            Debug.Assert(showOptionsGridTransform != null, "showOptionsGridTransform != null");
-            showOptionsGridTransform.BeginAnimation(TranslateTransform.XProperty, hideMainGridAnimation);
+            if (hideMainGridTransform != null)
+            {
+                hideMainGridTransform.BeginAnimation(TranslateTransform.XProperty, hideMainGridAnimation);
+            }
+            if (showOptionsGridTransform != null)
+            {
+                showOptionsGridTransform.BeginAnimation(TranslateTransform.XProperty, hideMainGridAnimation);
+            }
 
             new Thread(
                 delegate()
@@ -710,7 +721,7 @@ namespace PeaRoxy.Windows.WPFClient
         /// </param>
         private void ToolbarReConfigClick(object sender, RoutedEventArgs e)
         {
-            this.ReConfig();
+            this.ReConfig(false);
         }
 
         /// <summary>
@@ -757,8 +768,7 @@ namespace PeaRoxy.Windows.WPFClient
                 {
                     if (this.listener != null)
                     {
-                        if ((this.listener.Status == ProxyController.ControllerStatus.Both
-                             || this.listener.Status == ProxyController.ControllerStatus.OnlyProxy)
+                        if (this.listener.Status.HasFlag(ProxyController.ControllerStatus.Proxy)
                             && this.listener.ActiveServer is NoServer)
                         {
                             this.Toolbar.SmartPearEnableMenuItem.IsChecked = true;
@@ -766,8 +776,7 @@ namespace PeaRoxy.Windows.WPFClient
                             return;
                         }
 
-                        if ((this.listener.Status == ProxyController.ControllerStatus.Both
-                             || this.listener.Status == ProxyController.ControllerStatus.OnlyProxy)
+                        if (this.listener.Status.HasFlag(ProxyController.ControllerStatus.Proxy)
                             && this.listener.ActiveServer is PeaRoxyWeb)
                         {
                             this.listener.SmartPear.ForwarderHttpEnable = true;
@@ -951,7 +960,7 @@ namespace PeaRoxy.Windows.WPFClient
         }
 
         /// <summary>
-        /// The window_ unloaded.
+        /// The window unloaded.
         /// </summary>
         /// <param name="sender">
         /// The sender.
@@ -961,7 +970,7 @@ namespace PeaRoxy.Windows.WPFClient
         /// </param>
         private void WindowUnloaded(object sender, RoutedEventArgs e)
         {
-            this.StopServer();
+            this.StopServer(true);
         }
 
         #endregion

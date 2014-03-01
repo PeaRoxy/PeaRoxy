@@ -30,16 +30,16 @@ namespace PeaRoxy.Windows.WPFClient
 
     using LukeSw.Windows.Forms;
 
-    using Microsoft.WindowsAPICodePack.Shell;
     using Microsoft.WindowsAPICodePack.Taskbar;
 
     using PeaRoxy.ClientLibrary;
+    using PeaRoxy.Windows.Network.Hook;
     using PeaRoxy.Windows.Network.TAP;
     using PeaRoxy.Windows.WPFClient.Properties;
     using PeaRoxy.Windows.WPFClient.SettingTabs;
-   
+    using PeaRoxy.Windows;
+
     using Application = System.Windows.Application;
-    using Common = PeaRoxy.Windows.Common;
     using IWin32Window = System.Windows.Forms.IWin32Window;
     using SmartPear = PeaRoxy.Windows.WPFClient.SettingTabs.SmartPear;
 
@@ -72,11 +72,6 @@ namespace PeaRoxy.Windows.WPFClient
         /// </summary>
         private long uploadSpeed;
 
-        /// <summary>
-        /// The tap tunnel.
-        /// </summary>
-        private TapTunnel tapTunnel;
-
         #endregion
 
         #region Constructors and Destructors
@@ -91,9 +86,21 @@ namespace PeaRoxy.Windows.WPFClient
 
             if (Settings.Default.FirstRun)
             {
+                int currentSettingsVersion = Settings.Default.Settings_Version;
                 Settings.Default.Upgrade();
                 Settings.Default.FirstRun = false;
                 Settings.Default.Save();
+                if (currentSettingsVersion != Settings.Default.Settings_Version)
+                {
+                    Settings.Default.Reset();
+                    Settings.Default.FirstRun = false;
+                    Settings.Default.Save();
+                }
+            }
+            if (!Settings.Default.Welcome_Shown)
+            {
+                WelcomeWindow welcome = new WelcomeWindow();
+                welcome.ShowDialog();
             }
 
             WindowsModule platform = new WindowsModule();
@@ -122,7 +129,6 @@ namespace PeaRoxy.Windows.WPFClient
                                                                            "Exit", 
                                                                            delegate
                                                                                {
-                                                                                   this.StopServer();
                                                                                    App.End();
                                                                                })
                             });
@@ -333,7 +339,7 @@ namespace PeaRoxy.Windows.WPFClient
 
                 if (this.listener != null)
                 {
-                    this.StopServer();
+                    this.StopServer(true);
                 }
                 else
                 {
@@ -455,13 +461,9 @@ namespace PeaRoxy.Windows.WPFClient
                 this.IndfferentForm();
 
                 // Grabber Pre-Listen Settings
-                switch (Settings.Default.Grabber)
+                switch ((Grabber.GrabberType)Settings.Default.Grabber)
                 {
-                    case 0:
-
-                        // Do nothing
-                        break;
-                    case 1:
+                    case Grabber.GrabberType.Tap:
                         if (Settings.Default.Server_Type == 0)
                         {
                             throw new Exception("You can't select No Server when using TAP Adapter grabber.");
@@ -492,9 +494,12 @@ namespace PeaRoxy.Windows.WPFClient
                         }
 
                         break;
-                    case 2:
-
-                        // Do nothing
+                    case Grabber.GrabberType.Hook:
+                        if (Settings.Default.Server_Type == 2)
+                        {
+                            throw new Exception("You can't select PeaRoxyWeb Server when using Hook grabber.");
+                        }
+                        this.listener.IsHttpsSupported = true;
                         break;
                 }
 
@@ -555,65 +560,21 @@ namespace PeaRoxy.Windows.WPFClient
                                         this.listener.Start();
 
                                         // Grabber Pro-Listen Settings
-                                        switch (Settings.Default.Grabber)
+                                        if ((Grabber.GrabberType)Settings.Default.Grabber == Grabber.GrabberType.Tap)
                                         {
-                                            case 0:
-                                                this.ReConfig(true);
-                                                break;
-                                            case 1:
-                                                List<IPAddress> hostIps = new List<IPAddress>();
-                                                if (CommonLibrary.Common.IsIpAddress(serverAddress))
-                                                {
-                                                    hostIps.Add(IPAddress.Parse(serverAddress));
-                                                }
-                                                else
-                                                {
-                                                    hostIps.AddRange(Dns.GetHostEntry(serverAddress).AddressList);
-                                                }
-
-                                                this.tapTunnel = new TapTunnel
-                                                                     {
-                                                                         AdapterAddressRange =
-                                                                             IPAddress.Parse(
-                                                                                 Settings.Default.TAP_IPRange),
-                                                                         DnsResolvingAddress =
-                                                                             IPAddress.Parse(
-                                                                                 Settings.Default
-                                                                             .DNS_IPAddress),
-                                                                         DnsResolvingAddress2 =
-                                                                             IPAddress.Parse(
-                                                                                 Settings.Default
-                                                                             .Proxy_Address),
-                                                                         ExceptionIPs = hostIps.ToArray(),
-                                                                         SocksProxyEndPoint =
-                                                                             new IPEndPoint(
-                                                                             IPAddress.Parse(
-                                                                                 Settings.Default
-                                                                             .Proxy_Address),
-                                                                             this.listener.Port),
-                                                                         TunnelName = "PeaRoxy Tunnel"
-                                                                     };
-
-                                                if (!this.tapTunnel.StartTunnel())
-                                                {
-                                                    this.tapTunnel.StopTunnel();
-                                                    if (!silent)
-                                                    {
-                                                        VDialog.Show(
-                                                            this,
-                                                            "Failed to start TAP Adapter. Skipped.",
-                                                            "TAP Driver",
-                                                            MessageBoxButtons.OK,
-                                                            MessageBoxIcon.Warning);
-                                                    }
-                                                }
-
-                                                break;
-                                            case 2:
-
-                                                // Do Nothing
-                                                break;
+                                            List<IPAddress> hostIps = new List<IPAddress>();
+                                            if (CommonLibrary.Common.IsIpAddress(serverAddress))
+                                            {
+                                                hostIps.Add(IPAddress.Parse(serverAddress));
+                                            }
+                                            else
+                                            {
+                                                hostIps.AddRange(Dns.GetHostEntry(serverAddress).AddressList);
+                                            }
+                                            TapTunnelModule.ExceptionIPs = hostIps.ToArray();
                                         }
+
+                                        this.ReConfig(silent);
 
                                         App.Notify.ShowBalloonTip(
                                             2000,
@@ -688,13 +649,13 @@ namespace PeaRoxy.Windows.WPFClient
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        public bool StopServer()
+        public bool StopServer(bool silent)
         {
             try
             {
                 if (this.listener != null)
                 {
-                    if (this.listener.Status != ProxyController.ControllerStatus.Stopped)
+                    if (this.listener.Status != ProxyController.ControllerStatus.None)
                     {
                         if (this.listener.IsAutoConfigEnable && !Settings.Default.AutoConfig_KeepRuning)
                         {
@@ -704,33 +665,9 @@ namespace PeaRoxy.Windows.WPFClient
                         this.listener.Stop();
                     }
 
-                    if (this.listener.Status == ProxyController.ControllerStatus.OnlyAutoConfig
-                        || this.listener.Status == ProxyController.ControllerStatus.Both)
-                    {
-                        this.Status = CurrentStatus.Sleep;
-                    }
-                    else
-                    {
-                        this.Status = CurrentStatus.Disconnected;
-                    }
+                    this.Status = this.listener.Status.HasFlag(ProxyController.ControllerStatus.AutoConfig) ? CurrentStatus.Sleep : CurrentStatus.Disconnected;
 
-                    switch (Settings.Default.Grabber)
-                    {
-                        case 0:
-                            this.ReConfig(true);
-                            break;
-                        case 1:
-                            if (this.tapTunnel != null)
-                            {
-                                this.tapTunnel.StopTunnel();
-                            }
-
-                            break;
-                        case 2:
-
-                            // Do Nothing
-                            break;
-                    }
+                    this.ReConfig(silent);
                 }
 
                 this.Options.SaveSettings();
@@ -770,134 +707,170 @@ namespace PeaRoxy.Windows.WPFClient
         /// <param name="silent">
         /// The silent.
         /// </param>
-        public void ReConfig(bool silent = false)
+        /// <param name="forceState">
+        /// Indicate when method must force the state to active or deactive. null for refresh/auto
+        /// </param>
+        public void ReConfig(bool silent, bool? forceState = null)
         {
-            if (this.listener == null || this.listener.Status == ProxyController.ControllerStatus.Stopped
-                || this.listener.Status == ProxyController.ControllerStatus.OnlyAutoConfig)
+            bool isListenerActive = this.listener != null && this.listener.Status.HasFlag(ProxyController.ControllerStatus.Proxy);
+            if (!forceState.HasValue || !forceState.Value)
             {
-                if (Settings.Default.AutoConfig_Enable)
+                if (!isListenerActive)
                 {
-                    WindowsProxy.RefreshProxySettings();
-
-                    // ni.ShowBalloonTip(2000, "PeaRoxy Client", "Ask Windows to refresh proxy settings: Done", System.Windows.Forms.ToolTipIcon.Info);
-                    // Nothing to Do
+                    ProxyModule.DisableProxy();
+                    ProxyModule.DisableProxyAutoConfig();
                 }
 
-                if (WindowsProxy.WindowsDisableProxy())
+                if (isListenerActive && TapTunnelModule.IsRunning())
                 {
-                    App.Notify.ShowBalloonTip(
-                        2000, 
-                        "PeaRoxy Client", 
-                        "Ask Windows to ignore PeaRoxy settings: Done", 
-                        ToolTipIcon.Info);
+                    TapTunnelModule.StopTunnel();
                 }
-                else if (!silent
-                         && VDialog.Show(
-                             this, 
-                             "Failed, You need to logoff and relogin to your account and try again or configure your system manually.\r\nDo want us to logoff your user account?!", 
-                             "Auto Config", 
-                             MessageBoxButtons.YesNo, 
-                             MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Yes)
+                TapTunnelModule.CleanAllTunnelProcesses();
+
+                if (isListenerActive && HookModule.IsHookProcessRunning())
                 {
-                    Common.LogOffUser();
+                    HookModule.StopHookProcess();
                 }
+                HookModule.CleanAllHookProcesses();
             }
-            else
+
+            if ((forceState.HasValue && !forceState.Value) || !isListenerActive)
             {
-                if (Settings.Default.AutoConfig_Enable)
-                {
-                    string autoProxyAddress = string.Format(
-                        "http://{0}:{1}/{2}",
-                        (Settings.Default.Proxy_Address == "*") ? Environment.MachineName : Settings.Default.Proxy_Address, 
-                        Settings.Default.Proxy_Port, 
-                        Settings.Default.AutoConfig_Address);
-                    if (!WindowsProxy.WindowsSetActiveProxyAutoConfig(autoProxyAddress))
+                return;
+            }
+
+            switch ((Grabber.GrabberType)Settings.Default.Grabber)
+            {
+                case Grabber.GrabberType.Proxy:
+                    string autoConfigUrl = string.Empty;
+                    if (Settings.Default.AutoConfig_Enable)
                     {
-                        if (!silent
-                            && VDialog.Show(
-                                this, 
-                                "Failed, You need to logoff and relogin to your account and try again or configure your system manually.\r\nDo want us to logoff your user account?!", 
-                                "Auto Config", 
-                                MessageBoxButtons.YesNo, 
-                                MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Yes)
+                        autoConfigUrl = string.Format(
+                            "http://{0}:{1}/{2}",
+                            (Settings.Default.Proxy_Address == "*")
+                                ? IPAddress.Loopback.ToString()
+                                : Settings.Default.Proxy_Address,
+                            Settings.Default.Proxy_Port,
+                            Settings.Default.AutoConfig_Address);
+                    }
+
+                    bool res =
+                        ProxyModule.SetActiveProxy(
+                            new IPEndPoint(
+                                (Settings.Default.Proxy_Address == "*"
+                                     ? IPAddress.Any
+                                     : IPAddress.Parse(Settings.Default.Proxy_Address)),
+                                this.listener.Port));
+                    if (!string.IsNullOrWhiteSpace(autoConfigUrl))
+                    {
+                        res = res || ProxyModule.SetActiveAutoConfig(autoConfigUrl);
+                    }
+                    bool firefoxRes = ProxyModule.ForceFirefoxToUseSystemSettings();
+
+                    if (!res)
+                    {
+                        if (silent)
                         {
-                            Common.LogOffUser();
+                            App.Notify.ShowBalloonTip(
+                                5000,
+                                "Proxy Grabber",
+                                "We failed to register PeaRoxy as active proxy for this system. You may need to do it manually or restart/re-logon your PC and let us try again.",
+                                ToolTipIcon.Warning);
+                        }
+                        else
+                        {
+                            if (VDialog.Show(
+                                this,
+                                "We failed to register PeaRoxy as active proxy for this system. You may need to do it manually or restart/re-logon your PC and let us try again.\r\nDo want us to logoff your user account?! Please save your work in other applications before making a decision.",
+                                "Proxy Grabber",
+                                MessageBoxButtons.YesNo,
+                                MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Yes)
+                            {
+                                Common.LogOffUser();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (firefoxRes)
+                        {
+                            App.Notify.ShowBalloonTip(
+                                5000,
+                                "Proxy Grabber",
+                                "PeaRoxy successfully registered as active proxy of this system. You may need to restart your browser to be able to use it along with PeaRoxy.",
+                                ToolTipIcon.Info);
                         }
                         else
                         {
                             App.Notify.ShowBalloonTip(
-                                2000, 
-                                "PeaRoxy Client", 
-                                "Failed to configure Windows", 
+                                5000,
+                                "Proxy Grabber",
+                                "PeaRoxy successfully registered as active proxy of this system. Firefox probably need some manual configurations, also you may need to restart your browser to be able to use it along with PeaRoxy.",
                                 ToolTipIcon.Warning);
                         }
-
-                        return;
                     }
-                }
 
-                bool isDone = false;
-                if (
-                    !WindowsProxy.WindowsSetActiveProxy(
-                        Settings.Default.Proxy_Address, 
-                        Settings.Default.Proxy_Port, 
-                        this.listener.IsHttpSupported, 
-                        this.listener.IsHttpsSupported, 
-                        this.listener.IsSocksSupported))
-                {
-                    if (!silent
-                        && VDialog.Show(
-                            this, 
-                            "Failed, You need to logoff and relogin to your account and try again or configure your system manually.\r\nDo want us to logoff your user account?!", 
-                            "Auto Config", 
-                            MessageBoxButtons.YesNo, 
-                            MessageBoxIcon.Warning) == System.Windows.Forms.DialogResult.Yes)
+                    break;
+                case Grabber.GrabberType.Tap:
+                    if (this.listener != null
+                        && this.listener.Status.HasFlag(ProxyController.ControllerStatus.Proxy))
                     {
-                        Common.LogOffUser();
-                    }
-                    else
-                    {
-                        App.Notify.ShowBalloonTip(
-                            2000, 
-                            "PeaRoxy Client", 
-                            "Failed to configure Windows", 
-                            ToolTipIcon.Warning);
-                    }
-                }
-                else
-                {
-                    isDone = true;
-                }
+                        TapTunnelModule.AdapterAddressRange = IPAddress.Parse(Settings.Default.TAP_IPRange);
+                        TapTunnelModule.DnsResolvingAddress = IPAddress.Parse(Settings.Default.DNS_IPAddress);
+                        TapTunnelModule.DnsResolvingAddress2 = IPAddress.Parse(Settings.Default.Proxy_Address);
+                        TapTunnelModule.SocksProxyEndPoint =
+                            new IPEndPoint(IPAddress.Parse(Settings.Default.Proxy_Address), this.listener.Port);
+                        TapTunnelModule.TunnelName = "PeaRoxy Tunnel";
 
-                if (isDone)
-                {
+                        if (TapTunnelModule.StartTunnel())
+                        {
+                            App.Notify.ShowBalloonTip(
+                                5000,
+                                "TAP Grabber",
+                                "TAP Adapter activated successfully. You are ready to go.",
+                                ToolTipIcon.Info);
+                        }
+                        else
+                        {
+                            TapTunnelModule.StopTunnel();
+                            if (silent)
+                            {
+                                App.Notify.ShowBalloonTip(
+                                    5000,
+                                    "TAP Grabber",
+                                    "Failed to start TAP Adapter. Tap grabber disabled.",
+                                    ToolTipIcon.Warning);
+                            }
+                            else
+                            {
+                                VDialog.Show(
+                                    this,
+                                    "Failed to start TAP Adapter. Tap grabber disabled.",
+                                    "TAP Grabber",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Warning);
+                            }
+                        }
+                    }
+                    break;
+                case Grabber.GrabberType.Hook:
+                    HookModule.StartHookProcess(
+                        Settings.Default.Hook_Processes.Split(
+                            new[] { Environment.NewLine },
+                            StringSplitOptions.RemoveEmptyEntries),
+                        new IPEndPoint(
+                            (Settings.Default.Proxy_Address == "*"
+                                 ? IPAddress.Any
+                                 : IPAddress.Parse(Settings.Default.Proxy_Address)),
+                            this.listener.Port),
+                        Settings.Default.Smart_AntiDNS_Enable ? Settings.Default.Smart_AntiDNSPattern : string.Empty);
+
                     App.Notify.ShowBalloonTip(
-                        2000, 
-                        "PeaRoxy Client", 
-                        "Ask Windows to use PeaRoxy to connect to internet: Done", 
+                        5000,
+                        "Hook Grabber",
+                        "Hook process started successfully and actively monitor running applications from now on. You are ready to go.",
                         ToolTipIcon.Info);
-                }
-            }
-
-            if (WindowsProxy.IsFirefoxNeedReconfig() && !WindowsProxy.ForceFirefoxToUseSystemSettings())
-            {
-                if (!silent)
-                {
-                    VDialog.Show(
-                        this, 
-                        "Failed to change firefox settings, Are you running firefox?! Please close it and try again.", 
-                        "Auto Config", 
-                        MessageBoxButtons.OK, 
-                        MessageBoxIcon.Warning);
-                }
-                else
-                {
-                    App.Notify.ShowBalloonTip(
-                        2000, 
-                        "PeaRoxy Client", 
-                        "Failed to configure firefox", 
-                        ToolTipIcon.Warning);
-                }
+                    break;
             }
         }
 
@@ -995,9 +968,7 @@ namespace PeaRoxy.Windows.WPFClient
             this.uploadSpeed = (this.listener.AverageSendingSpeed + this.uploadSpeed) / 2;
             this.downloadPoints.Add(new ChartPoint(this.downloadSpeed / 1024d));
             this.uploadPoints.Add(new ChartPoint(this.uploadSpeed / 1024d));
-            if (this.listener != null
-                && (this.listener.Status == ProxyController.ControllerStatus.OnlyProxy
-                    || this.listener.Status == ProxyController.ControllerStatus.Both))
+            if (this.listener != null && this.listener.Status.HasFlag(ProxyController.ControllerStatus.Proxy))
             {
                 App.Notify.Text = string.Format("PeaRoxy Client\r\nCurrent Transfer Rate: {0}/s", CommonLibrary.Common.FormatFileSizeAsString(this.downloadSpeed + this.uploadSpeed));
             }
@@ -1006,8 +977,7 @@ namespace PeaRoxy.Windows.WPFClient
             {
                 if (TaskbarManager.IsPlatformSupported)
                 {
-                    if (this.listener.Status == ProxyController.ControllerStatus.OnlyProxy
-                        || this.listener.Status == ProxyController.ControllerStatus.Both)
+                    if (this.listener.Status.HasFlag(ProxyController.ControllerStatus.Proxy))
                     {
                         TaskbarManager.Instance.SetOverlayIcon(this.connectedIcon, "Connected");
                     }
@@ -1030,6 +1000,8 @@ namespace PeaRoxy.Windows.WPFClient
                 ((ActiveConnections)this.Options.Connections.SettingsPage).UpdateConnections(this.listener);
             }
         }
+
+
 
         /// <summary>
         /// The window_ content rendered.
@@ -1073,21 +1045,7 @@ namespace PeaRoxy.Windows.WPFClient
                 tabbedThumbnail.TabbedThumbnailBitmapRequested += this.TabbedThumbnailBitmapRequested;
                 Windows7ShellPreviewWindowFixer.Fix(this.Title, Process.GetCurrentProcess());
 
-                // JumpList
-                JumpList jl = JumpList.CreateJumpListForIndividualWindow(string.Empty, this.Handle);
-                jl.KnownCategoryToDisplay = JumpListKnownCategoryType.Neither;
-                jl.ClearAllUserTasks();
-                string ourFileName = Process.GetCurrentProcess().MainModule.FileName;
-                JumpListLink quitLink = new JumpListLink(ourFileName, "Quit PeaRoxy")
-                                            {
-                                                IconReference =
-                                                    new IconReference(
-                                                    ourFileName,
-                                                    1),
-                                                Arguments = "/quit"
-                                            };
-                jl.AddUserTasks(new JumpListTask[] { quitLink });
-                jl.Refresh();
+                App.InitJumpList();
             }
             catch (Exception)
             {
