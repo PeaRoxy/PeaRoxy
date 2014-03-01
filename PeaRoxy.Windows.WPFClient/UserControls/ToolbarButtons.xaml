@@ -43,11 +43,13 @@
                        Source="/PeaRoxy.Windows.WPFClient;component/Images/Toolbar/Grabber.png" Cursor="Hand" />
                 <Button.ContextMenu>
                     <ContextMenu FontSize="11">
-                        <MenuItem Header="Proxy - None" IsCheckable="True" IsChecked="True" Name="GrabberNoneMenuItem"
+                        <MenuItem Header="None" IsCheckable="True" IsChecked="True" Name="GrabberNoneMenuItem"
                                   Click="MiGrabberClick" />
                         <MenuItem Header="TAP Adapter" IsCheckable="True" Name="GrabberTapMenuItem"
                                   Click="MiGrabberClick" />
-                        <MenuItem Header="Hook" IsCheckable="True" IsEnabled="False" Name="GrabberHookMenuItem"
+                        <MenuItem Header="Hook" IsCheckable="True" Name="GrabberHookMenuItem"
+                                  Click="MiGrabberClick" />
+                        <MenuItem Header="Proxy Autoconfig" IsCheckable="True" Name="GrabberProxyMenuItem"
                                   Click="MiGrabberClick" />
                     </ContextMenu>
                 </Button.ContextMenu>

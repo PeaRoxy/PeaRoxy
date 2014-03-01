@@ -8,18 +8,19 @@
          d:DesignHeight="300" d:DesignWidth="360">
     <Grid x:Name="SettingsGrid">
         <GroupBox Foreground="Black" Header="Hook into Applications" HorizontalAlignment="Left" Margin="8,108,0,20"
-                  Name="GbHook" Width="350">
-            <Grid>
+                  Name="GbHook" Width="350" AllowDrop="True">
+            <Grid Drop="HookProcessesDrop">
                 <Label Content="Processes List:" Height="28" HorizontalAlignment="Left" Margin="7,26,0,0"
-                       VerticalAlignment="Top" />
-                <ListBox Margin="8,50,66,8" Name="LbHookProcesses" SelectionMode="Multiple" x:FieldModifier="private" />
-                <CheckBox Content="Hook into all running processes when starting" Height="16"
-                          HorizontalAlignment="Left" Margin="10,10,0,0" Name="CbHookRunning" VerticalAlignment="Top"
-                          Checked="TxtTextBoxLostFocus" Unchecked="TxtTextBoxLostFocus" x:FieldModifier="private" />
+                       VerticalAlignment="Top" Drop="HookProcessesDrop" />
+                <ListBox Margin="8,50,66,8" Name="LbHookProcesses" SelectionMode="Multiple" x:FieldModifier="private"
+                         Drop="HookProcessesDrop" />
                 <Button Content="Add" Height="23" HorizontalAlignment="Right" Margin="0,52,6,0"
-                        VerticalAlignment="Top" Width="57" Click="BtnHookAddClick" />
+                        VerticalAlignment="Top" Width="57" Click="BtnHookAddClick" Drop="HookProcessesDrop" />
                 <Button Content="Remove" Height="23" HorizontalAlignment="Right" Margin="0,78,6,0"
-                        VerticalAlignment="Top" Width="57" Click="BtnHookRemoveClick" />
+                        VerticalAlignment="Top" Width="57" Click="BtnHookRemoveClick" Drop="HookProcessesDrop" />
+                <Label Content="You also can drag and drop your application's icon here." Height="31"
+                       HorizontalAlignment="Left" Margin="7,0,0,0"
+                       VerticalAlignment="Top" Width="320" Drop="HookProcessesDrop" />
             </Grid>
         </GroupBox>
         <GroupBox Foreground="Black" Header="TAP Adapter" HorizontalAlignment="Left" Margin="8,35,0,0" Name="gb_tap"
@@ -31,34 +32,30 @@
                 <Label Content="Adapter IP Address Range:" Height="28" HorizontalAlignment="Left" Margin="7,2,0,0"
                        VerticalAlignment="Top" />
                 <Label Content="Note: TAP Driver will force enable and use Local DNS Server" Height="28"
-                       HorizontalAlignment="Left" Margin="7,23,0,0" VerticalAlignment="Top"/>
+                       HorizontalAlignment="Left" Margin="7,23,0,0" VerticalAlignment="Top" />
             </Grid>
         </GroupBox>
         <Label Content="Active Traffic Grabber:" Height="28" HorizontalAlignment="Left" Margin="7,7,0,0"
                Name="LblGrabberActive" VerticalAlignment="Top" x:FieldModifier="private" />
         <ComboBox Height="23" HorizontalAlignment="Left" Margin="221,8,0,0" Name="ActiveGrabber"
-                  VerticalAlignment="Top" Width="134" SelectionChanged="CbGrabberActiveSelectionChanged">
+                  VerticalAlignment="Top" Width="134" SelectionChanged="CbGrabberActiveSelectionChanged"
+                  x:FieldModifier="private">
             <ComboBoxItem Content="None" />
             <ComboBoxItem Content="TAP Adapter" />
-            <ComboBoxItem Content="Win32 Hook" IsEnabled="False" />
+            <ComboBoxItem Content="Win32 Hook" />
+            <ComboBoxItem Content="Proxy Autoconfig" />
         </ComboBox>
-        <Grid Height="95" HorizontalAlignment="Left" Margin="58,100,0,0" Name="GridOptionsdialog"
+        <Grid Height="72" HorizontalAlignment="Left" Margin="58,110,0,0" Name="GridOptionsdialog"
               VerticalAlignment="Top" Width="250" Background="White" IsEnabled="False" x:FieldModifier="private">
-            <Rectangle Width="250" Height="95" Margin="0,0,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"
+            <Rectangle Width="250" Height="72" Margin="0,0,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"
                        Stroke="#FF7D7D7D" StrokeThickness="2" />
-            <ComboBox Height="23" HorizontalAlignment="Left" Margin="81,7,0,0" Name="CbHookEditType"
-                      VerticalAlignment="Top" Width="160" x:FieldModifier="private">
-                <ComboBoxItem Content="Include" IsSelected="True" Tag="+" />
-                <ComboBoxItem Content="Exclude" IsSelected="False" Tag="-" />
-            </ComboBox>
-            <Label Content="Rule Type:" Height="28" HorizontalAlignment="Left" Margin="7,5,0,0" VerticalAlignment="Top" />
-            <Label Content="Application:" Height="28" HorizontalAlignment="Left" Margin="7,32,0,0"
+            <Label Content="Application:" Height="28" HorizontalAlignment="Left" Margin="10,10,0,0"
                    VerticalAlignment="Top" />
-            <TextBox Height="23" HorizontalAlignment="Left" Margin="81,34,0,0" Name="TxtHookEditApp"
-                     VerticalAlignment="Top" Width="160" x:FieldModifier="private" />
-            <Button Content="Save" Height="23" HorizontalAlignment="Left" Margin="191,65,0,0"
+            <TextBox Height="23" HorizontalAlignment="Left" Margin="84,12,0,0" Name="TxtHookEditApp"
+                     VerticalAlignment="Top" Width="156" x:FieldModifier="private" />
+            <Button Content="Save" Height="23" HorizontalAlignment="Left" Margin="187,40,0,0"
                     VerticalAlignment="Top" Width="50" Click="BtnHookEditOkClick" IsDefault="True" />
-            <Button Content="Cancel" Height="23" HorizontalAlignment="Left" Margin="138,65,0,0"
+            <Button Content="Cancel" Height="23" HorizontalAlignment="Left" Margin="134,40,0,0"
                     VerticalAlignment="Top" Width="50" Click="BtnHookEditCancelClick"
                     IsCancel="True" />
             <Grid.RenderTransform>

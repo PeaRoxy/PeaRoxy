@@ -99,6 +99,7 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
         ///     The navigator state.
         /// </summary>
         private State navigatorState = State.Option;
+        private DoubleAnimation optionRotateButtonAnimation;
 
         #endregion
 
@@ -313,7 +314,6 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
                 DoubleAnimation alignTopButtonsAnimation;
                 TranslateTransform alignTopButtonsTransform;
                 RotateTransform rotateTransform;
-                DoubleAnimation rotateBackImageAnimation;
                 if (this.navigatorState == value)
                 {
                     return;
@@ -344,16 +344,16 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
                         this.BackButton.Visibility = Visibility.Visible;
                         this.OptionButton.BeginAnimation(OpacityProperty, hideOptionsButAnimation);
                         this.BackButton.BeginAnimation(OpacityProperty, showBackButAnimation);
+                        this.optionRotateButtonAnimation = this.optionRotateButtonAnimation ?? new DoubleAnimation();
 
-                        rotateBackImageAnimation = this.ImgOptionsButton.Tag as DoubleAnimation
-                                                   ?? new DoubleAnimation(90, 0, Duration.Automatic);
-
-                        rotateBackImageAnimation.RepeatBehavior = new RepeatBehavior(1);
-                        rotateBackImageAnimation.Duration = new Duration(TimeSpan.FromSeconds(Time));
+                        this.optionRotateButtonAnimation.From = 90;
+                        this.optionRotateButtonAnimation.To = 0;
+                        this.optionRotateButtonAnimation.RepeatBehavior = new RepeatBehavior(1);
+                        this.optionRotateButtonAnimation.Duration = new Duration(TimeSpan.FromSeconds(Time));
                         rotateTransform = this.ImgBackButton.RenderTransform as RotateTransform;
                         if (rotateTransform != null)
                         {
-                            rotateTransform.BeginAnimation(RotateTransform.AngleProperty, rotateBackImageAnimation);
+                            rotateTransform.BeginAnimation(RotateTransform.AngleProperty, this.optionRotateButtonAnimation);
                         }
 
                         break;
@@ -371,16 +371,17 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
                         this.OptionButton.Visibility = Visibility.Visible;
                         this.OptionButton.BeginAnimation(OpacityProperty, showOptionsButAnimation);
                         this.BackButton.BeginAnimation(OpacityProperty, hideBackButAnimation);
+                        
+                        this.optionRotateButtonAnimation = this.optionRotateButtonAnimation ?? new DoubleAnimation();
 
-                        rotateBackImageAnimation = this.ImgOptionsButton.Tag as DoubleAnimation
-                                                   ?? new DoubleAnimation(90, 0, Duration.Automatic);
-
-                        rotateBackImageAnimation.RepeatBehavior = new RepeatBehavior(1);
-                        rotateBackImageAnimation.Duration = new Duration(TimeSpan.FromSeconds(Time));
+                        this.optionRotateButtonAnimation.From = 0;
+                        this.optionRotateButtonAnimation.To = 90;
+                        this.optionRotateButtonAnimation.RepeatBehavior = new RepeatBehavior(1);
+                        this.optionRotateButtonAnimation.Duration = new Duration(TimeSpan.FromSeconds(Time));
                         rotateTransform = this.ImgBackButton.RenderTransform as RotateTransform;
                         if (rotateTransform != null)
                         {
-                            rotateTransform.BeginAnimation(RotateTransform.AngleProperty, rotateBackImageAnimation);
+                            rotateTransform.BeginAnimation(RotateTransform.AngleProperty, this.optionRotateButtonAnimation);
                         }
 
                         alignTopButtonsAnimation = new DoubleAnimation(
@@ -625,18 +626,18 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
         /// </param>
         private void ImgOptionsButtonMouseEnter(object sender, MouseEventArgs e)
         {
-            DoubleAnimation animation = this.ImgOptionsButton.Tag as DoubleAnimation
-                                        ?? new DoubleAnimation(0, 360, TimeSpan.FromSeconds(2));
+            this.optionRotateButtonAnimation = this.optionRotateButtonAnimation ?? new DoubleAnimation();
 
-            animation.Duration = new Duration(TimeSpan.FromSeconds(2));
-            animation.RepeatBehavior = RepeatBehavior.Forever;
+            this.optionRotateButtonAnimation.From = 0;
+            this.optionRotateButtonAnimation.To = 360;
+            this.optionRotateButtonAnimation.Duration = new Duration(TimeSpan.FromSeconds(2));
+            this.optionRotateButtonAnimation.RepeatBehavior = RepeatBehavior.Forever;
             RotateTransform rotateTransform = this.ImgOptionsButton.RenderTransform as RotateTransform;
             if (rotateTransform != null)
             {
-                rotateTransform.BeginAnimation(RotateTransform.AngleProperty, animation);
+                rotateTransform.BeginAnimation(RotateTransform.AngleProperty, this.optionRotateButtonAnimation);
             }
 
-            this.ImgOptionsButton.Tag = animation;
         }
 
         /// <summary>
@@ -650,18 +651,19 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
         /// </param>
         private void ImgOptionsButtonMouseLeave(object sender, MouseEventArgs e)
         {
-            DoubleAnimation animation = this.ImgOptionsButton.Tag as DoubleAnimation;
-            if (animation == null)
+            if (this.optionRotateButtonAnimation == null)
             {
                 return;
             }
 
-            animation.RepeatBehavior = new RepeatBehavior(1);
-            animation.Duration = new Duration(TimeSpan.FromSeconds(1));
+            this.optionRotateButtonAnimation.From = 0;
+            this.optionRotateButtonAnimation.To = 360;
+            this.optionRotateButtonAnimation.RepeatBehavior = new RepeatBehavior(1);
+            this.optionRotateButtonAnimation.Duration = new Duration(TimeSpan.FromSeconds(1));
             RotateTransform rotateTransform = this.ImgOptionsButton.RenderTransform as RotateTransform;
             if (rotateTransform != null)
             {
-                rotateTransform.BeginAnimation(RotateTransform.AngleProperty, animation);
+                rotateTransform.BeginAnimation(RotateTransform.AngleProperty, this.optionRotateButtonAnimation);
             }
         }
 
@@ -722,16 +724,18 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
         {
             this.ReConfigGrid.ToolTip = new Tooltip(
                 "Reconfigure Windows/Applications", 
-                "Configure Windows and Firefox to use PeaRoxy Client as proxy server.");
+                "Cleanup and configure Windows and applications to use selected grabber to access internet.");
 
             this.GrabberGrid.ToolTip = new Tooltip(
                 "Traffic Grabber", 
                 "Select how you want us to grab traffic from applications:" + Environment.NewLine + string.Empty
-                + "[None:] No grabbing, applications and Windows use PeaRoxy as proxy if they want"
+                + "[None:] No grabbing, applications and Windows are free to use PeaRoxy but you need to manually configure them"
                 + Environment.NewLine
                 + "[TAP Adapter:] Force Windows and applications to use PeaRoxy using a Virtual Network Adapter"
                 + Environment.NewLine
-                + "[Hook:] Force applications to use PeaRoxy by injecting a code into them. Modifying them on the fly in other word");
+                + "[Hook:] Force applications to use PeaRoxy by injecting a custom code into them"
+                + Environment.NewLine
+                + "[Proxy:] Register PeaRoxy as active proxy in Windows settings");
 
             this.SmartPearGrid.ToolTip = new Tooltip(
                 "SmartPear!", 

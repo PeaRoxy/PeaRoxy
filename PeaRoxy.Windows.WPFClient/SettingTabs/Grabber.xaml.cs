@@ -15,6 +15,8 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
+    using System.IO;
+    using System.Linq;
     using System.Net;
     using System.Threading;
     using System.Windows;
@@ -27,18 +29,24 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
 
     using PeaRoxy.Windows.WPFClient.Properties;
 
+    using Shell32;
+
+    using DataFormats = System.Windows.DataFormats;
+    using DragEventArgs = System.Windows.DragEventArgs;
+
     #endregion
 
     /// <summary>
     ///     Interaction logic for Grabber.xaml
     /// </summary>
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly",
+        Justification = "Reviewed. Suppression is OK here.")]
     public partial class Grabber
     {
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Grabber"/> class.
+        ///     Initializes a new instance of the <see cref="Grabber" /> class.
         /// </summary>
         public Grabber()
         {
@@ -47,29 +55,59 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
 
         #endregion
 
+        #region Enums
+
+        public enum GrabberType
+        {
+            None = 0,
+
+            Tap = 1,
+
+            Hook = 2,
+
+            Proxy = 3,
+        }
+
+        #endregion
+
+        #region Public Properties
+
+        public GrabberType SelectedGrabber
+        {
+            get
+            {
+                return (GrabberType)this.ActiveGrabber.SelectedIndex;
+            }
+            set
+            {
+                this.ActiveGrabber.SelectedIndex = (int)value;
+            }
+        }
+
+        #endregion
+
         #region Public Methods and Operators
 
         /// <summary>
-        /// The hook_ add item.
+        ///     The hook_ add item.
         /// </summary>
         public void HookAddItem()
         {
-            this.TxtHookEditApp.Text = ".exe";
-            this.CbHookEditType.SelectedIndex = 0;
+            this.TxtHookEditApp.Text = "";
             this.ShowOptionsDialog();
         }
 
         /// <summary>
-        /// The hook_ save item.
+        ///     The hook_ save item.
         /// </summary>
         public void HookSaveItem()
         {
             try
             {
-                string app = this.TxtHookEditApp.Text.ToLower();
-                if (app.Trim() != string.Empty)
+                string app = this.TxtHookEditApp.Text.ToLower().Trim();
+                if (app != string.Empty && !this.LbHookProcesses.Items.Contains(app))
                 {
-                    this.LbHookProcesses.Items.Add(((ComboBoxItem)this.CbHookEditType.SelectedItem).Tag + app);
+                    this.LbHookProcesses.Items.Add(app);
                 }
 
                 this.SaveSettings();
@@ -78,25 +116,24 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
             catch (Exception e)
             {
                 VDialog.Show(
-                    "Can't add process name: " + e.Message, 
-                    "PeaRoxy Client - Hook Processes Update", 
-                    MessageBoxButtons.OK, 
+                    "Can't add process name: " + e.Message,
+                    "PeaRoxy Client - Hook Processes Update",
+                    MessageBoxButtons.OK,
                     MessageBoxIcon.Stop);
             }
         }
 
         /// <summary>
-        /// The load settings.
+        ///     The load settings.
         /// </summary>
         public override void LoadSettings()
         {
             this.IsLoading = true;
-            this.CbHookRunning.IsChecked = Settings.Default.Hook_IntoRuningProcesses;
 
             List<string> hookProcesses =
                 new List<string>(
                     Settings.Default.Hook_Processes.Split(
-                        new[] { Environment.NewLine }, 
+                        new[] { Environment.NewLine },
                         StringSplitOptions.RemoveEmptyEntries));
             this.LbHookProcesses.Items.Clear();
             foreach (string p in hookProcesses)
@@ -110,7 +147,7 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
         }
 
         /// <summary>
-        /// The save settings.
+        ///     The save settings.
         /// </summary>
         public override void SaveSettings()
         {
@@ -121,21 +158,16 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
 
             Settings.Default.Grabber = this.ActiveGrabber.SelectedIndex;
             Settings.Default.TAP_IPRange = this.TxtTapIpaddress.Text;
-            Settings.Default.Hook_IntoRuningProcesses = this.CbHookRunning.IsChecked ?? false;
-            Settings.Default.Hook_Processes = string.Empty;
-            foreach (string p in this.LbHookProcesses.Items)
-            {
-                Settings.Default.Hook_Processes += p + Environment.NewLine;
-            }
+            Settings.Default.Hook_Processes = string.Join(Environment.NewLine, this.LbHookProcesses.Items.OfType<string>().ToArray());
 
             Settings.Default.Save();
         }
 
         /// <summary>
-        /// The set enable.
+        ///     The set enable.
         /// </summary>
         /// <param name="enable">
-        /// The enable.
+        ///     The enable.
         /// </param>
         public override void SetEnable(bool enable)
         {
@@ -147,14 +179,96 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
         #region Methods
 
         /// <summary>
-        /// The hide options dialog.
+        ///     The hook add click.
+        /// </summary>
+        /// <param name="sender">
+        ///     The sender.
+        /// </param>
+        /// <param name="e">
+        ///     The e.
+        /// </param>
+        private void BtnHookAddClick(object sender, RoutedEventArgs e)
+        {
+            this.HookAddItem();
+        }
+
+        /// <summary>
+        ///     The hook cancel-edit click.
+        /// </summary>
+        /// <param name="sender">
+        ///     The sender.
+        /// </param>
+        /// <param name="e">
+        ///     The e.
+        /// </param>
+        private void BtnHookEditCancelClick(object sender, RoutedEventArgs e)
+        {
+            this.HideOptionsDialog();
+        }
+
+        /// <summary>
+        ///     The hook ok-edit click.
+        /// </summary>
+        /// <param name="sender">
+        ///     The sender.
+        /// </param>
+        /// <param name="e">
+        ///     The e.
+        /// </param>
+        private void BtnHookEditOkClick(object sender, RoutedEventArgs e)
+        {
+            this.HookSaveItem();
+        }
+
+        /// <summary>
+        ///     The hook remove click.
+        /// </summary>
+        /// <param name="sender">
+        ///     The sender.
+        /// </param>
+        /// <param name="e">
+        ///     The e.
+        /// </param>
+        private void BtnHookRemoveClick(object sender, RoutedEventArgs e)
+        {
+            string[] pc = new string[this.LbHookProcesses.SelectedItems.Count];
+            this.LbHookProcesses.SelectedItems.CopyTo(pc, 0);
+            foreach (string s in pc)
+            {
+                this.LbHookProcesses.Items.Remove(s);
+            }
+
+            this.LbHookProcesses.SelectedItems.Clear();
+            this.SaveSettings();
+        }
+
+        /// <summary>
+        ///     The grabber selection changed.
+        /// </summary>
+        /// <param name="sender">
+        ///     The sender.
+        /// </param>
+        /// <param name="e">
+        ///     The e.
+        /// </param>
+        private void CbGrabberActiveSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            this.SaveSettings();
+        }
+
+        /// <summary>
+        ///     The hide options dialog.
         /// </summary>
         private void HideOptionsDialog()
         {
             this.GridOptionsdialog.IsEnabled = false;
             DoubleAnimation showAnimation = new DoubleAnimation(0, -250, new Duration(TimeSpan.FromSeconds(0.5)))
                                                 {
-                                                    EasingFunction = new ElasticEase()
+                                                    EasingFunction
+                                                        =
+                                                        new ElasticEase
+                                                        (
+                                                        )
                                                 };
             ((ElasticEase)showAnimation.EasingFunction).EasingMode = EasingMode.EaseIn;
             ((ElasticEase)showAnimation.EasingFunction).Oscillations = 1;
@@ -172,15 +286,61 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
                                     this.GbHook.IsEnabled =
                                         this.gb_tap.IsEnabled =
                                         this.ActiveGrabber.IsEditable = this.LblGrabberActive.IsEnabled = true;
-                                }, 
+                                },
                             new object[] { });
-                    }) {
-                          IsBackground = true 
-                       }.Start();
+                    }) { IsBackground = true }.Start();
+        }
+
+        private void HookProcessesDrop(object sender, DragEventArgs e)
+        {
+            if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                return;
+            }
+
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            foreach (string file in files)
+            {
+                try
+                {
+                    if (!Directory.Exists(file) && File.Exists(file))
+                    {
+                        string fileExtension = Path.GetExtension(file);
+                        string fileName = Path.GetFileName(file);
+                        if (fileExtension != null && fileName != null && fileExtension.ToLower() == ".lnk")
+                        {
+                            string filePath = Path.GetDirectoryName(file);
+                            Shell shell = new Shell();
+                            Folder folder = shell.NameSpace(filePath);
+                            FolderItem folderItem = folder.ParseName(fileName);
+                            if (folderItem != null)
+                            {
+                                string newFile = ((ShellLinkObject)folderItem.GetLink).Path;
+                                fileExtension = Path.GetExtension(newFile);
+                                fileName = Path.GetFileName(newFile);
+                            }
+                        }
+
+                        if (fileExtension != null && fileName != null && fileExtension.ToLower() == ".exe")
+                        {
+                            string app = Path.GetFileNameWithoutExtension(fileName).ToLower().Trim();
+                            if (app != string.Empty && !this.LbHookProcesses.Items.Contains(app))
+                            {
+                                this.LbHookProcesses.Items.Add(app);
+                                this.LbHookProcesses.ScrollIntoView(app);
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                }
+            }
+            this.SaveSettings();
         }
 
         /// <summary>
-        /// The show options dialog.
+        ///     The show options dialog.
         /// </summary>
         private void ShowOptionsDialog()
         {
@@ -188,7 +348,11 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
                 this.gb_tap.IsEnabled = this.ActiveGrabber.IsEditable = this.LblGrabberActive.IsEnabled = false;
             DoubleAnimation showAnimation = new DoubleAnimation(-250, 0, new Duration(TimeSpan.FromSeconds(0.5)))
                                                 {
-                                                    EasingFunction = new ElasticEase()
+                                                    EasingFunction
+                                                        =
+                                                        new ElasticEase
+                                                        (
+                                                        )
                                                 };
             ((ElasticEase)showAnimation.EasingFunction).EasingMode = EasingMode.EaseOut;
             ((ElasticEase)showAnimation.EasingFunction).Oscillations = 50;
@@ -200,113 +364,19 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
                     {
                         Thread.Sleep(1000);
                         this.Dispatcher.Invoke(
-                            (App.SimpleVoidDelegate)delegate { this.GridOptionsdialog.IsEnabled = true; }, 
+                            (App.SimpleVoidDelegate)delegate { this.GridOptionsdialog.IsEnabled = true; },
                             new object[] { });
-                    }) {
-                          IsBackground = true 
-                       }.Start();
+                    }) { IsBackground = true }.Start();
         }
 
         /// <summary>
-        /// The hook add click.
+        ///     The TAP IPAddress lost focus.
         /// </summary>
         /// <param name="sender">
-        /// The sender.
+        ///     The sender.
         /// </param>
         /// <param name="e">
-        /// The e.
-        /// </param>
-        private void BtnHookAddClick(object sender, RoutedEventArgs e)
-        {
-            this.HookAddItem();
-        }
-
-        /// <summary>
-        /// The hook cancel-edit click.
-        /// </summary>
-        /// <param name="sender">
-        /// The sender.
-        /// </param>
-        /// <param name="e">
-        /// The e.
-        /// </param>
-        private void BtnHookEditCancelClick(object sender, RoutedEventArgs e)
-        {
-            this.HideOptionsDialog();
-        }
-
-        /// <summary>
-        /// The hook ok-edit click.
-        /// </summary>
-        /// <param name="sender">
-        /// The sender.
-        /// </param>
-        /// <param name="e">
-        /// The e.
-        /// </param>
-        private void BtnHookEditOkClick(object sender, RoutedEventArgs e)
-        {
-            this.HookSaveItem();
-        }
-
-        /// <summary>
-        /// The hook remove click.
-        /// </summary>
-        /// <param name="sender">
-        /// The sender.
-        /// </param>
-        /// <param name="e">
-        /// The e.
-        /// </param>
-        private void BtnHookRemoveClick(object sender, RoutedEventArgs e)
-        {
-            string[] pc = new string[this.LbHookProcesses.SelectedItems.Count];
-            this.LbHookProcesses.SelectedItems.CopyTo(pc, 0);
-            foreach (string s in pc)
-            {
-                this.LbHookProcesses.Items.Remove(s);
-            }
-
-            this.LbHookProcesses.SelectedItems.Clear();
-            this.SaveSettings();
-        }
-
-        /// <summary>
-        /// The grabber selection changed.
-        /// </summary>
-        /// <param name="sender">
-        /// The sender.
-        /// </param>
-        /// <param name="e">
-        /// The e.
-        /// </param>
-        private void CbGrabberActiveSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            this.SaveSettings();
-        }
-
-        /// <summary>
-        /// The txt_ text box_ lost focus.
-        /// </summary>
-        /// <param name="sender">
-        /// The sender.
-        /// </param>
-        /// <param name="e">
-        /// The e.
-        /// </param>
-        private void TxtTextBoxLostFocus(object sender, RoutedEventArgs e)
-        {
-            this.SaveSettings();
-        }
-
-        /// <summary>
-        /// The TAP IPAddress lost focus.
-        /// </summary>
-        /// <param name="sender">
-        /// The sender.
-        /// </param>
-        /// <param name="e">
-        /// The e.
+        ///     The e.
         /// </param>
         private void TxtTapIpaddressLostFocus(object sender, RoutedEventArgs e)
         {
@@ -316,20 +386,18 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
             {
                 this.TxtTapIpaddress.Text = "10.0.0.0";
                 VDialog.Show(
-                    "IP address is not acceptable.", 
-                    "Data Validation", 
-                    MessageBoxButtons.OK, 
+                    "IP address is not acceptable.",
+                    "Data Validation",
+                    MessageBoxButtons.OK,
                     MessageBoxIcon.Exclamation);
                 new Thread(
                     delegate()
                         {
                             Thread.Sleep(10);
                             this.Dispatcher.Invoke(
-                                (App.SimpleVoidDelegate)(() => this.TxtTapIpaddress.Focus()), 
+                                (App.SimpleVoidDelegate)(() => this.TxtTapIpaddress.Focus()),
                                 new object[] { });
-                        }) {
-                              IsBackground = true 
-                           }.Start();
+                        }) { IsBackground = true }.Start();
             }
             else
             {
