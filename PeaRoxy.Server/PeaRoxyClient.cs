@@ -413,18 +413,19 @@ namespace PeaRoxy.Server
                                     }
                                 }
 
-                                if (clientRequest[0] != ServerPeaRoxyVersion)
-                                {
-                                    // Check again if client use same version as we are
-                                    this.Close(); // "6. " + "Unknown version, Expected " + version.ToString());
-                                    return;
-                                }
-
                                 string clientRequestedAddress = null;
                                 ushort clientRequestedPort = 0;
                                 if (serverErrorCode == 0)
                                 {
                                     // Auth ok
+
+                                    if (clientRequest[0] != ServerPeaRoxyVersion)
+                                    {
+                                        // Check again if client use same version as we are
+                                        this.Close(); // "6. " + "Unknown version, Expected " + version.ToString());
+                                        return;
+                                    }
+
                                     byte clientAddressType = clientRequest[3];
                                         
                                         // Read address type client want to connect
