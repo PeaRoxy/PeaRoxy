@@ -13,7 +13,7 @@ SetCompressor /SOLID lzma
 ;General
   !include "x64.nsh"
   ;Name and file
-  Name "PeaRoxy Client for Windows v${VERSION}"
+  Name "PeaRoxy Client v${VERSION}"
   OutFile "..\Binaries\PeaRoxyClient-Win-v${VERSION}.exe"
 
   ;Default installation folder
@@ -74,25 +74,8 @@ Section "Main Application" SecMain
   SectionIn RO
   SetOutPath "$INSTDIR"
   ;File "GPL.txt"
-  File "..\bin\WPFClient\*"
+  File  /r /x "*.crt" /x "*.pdb" "..\bin\WPFClient\*"
 
-  CreateDirectory "$INSTDIR\HTTPSCerts"
-  SetOutPath "$INSTDIR\HTTPSCerts"
-  File "..\bin\WPFClient\HTTPSCerts\*"
-
-  CreateDirectory "$INSTDIR\TAPDriver"
-  SetOutPath "$INSTDIR\TAPDriver"
-  File "..\bin\WPFClient\TAPDriver\*"
-  
-  CreateDirectory "$INSTDIR\TAPDriver\x64"
-  SetOutPath "$INSTDIR\TAPDriver\x64"
-  File "..\bin\WPFClient\TAPDriver\x64\*"
-  
-  CreateDirectory "$INSTDIR\TAPDriver\x86"
-  SetOutPath "$INSTDIR\TAPDriver\x86"
-  File "..\bin\WPFClient\TAPDriver\x86\*"
-
-  SetOutPath "$INSTDIR"
 
   ;Store installation folder
   WriteRegStr HKLM "Software\PeaRoxy" "InstallDir" $INSTDIR

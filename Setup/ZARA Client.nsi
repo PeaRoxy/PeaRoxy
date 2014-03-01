@@ -56,25 +56,7 @@ Section "Main Application" SecMain
 
   SectionIn RO
   SetOutPath "$INSTDIR"
-  File "..\bin\ZARA\*"
-
-  CreateDirectory "$INSTDIR\HTTPSCerts"
-  SetOutPath "$INSTDIR\HTTPSCerts"
-  File "..\bin\ZARA\HTTPSCerts\*"
-
-  CreateDirectory "$INSTDIR\TAPDriver"
-  SetOutPath "$INSTDIR\TAPDriver"
-  File "..\bin\ZARA\TAPDriver\*"
-
-  CreateDirectory "$INSTDIR\TAPDriver\x64"
-  SetOutPath "$INSTDIR\TAPDriver\x64"
-  File "..\bin\ZARA\TAPDriver\x64\*"
-
-  CreateDirectory "$INSTDIR\TAPDriver\x86"
-  SetOutPath "$INSTDIR\TAPDriver\x86"
-  File "..\bin\ZARA\TAPDriver\x86\*"
-  
-  SetOutPath "$INSTDIR"
+  File  /r /x "*.crt" /x "*.pdb" "..\bin\ZARA\*"
   ExecShell open "$INSTDIR\ZARA.exe"
   Quit
 SectionEnd
