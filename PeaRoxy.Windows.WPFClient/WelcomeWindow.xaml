@@ -1,0 +1,97 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
+        x:Class="PeaRoxy.Windows.WPFClient.WelcomeWindow"
+        Title="First Time Wizard"  SizeToContent="WidthAndHeight" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" Icon="Images/Toolbar/ReConfig.png" Closing="WindowClosing" >
+    <Canvas Height="375" Width="538" Name="Canvas" >
+        <xctk:Wizard HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" CanHelp="False" Width="{Binding Path=ActualWidth, ElementName=Canvas}" Height="{Binding Path=ActualHeight, ElementName=Canvas}" Cancel="WizardSkip" Finish="WizardFinish" CancelButtonContent="Skip" Name="WizardPanel"
+                     x:FieldModifier="private" PageChanged="WizardPanelPageChanged">
+            <xctk:WizardPage Title="Welcome to the PeaRoxy">
+                <xctk:WizardPage.ExteriorPanelContent>
+                    <Image VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Source="Images\PeaRoxy Left.bmp"/>
+                </xctk:WizardPage.ExteriorPanelContent>
+                <xctk:WizardPage.Description>
+                    <system:String xml:space="preserve">We are here to help you configure PeaRoxy based on your needs.
+                                
+Click next to start.
+                            </system:String>
+                </xctk:WizardPage.Description>
+            </xctk:WizardPage>
+
+            <xctk:WizardPage Title="Geographical Location">
+                <xctk:WizardPage.ExteriorPanelContent>
+                    <Image VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Source="Images\PeaRoxy Left.bmp"/>
+                </xctk:WizardPage.ExteriorPanelContent>
+                <xctk:WizardPage.Description>
+                    <system:String xml:space="preserve">We need to know where do you live and if there is a national firewall in your country in order to configure PeaRoxy.
+Select your country from folowing list:</system:String>
+                </xctk:WizardPage.Description>
+                <ListBox HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" Name="CountryPage">
+                    <ListBoxItem Tag="IR">Iran</ListBoxItem>
+                    <ListBoxItem Tag="AE">United Arab Emirates</ListBoxItem>
+                    <ListBoxItem Tag="SA">Saudi Arabia</ListBoxItem>
+                    <ListBoxItem Tag="PK">Pakistan</ListBoxItem>
+                    <ListBoxItem Tag="CH">China</ListBoxItem>
+                    <ListBoxItem Tag="">Other Countries / Unknown Firewall</ListBoxItem>
+                </ListBox>
+
+            </xctk:WizardPage>
+
+            <xctk:WizardPage Title="Traffic Grabber" Name="GrabberPage" x:FieldModifier="private">
+                <xctk:WizardPage.ExteriorPanelContent>
+                    <Image VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Source="Images\PeaRoxy Left.bmp"/>
+                </xctk:WizardPage.ExteriorPanelContent>
+                <xctk:WizardPage.Description>
+                    <system:String xml:space="preserve">PeaRoxy need to capture internet traffic from OS and application.
+How you like PeaRoxy to do that:</system:String>
+                </xctk:WizardPage.Description>
+                <StackPanel>
+                    <RadioButton Content="Capture all traffic" HorizontalAlignment="Left" VerticalAlignment="Top" Name="TapRadioButton" Checked="GrabberRadioButtonChecked"/>
+                    <TextBlock TextWrapping="WrapWithOverflow" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="18,0,0,5">
+                            Install a Network Adapter and capture all traffic from all user accounts
+                    </TextBlock>
+                    <RadioButton Content="Capture traffic from selected applications" HorizontalAlignment="Left" VerticalAlignment="Top" Name="HookRadioButton" Checked="GrabberRadioButtonChecked" x:FieldModifier="private" />
+                    <TextBlock TextWrapping="WrapWithOverflow" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="18,0,0,5">
+                            Modify selected applications on the fly and force them to use PeaRoxy with injecting a code into them
+                    </TextBlock>
+                    <RadioButton Content="Register PeaRoxy as active proxy server" HorizontalAlignment="Left" VerticalAlignment="Top" Name="ProxyRadioButton" Checked="GrabberRadioButtonChecked"/>
+                    <TextBlock TextWrapping="WrapWithOverflow" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="18,0,0,5">
+                            Inform OS and let applications and OS decide whenever they want to use PeaRoxy
+                    </TextBlock>
+                    <RadioButton Content="None" HorizontalAlignment="Left" VerticalAlignment="Top" Name="NoneRadioButton"
+                                 Checked="GrabberRadioButtonChecked"/>
+                    <TextBlock TextWrapping="WrapWithOverflow" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="18,0,0,5">
+                            Does nothing to inform or force OS or applications to use PeaRoxy. User need to configure applications manually
+                    </TextBlock>
+                </StackPanel>
+            </xctk:WizardPage>
+
+            <xctk:WizardPage Title="Selected Applications" Name="ApplicationsPage">
+                <xctk:WizardPage.ExteriorPanelContent>
+                    <Image VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Source="Images\PeaRoxy Left.bmp"/>
+                </xctk:WizardPage.ExteriorPanelContent>
+                <xctk:WizardPage.Description>
+                    <system:String xml:space="preserve">Here is list of applications we will force to use PeaRoxy. You can remove an application from list by selecting it and pressing "Delete" key. For adding other applications to the list, simply drag them to this window:</system:String>
+                </xctk:WizardPage.Description>
+                <ListBox HorizontalAlignment="Stretch" AllowDrop="True" SelectionMode="Multiple" Margin="0,0,0,0" VerticalAlignment="Stretch" Name="ApplicationsListBox" KeyUp="ApplicationsListBoxKeyUp" Drop="ApplicationsListBoxDrop">
+                </ListBox>
+            </xctk:WizardPage>
+
+            <xctk:WizardPage Title="Done" Name="FinishPage" CanFinish="True">
+                <xctk:WizardPage.ExteriorPanelContent>
+                    <Image VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Source="Images\PeaRoxy Left.bmp"/>
+                </xctk:WizardPage.ExteriorPanelContent>
+                <xctk:WizardPage.Description>
+                    <system:String xml:space="preserve">We know enough, now you can start using PeaRoxy. Simply enter your connection information on main page of PeaRoxy and click "Start".
+You always can restart this Wizard using "Show First Time Wizard" button on "Settings" panel.
+
+Summery:</system:String>
+                </xctk:WizardPage.Description>
+                <ListBox HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" Name="SummeryListBox">
+                </ListBox>
+            </xctk:WizardPage>
+        </xctk:Wizard>
+    </Canvas>
+</Window>
