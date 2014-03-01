@@ -196,7 +196,7 @@ namespace PeaRoxy.Server
                     TcpClient pingTcp = new TcpClient();
                     pingTcp.Connect("pearoxy.com", 80);
                     pingTcp.BeginConnect(
-                        "pearoxy.com", 
+                        "reporting.pearoxy.com", 
                         80, 
                         delegate(IAsyncResult ar)
                             {
@@ -218,7 +218,7 @@ namespace PeaRoxy.Server
                                     string pingRequest = "GET /ping.php?do=register&address=" + this.Ip
                                                          + "&port=" + this.Port + "&authmode="
                                                          + configSelectedAuth + " HTTP/1.1" + rn
-                                                         + "Host: www.pearoxy.com" + rn + rn;
+                                                         + "Host: reporting.pearoxy.com" + rn + rn;
                                     byte[] pingRequestBytes = Encoding.ASCII.GetBytes(pingRequest);
                                     pingStream.BeginWrite(
                                         pingRequestBytes, 
