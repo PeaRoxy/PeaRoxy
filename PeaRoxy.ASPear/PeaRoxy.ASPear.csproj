@@ -38,7 +38,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\bin\PeaRoxyWeb_ASPear\</OutputPath>
+    <OutputPath>bin\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -126,6 +126,7 @@
   </ProjectExtensions>
   <PropertyGroup>
     <PostBuildEvent>if $(ConfigurationName) == Release (
+del "$(SolutionDir)Binaries\PeaRoxyWeb_*.zip"
 "$(SolutionDir)Solution Items\7za" a -tzip "$(SolutionDir)Binaries\PeaRoxyWeb_PHPear.zip" "$(SolutionDir)\PeaRoxy.PHPear*" -mx9 -xr@"$(ProjectDir)ZipExcludeList.txt"
 "$(SolutionDir)Solution Items\7za" a -tzip "$(SolutionDir)Binaries\PeaRoxyWeb_ASPear.zip" "$(SolutionDir)\PeaRoxy.ASPear\Publish*" -mx9 -xr@"$(ProjectDir)ZipExcludeList.txt"
 )</PostBuildEvent>
