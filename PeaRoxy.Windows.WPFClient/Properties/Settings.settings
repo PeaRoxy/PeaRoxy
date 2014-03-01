@@ -1,7 +1,5 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)"
-              GeneratedClassNamespace="PeaRoxy.Windows.WPFClient.Properties" GeneratedClassName="Settings">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="PeaRoxy.Windows.WPFClient.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
     <Setting Name="Server_Type" Type="System.Byte" Scope="User">
@@ -74,16 +72,16 @@
       <Value Profile="(Default)">0</Value>
     </Setting>
     <Setting Name="Smart_HTTP_Enable" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="Smart_HTTP_AutoRoute_Enable" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="Smart_HTTP_AutoRoute_Pattern" Type="System.String" Scope="User">
-      <Value Profile="(Default)">^HTTP/1.1 403 Forbidden(\r\nConnection:close)*</Value>
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="Smart_HTTPS_Enable" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="Smart_SOCKS_Enable" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
@@ -92,10 +90,10 @@
       <Value Profile="(Default)">20</Value>
     </Setting>
     <Setting Name="Smart_Timeout_Enable" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="Smart_Direct_Port80Router" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="Smart_HTTP_List" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
@@ -134,29 +132,10 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="Smart_Direct_AutoRoutePort80AsHTTP" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="TAP_IPRange" Type="System.String" Scope="User">
       <Value Profile="(Default)">10.0.0.0</Value>
-    </Setting>
-    <Setting Name="Hook_IntoRuningProcesses" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
-    </Setting>
-    <Setting Name="Hook_Processes" Type="System.String" Scope="User">
-      <Value Profile="(Default)">
-        firefox.exe
-        iexplorer.exe
-        chrome,exe
-        opera.exe
-        safari.exe
-        avant.exe
-        rockmelt.exe
-        deepnet.exe
-        maxthon.exe
-        seamonkey.exe
-        gameoverlayui.exe
-        steam.exe
-      </Value>
     </Setting>
     <Setting Name="Grabber" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
@@ -165,16 +144,38 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="Smart_AntiDNS_Enable" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="Smart_AntiDNSPattern" Type="System.String" Scope="User">
-      <Value Profile="(Default)">^(10.10.*.*)$</Value>
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="Accepting_Wait" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">10</Value>
     </Setting>
     <Setting Name="Routing_Wait" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="Hook_Processes" Type="System.String" Scope="User">
+      <Value Profile="(Default)">firefox
+iexplore
+chrome
+opera
+safari
+rockmelt
+deepnet
+maxthon
+seamonkey
+idman
+dap</Value>
+    </Setting>
+    <Setting Name="Settings_Version" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">3</Value>
+    </Setting>
+    <Setting Name="Welcome_Shown" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="SelectedProfile" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
     </Setting>
   </Settings>
 </SettingsFile>
