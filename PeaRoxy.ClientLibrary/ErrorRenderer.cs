@@ -43,8 +43,8 @@ namespace PeaRoxy.ClientLibrary
             this.OnPort80Direct = true;
             this.Enable = true;
 
-            if (ClassRegistry.GetClass<CertManager>().CreateAuthority("PeaRoxy Authority", "HTTPSCerts\\PeaRoxy.crt"))
-                ClassRegistry.GetClass<CertManager>().RegisterAuthority("PeaRoxy Authority", "HTTPSCerts\\PeaRoxy.crt");
+            if (ClassRegistry.GetClass<CertManager>().CreateAuthority("PeaRoxy Authority", "PeaRoxy.crt"))
+                ClassRegistry.GetClass<CertManager>().RegisterAuthority("PeaRoxy Authority", "PeaRoxy.crt");
         }
 
         #endregion
@@ -124,9 +124,9 @@ namespace PeaRoxy.ClientLibrary
             domainName = domainName.ToLower().Trim();
             string md5 = Common.Md5(domainName);
             if (ClassRegistry.GetClass<CertManager>()
-                .CreateCert(domainName, "HTTPSCerts\\PeaRoxy.crt", "HTTPSCerts\\" + md5 + ".crt"))
+                .CreateCert(domainName, "PeaRoxy.crt", Path.Combine("Cache", md5 + ".crt")))
             {
-                return "HTTPSCerts\\" + md5 + ".crt";
+                return Path.Combine("HTTPSCerts", "Cache", md5 + ".crt");
             }
 
             return null;

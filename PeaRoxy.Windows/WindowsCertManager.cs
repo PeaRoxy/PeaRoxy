@@ -15,6 +15,7 @@ namespace PeaRoxy.Windows
     using System;
     using System.Diagnostics;
     using System.IO;
+    using System.Reflection;
 
     using PeaRoxy.Platform;
 
@@ -41,17 +42,17 @@ namespace PeaRoxy.Windows
         /// </returns>
         public override bool CreateAuthority(string name, string path)
         {
-            string currentAddress = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+            string currentAddress = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             if (currentAddress == null) return false;
-            if (File.Exists(Path.Combine(currentAddress, path))) return true;
+            if (File.Exists(Path.Combine(currentAddress, "HTTPSCerts", path))) return true;
 
             Process p = Common.CreateProcess(
-                Path.Combine(currentAddress, "HTTPSCerts\\makecert.exe"), 
-                "-pe -n \"CN=" + name + "\" -cy authority -ss my -sr LocalMachine -a sha1 -sky signature -r " + path);
-            if (p != null)
-                p.WaitForExit();
+                Path.Combine("HTTPSCerts", "makecert.exe"),
+                "-pe -n \"CN=" + name + "\" -cy authority -ss my -sr LocalMachine -a sha1 -sky signature -r \"" + path
+                + "\"");
+            if (p != null) p.WaitForExit();
 
-            return File.Exists(Path.Combine(currentAddress, path));
+            return File.Exists(Path.Combine(currentAddress, "HTTPSCerts", path));
         }
 
         /// <summary>
@@ -72,19 +73,19 @@ namespace PeaRoxy.Windows
         public override bool CreateCert(string domainName, string authorityPath, string path)
         {
             domainName = domainName.ToLower().Trim();
-            string currentAddress = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+            string currentAddress = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             if (currentAddress == null) return false;
-            if (File.Exists(Path.Combine(currentAddress, path))) return true;
+            if (File.Exists(Path.Combine(currentAddress, "HTTPSCerts", path))) return true;
 
             Process p = Common.CreateProcess(
-                Path.Combine(currentAddress, "HTTPSCerts\\makecert.exe"), 
+                Path.Combine("HTTPSCerts", "makecert.exe"),
                 "-pe -n \"CN=" + domainName
                 + "\" -ss my -sr LocalMachine -a sha1 -sky exchange -eku 1.3.6.1.5.5.7.3.1 -ic \"" + authorityPath
                 + "\" -is my -ir LocalMachine -sp \"Microsoft RSA SChannel Cryptographic Provider\" -sy 12 \""
                 + path + "\"");
             if (p != null) p.WaitForExit();
 
-            return File.Exists(Path.Combine(currentAddress, path));
+            return File.Exists(Path.Combine(currentAddress, "HTTPSCerts", path));
         }
 
         /// <summary>
@@ -105,14 +106,13 @@ namespace PeaRoxy.Windows
         public override bool RegisterAuthority(string name, string authorityPath, bool firefox = true)
         {
             Process p = Common.CreateProcess(
-                "HTTPSCerts\\certmgr.exe", 
+                Path.Combine("HTTPSCerts", "certmgr.exe"),
                 "-add -c \"" + authorityPath + "\" -s -r LocalMachine root");
             if (p != null) p.WaitForExit();
+
             try
             {
-
                 if (!firefox) return true;
-
 
                 string firefoxProfilesPath =
                     Path.Combine(
@@ -120,16 +120,14 @@ namespace PeaRoxy.Windows
                         "Mozilla\\Firefox\\Profiles");
                 if (!Directory.Exists(firefoxProfilesPath)) return true;
 
-
                 foreach (string profileAddress in Directory.GetDirectories(firefoxProfilesPath))
                 {
                     Process p1 = Common.CreateProcess(
-                        "HTTPSCerts\\certutil.exe",
+                        Path.Combine("HTTPSCerts", "certutil.exe"),
                         "-A -n \"" + name + "\" -t \"TCu,TCu,TCu\" -d \"" + profileAddress + "\" -i \"" + authorityPath
                         + "\"");
                     if (p1 != null) p1.WaitForExit();
                 }
-
             }
             catch { }
             return true;
