@@ -1,10 +1,10 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="TapTunnel.cs" company="PeaRoxy.com">
+// <copyright file="TapTunnelModule.cs" company="PeaRoxy.com">
 //   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
 //   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
 // </copyright>
 // <summary>
-//   The tap tunnel.
+//   The tap tunnel module.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -27,7 +27,7 @@ namespace PeaRoxy.Windows.Network.TAP
     /// <summary>
     /// The tap tunnel.
     /// </summary>
-    public class TapTunnel
+    public static class TapTunnelModule
     {
         #region Fields
 
@@ -35,25 +35,25 @@ namespace PeaRoxy.Windows.Network.TAP
         /// The IP subnet.
         /// </summary>
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Reviewed. Suppression is OK here.")]
-        private readonly IPAddress ipSubnet = IPAddress.Parse("255.255.255.0");
+        private static readonly IPAddress IpSubnet = IPAddress.Parse("255.255.255.0");
 
         #endregion
 
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TapTunnel"/> class.
+        /// Initializes a new instance of the <see cref="TapTunnelModule"/> class.
         /// </summary>
-        public TapTunnel()
+        static TapTunnelModule()
         {
-            this.AdapterAddressRange = IPAddress.Parse("10.0.0.0");
-            this.DnsResolvingAddress = null;
-            this.DnsResolvingAddress2 = null;
-            this.AutoDnsResolvingAddress = IPAddress.Parse("8.8.8.8");
-            this.SocksProxyEndPoint = new IPEndPoint(IPAddress.Loopback, 1080);
-            this.ExceptionIPs = new IPAddress[0];
-            this.TunnelName = "Tap Tunnel";
-            this.AutoDnsResolving = false;
+            AdapterAddressRange = IPAddress.Parse("10.0.0.0");
+            DnsResolvingAddress = null;
+            DnsResolvingAddress2 = null;
+            AutoDnsResolvingAddress = IPAddress.Parse("8.8.8.8");
+            SocksProxyEndPoint = new IPEndPoint(IPAddress.Loopback, 1080);
+            ExceptionIPs = new IPAddress[0];
+            TunnelName = "Tap Tunnel";
+            AutoDnsResolving = false;
         }
 
         #endregion
@@ -63,42 +63,42 @@ namespace PeaRoxy.Windows.Network.TAP
         /// <summary>
         /// Gets or sets the adapter address range.
         /// </summary>
-        public IPAddress AdapterAddressRange { get; set; }
+        public static IPAddress AdapterAddressRange { get; set; }
 
         /// <summary>
         /// Gets or sets the DNS resolving address.
         /// </summary>
-        public IPAddress DnsResolvingAddress { get; set; }
+        public static IPAddress DnsResolvingAddress { get; set; }
 
         /// <summary>
         /// Gets or sets the DNS resolving address 2.
         /// </summary>
-        public IPAddress DnsResolvingAddress2 { get; set; }
+        public static IPAddress DnsResolvingAddress2 { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether auto DNS resolving.
         /// </summary>
-        public bool AutoDnsResolving { get; set; }
+        public static bool AutoDnsResolving { get; set; }
 
         /// <summary>
         /// Gets or sets the auto DNS resolving address.
         /// </summary>
-        public IPAddress AutoDnsResolvingAddress { get; set; }
+        public static IPAddress AutoDnsResolvingAddress { get; set; }
 
         /// <summary>
         /// Gets or sets the exception i ps.
         /// </summary>
-        public IPAddress[] ExceptionIPs { get; set; }
+        public static IPAddress[] ExceptionIPs { get; set; }
 
         /// <summary>
         /// Gets or sets the socks proxy end point.
         /// </summary>
-        public IPEndPoint SocksProxyEndPoint { get; set; }
+        public static IPEndPoint SocksProxyEndPoint { get; set; }
 
         /// <summary>
         /// Gets or sets the tunnel name.
         /// </summary>
-        public string TunnelName { get; set; }
+        public static string TunnelName { get; set; }
 
         #endregion
 
@@ -109,7 +109,7 @@ namespace PeaRoxy.Windows.Network.TAP
         /// </summary>
         public static void FlashDnsCache()
         {
-            Common.CreateProcess("ipconfig", "/flushdns").WaitForExit();
+            Common.CreateProcess("ipconfig", "/flushdns", true, false, false, true).WaitForExit();
         }
 
         /// <summary>
@@ -118,10 +118,29 @@ namespace PeaRoxy.Windows.Network.TAP
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        // ReSharper disable once UnusedMember.Global
-        public bool IsRunning()
+        public static bool IsRunning()
         {
-            return Tun2Socks.IsTun2SocksRunning();
+            if (!Tun2Socks.IsTun2SocksRunning() || !Dns2Socks.IsDns2SocksRunning())
+            {
+                Tun2Socks.StopTun2Socks();
+                Tun2Socks.CleanAllTun2Socks();
+                Dns2Socks.StopDns2Socks();
+                Dns2Socks.CleanAllDns2Socks();
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Clean all tunnel processes
+        /// </summary>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
+        public static void CleanAllTunnelProcesses()
+        {
+            Tun2Socks.CleanAllTun2Socks();
+            Dns2Socks.CleanAllDns2Socks();
         }
 
         /// <summary>
@@ -130,22 +149,22 @@ namespace PeaRoxy.Windows.Network.TAP
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        public bool StartTunnel()
+        public static bool StartTunnel()
         {
-            if (!CommonLibrary.Common.IsValidIpSubnet(this.ipSubnet))
+            if (!CommonLibrary.Common.IsValidIpSubnet(IpSubnet))
             {
                 return false;
             }
 
-            this.AdapterAddressRange = CommonLibrary.Common.MergeIpIntoIpSubnet(
-                this.AdapterAddressRange,
-                this.ipSubnet,
+            AdapterAddressRange = CommonLibrary.Common.MergeIpIntoIpSubnet(
+                AdapterAddressRange,
+                IpSubnet,
                 IPAddress.Parse("10.0.0.1"));
             IPAddress addressGateWay = CommonLibrary.Common.MergeIpIntoIpSubnet(
-                this.AdapterAddressRange,
-                this.ipSubnet,
+                AdapterAddressRange,
+                IpSubnet,
                 IPAddress.Parse("10.0.0.2"));
-            NetworkAdapter net = TapAdapter.InstallAnAdapter(this.TunnelName);
+            NetworkAdapter net = TapAdapter.InstallAnAdapter(TunnelName);
             if (net == null)
             {
                 return false;
@@ -154,10 +173,10 @@ namespace PeaRoxy.Windows.Network.TAP
             if (
                 !Tun2Socks.StartTun2Socks(
                     net,
-                    this.AdapterAddressRange,
-                    this.ipSubnet,
+                    AdapterAddressRange,
+                    IpSubnet,
                     addressGateWay,
-                    this.SocksProxyEndPoint))
+                    SocksProxyEndPoint))
             {
                 return false;
             }
@@ -172,27 +191,27 @@ namespace PeaRoxy.Windows.Network.TAP
             timeout = timeout / 3;
             string dnsString = string.Empty;
 
-            if (this.AutoDnsResolving && this.AutoDnsResolvingAddress != null)
+            if (AutoDnsResolving && AutoDnsResolvingAddress != null)
             {
-                Dns2Socks.StartDns2Socks(this.AutoDnsResolvingAddress, this.SocksProxyEndPoint);
-                dnsString = this.SocksProxyEndPoint.Address.ToString();
+                Dns2Socks.StartDns2Socks(AutoDnsResolvingAddress, SocksProxyEndPoint);
+                dnsString = SocksProxyEndPoint.Address.ToString();
             }
-            else if (this.DnsResolvingAddress != null && this.DnsResolvingAddress2 != null)
+            else if (DnsResolvingAddress != null && DnsResolvingAddress2 != null)
             {
-                dnsString = this.DnsResolvingAddress + "," + this.DnsResolvingAddress2;
+                dnsString = DnsResolvingAddress + "," + DnsResolvingAddress2;
             }
-            else if (this.DnsResolvingAddress != null)
+            else if (DnsResolvingAddress != null)
             {
-                dnsString = this.DnsResolvingAddress.ToString();
+                dnsString = DnsResolvingAddress.ToString();
             }
-            else if (this.DnsResolvingAddress2 != null)
+            else if (DnsResolvingAddress2 != null)
             {
-                dnsString = this.DnsResolvingAddress2.ToString();
+                dnsString = DnsResolvingAddress2.ToString();
             }
 
             while (true)
             {
-                if (netconfig.SetIpAddresses(this.AdapterAddressRange.ToString(), this.ipSubnet.ToString())
+                if (netconfig.SetIpAddresses(AdapterAddressRange.ToString(), IpSubnet.ToString())
                     && netconfig.SetDnsSearchOrder(dnsString))
                 {
                     break;
@@ -244,7 +263,7 @@ namespace PeaRoxy.Windows.Network.TAP
                 IP4RouteTable.GetCurrentTable()
                     .Where(
                         ip4 =>
-                        this.ExceptionIPs.Any(
+                        ExceptionIPs.Any(
                             ip =>
                             ip4.Destination != null && ip4.NextHop != null && ip4.Mask != null
                             && ip4.Destination == ip.ToString() && ip4.Mask == "255.255.255.255"
@@ -271,7 +290,7 @@ namespace PeaRoxy.Windows.Network.TAP
                     continue;
                 }
 
-                foreach (IPAddress ip in this.ExceptionIPs)
+                foreach (IPAddress ip in ExceptionIPs)
                 {
                     // if (IP4RouteTable.GetBestInterfaceIndexForIP(ip) == net.InterfaceIndex)
                     IP4RouteTable.AddChangeRouteRule(ip, IPAddress.Parse(r.NextHop), 1, null, r.InterfaceIndex);
@@ -285,7 +304,7 @@ namespace PeaRoxy.Windows.Network.TAP
         /// <summary>
         /// The stop tunnel.
         /// </summary>
-        public void StopTunnel()
+        public static void StopTunnel()
         {
             Tun2Socks.StopTun2Socks();
             Tun2Socks.CleanAllTun2Socks();
@@ -296,7 +315,7 @@ namespace PeaRoxy.Windows.Network.TAP
                     IP4RouteTable.GetCurrentTable()
                         .Where(
                             ip4 =>
-                            this.ExceptionIPs.Any(
+                            ExceptionIPs.Any(
                                 ip =>
                                 ip4.Destination != null && ip4.NextHop != null && ip4.Mask != null
                                 && ip4.Destination == ip.ToString() && ip4.Mask == "255.255.255.255"
