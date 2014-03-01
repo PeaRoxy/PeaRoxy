@@ -98,22 +98,22 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
         /// </param>
         private void NewLog(string message, EventArgs e)
         {
-            this.Logs.Items.Add(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToShortTimeString() + ": " + message);
+            message = DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToShortTimeString() + ": " + message;
+            this.Logs.Items.Add(message);
             try
             {
-                if (VisualTreeHelper.GetChildrenCount(this.Logs) <= 0
-                    || VisualTreeHelper.GetChildrenCount(VisualTreeHelper.GetChild(this.Logs, 0)) <= 0) return;
+                this.Logs.ScrollIntoView(message);
+                //if (VisualTreeHelper.GetChildrenCount(this.Logs) <= 0
+                //    || VisualTreeHelper.GetChildrenCount(VisualTreeHelper.GetChild(this.Logs, 0)) <= 0) return;
 
-                ScrollViewer scroll =
-                    VisualTreeHelper.GetChild(VisualTreeHelper.GetChild(this.Logs, 0), 0) as ScrollViewer;
-                if (scroll != null)
-                {
-                    scroll.ScrollToEnd();
-                }
+                //ScrollViewer scroll =
+                //    VisualTreeHelper.GetChild(VisualTreeHelper.GetChild(this.Logs, 0), 0) as ScrollViewer;
+                //if (scroll != null)
+                //{
+                //    scroll.ScrollToEnd();
+                //}
             }
-            catch (Exception)
-            {
-            }
+            catch { }
         }
 
         /// <summary>
