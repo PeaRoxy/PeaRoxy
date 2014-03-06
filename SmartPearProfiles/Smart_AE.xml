@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SmartProfile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <HttpRules />
+  <DirectRules />
+  <AntiDnsPoisoningRule />
+  <AntiBlockPageRule />
+  <DirectTimeout>60</DirectTimeout>
+  <IsHttpSupported>false</IsHttpSupported>
+  <IsHttpsSupported>false</IsHttpsSupported>
+  <IsSocksSupported>false</IsSocksSupported>
+  <HttpBlockPageDetection>false</HttpBlockPageDetection>
+  <DnsPoisoningDetection>false</DnsPoisoningDetection>
+  <TimeoutDetection>false</TimeoutDetection>
+  <TreatPort80AsHttp>false</TreatPort80AsHttp>
+</SmartProfile>

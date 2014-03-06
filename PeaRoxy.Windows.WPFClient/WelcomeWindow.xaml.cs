@@ -11,6 +11,7 @@
     using System.Windows.Controls;
     using System.Windows.Input;
 
+    using PeaRoxy.Updater;
     using PeaRoxy.Windows.WPFClient.Properties;
     using PeaRoxy.Windows.WPFClient.SettingTabs;
 
@@ -45,7 +46,7 @@
                 this.ApplicationsListBox.Items.Add(p.Trim().ToLower());
             }
 
-            foreach (ListBoxItem item in CountryPage.Items)
+            foreach (ListBoxItem item in this.CountryPage.Items)
             {
                 if (((item.Tag as string ?? string.Empty).Trim() == Settings.Default.SelectedProfile)
                     || ((item.Tag as string ?? "NONE").Trim() == string.Empty))
@@ -70,6 +71,26 @@
                     this.NoneRadioButton.IsChecked = true;
                     break;
             }
+        }
+
+        #endregion
+
+        #region Public Methods and Operators
+
+        public static void ImportSmartProfile(SmartProfile sp)
+        {
+            Settings.Default.Smart_HTTP_List = string.Join(Environment.NewLine, sp.HttpRules);
+            Settings.Default.Smart_Direct_List = string.Join(Environment.NewLine, sp.DirectRules);
+            Settings.Default.Smart_AntiDNSPattern = sp.AntiDnsPoisoningRule;
+            Settings.Default.Smart_HTTP_AutoRoute_Pattern = sp.AntiBlockPageRule;
+            Settings.Default.Smart_HTTP_Enable = sp.IsHttpSupported;
+            Settings.Default.Smart_HTTPS_Enable = sp.IsHttpsSupported;
+            Settings.Default.Smart_SOCKS_Enable = sp.IsSocksSupported;
+            Settings.Default.Smart_HTTP_AutoRoute_Enable = sp.HttpBlockPageDetection;
+            Settings.Default.Smart_AntiDNS_Enable = sp.DnsPoisoningDetection;
+            Settings.Default.Smart_Timeout_Enable = sp.TimeoutDetection;
+            Settings.Default.Smart_Timeout_Value = (ushort)sp.DirectTimeout;
+            Settings.Default.Smart_Direct_AutoRoutePort80AsHTTP = sp.TreatPort80AsHttp;
         }
 
         #endregion
@@ -187,53 +208,34 @@
                         switch (selectedItem.Tag as string)
                         {
                             case "IR":
-                                Settings.Default.Smart_HTTPS_Enable = true;
-                                Settings.Default.Smart_HTTP_Enable = true;
-                                Settings.Default.Smart_SOCKS_Enable = false;
-                                Settings.Default.Smart_Direct_List = "*google.c*:*" + Environment.NewLine + "*facebook.c*:*" + Environment.NewLine + "*youtube.c*:*" + Environment.NewLine + "*twitter.c*:*";
-                                Settings.Default.Smart_HTTP_List = "*google.c*" + Environment.NewLine + "*facebook.c*" + Environment.NewLine + "*youtube.c*" + Environment.NewLine + "*twitter.c*";
-                                Settings.Default.Smart_HTTP_AutoRoute_Enable = true;
-                                Settings.Default.Smart_HTTP_AutoRoute_Pattern =
-                                    "^HTTP/1.1 403 Forbidden(\\r\\nConnection:close)*";
-                                Settings.Default.Smart_AntiDNS_Enable = true;
-                                Settings.Default.Smart_AntiDNSPattern = "^(10.10.*.*)$";
-                                Settings.Default.Smart_Timeout_Enable = true;
-                                Settings.Default.Smart_Direct_AutoRoutePort80AsHTTP = true;
+                                ImportSmartProfile(SmartProfile.FromXml(Properties.Resources.Smart_IR));
                                 this.SummeryListBox.Items.Add("SmartPear for HTTP connections: Enable");
                                 this.SummeryListBox.Items.Add("SmartPear for Direct connections: Enable");
                                 this.SummeryListBox.Items.Add("SmartPear Profile: Iran");
                                 break;
                             case "CH":
-                                Settings.Default.Smart_HTTPS_Enable = false;
-                                Settings.Default.Smart_HTTP_Enable = false;
-                                Settings.Default.Smart_SOCKS_Enable = false;
-                                Settings.Default.Smart_Direct_List = "*google.c*:*" + Environment.NewLine + "*facebook.c*:*" + Environment.NewLine + "*youtube.c*:*" + Environment.NewLine + "*twitter.c*:*";
-                                Settings.Default.Smart_HTTP_List = "*google.c*" + Environment.NewLine + "*facebook.c*" + Environment.NewLine + "*youtube.c*" + Environment.NewLine + "*twitter.c*";
-                                Settings.Default.Smart_HTTP_AutoRoute_Enable = false;
-                                Settings.Default.Smart_HTTP_AutoRoute_Pattern = "";
-                                Settings.Default.Smart_AntiDNS_Enable = true;
-                                Settings.Default.Smart_AntiDNSPattern = "^(78.16.49.15|46.82.174.68|243.185.187.39|37.61.54.158|159.106.121.75|59.24.3.173|8.7.198.45|93.46.8.89|203.98.7.65)$";
-                                Settings.Default.Smart_Timeout_Enable = true;
-                                Settings.Default.Smart_Direct_AutoRoutePort80AsHTTP = true;
+                                ImportSmartProfile(SmartProfile.FromXml(Properties.Resources.Smart_CH));
                                 this.SummeryListBox.Items.Add("SmartPear for HTTP connections: Disable");
                                 this.SummeryListBox.Items.Add("SmartPear for Direct connections: Disable");
                                 this.SummeryListBox.Items.Add("SmartPear Profile: China");
                                 break;
                             case "AE":
+                                ImportSmartProfile(SmartProfile.FromXml(Properties.Resources.Smart_AE));
+                                this.SummeryListBox.Items.Add("SmartPear for HTTP connections: Disable");
+                                this.SummeryListBox.Items.Add("SmartPear for Direct connections: Disable");
+                                break;
                             case "SA":
+                                ImportSmartProfile(SmartProfile.FromXml(Properties.Resources.Smart_SA));
+                                this.SummeryListBox.Items.Add("SmartPear for HTTP connections: Disable");
+                                this.SummeryListBox.Items.Add("SmartPear for Direct connections: Disable");
+                                break;
                             case "PK":
+                                ImportSmartProfile(SmartProfile.FromXml(Properties.Resources.Smart_PK));
+                                this.SummeryListBox.Items.Add("SmartPear for HTTP connections: Disable");
+                                this.SummeryListBox.Items.Add("SmartPear for Direct connections: Disable");
+                                break;
                             default:
-                                Settings.Default.Smart_HTTPS_Enable = false;
-                                Settings.Default.Smart_HTTP_Enable = false;
-                                Settings.Default.Smart_SOCKS_Enable = false;
-                                Settings.Default.Smart_Direct_List = "";
-                                Settings.Default.Smart_HTTP_List = "";
-                                Settings.Default.Smart_HTTP_AutoRoute_Enable = false;
-                                Settings.Default.Smart_HTTP_AutoRoute_Pattern = "";
-                                Settings.Default.Smart_AntiDNS_Enable = false;
-                                Settings.Default.Smart_AntiDNSPattern = "";
-                                Settings.Default.Smart_Timeout_Enable = false;
-                                Settings.Default.Smart_Direct_AutoRoutePort80AsHTTP = false;
+                                ImportSmartProfile(SmartProfile.FromXml(Properties.Resources.Smart));
                                 this.SummeryListBox.Items.Add("SmartPear for HTTP connections: Disable");
                                 this.SummeryListBox.Items.Add("SmartPear for Direct connections: Disable");
                                 break;

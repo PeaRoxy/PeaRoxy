@@ -741,7 +741,7 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
                 "SmartPear!", 
                 "[Enable:] Check direct connection before using Server for forwarding traffic" + Environment.NewLine
                 + "[Disable:] Always send traffic through Server" + Environment.NewLine
-                + "[Update:] Download latest rulesets for improving SmartPear behavior");
+                + "[Update:] Download latest settings for your selected country/profile and reset all PeaRoxt configurations to defualt");
 
             ToolTipService.SetShowDuration(this.ReConfigGrid, 60000);
             ToolTipService.SetShowDuration(this.GrabberGrid, 60000);

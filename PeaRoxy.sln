@@ -28,8 +28,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeaRoxy.ASPear", "PeaRoxy.A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeaRoxy.Windows.Network.Hook", "PeaRoxy.Windows.Network.Hook\PeaRoxy.Windows.Network.Hook.csproj", "{7E227DF0-7F70-45E7-999B-01811E60CAB1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeaRoxy.Windows.Updater", "PeaRoxy.Windows.Updater\PeaRoxy.Windows.Updater.csproj", "{51A9F6FA-3D62-4F59-8E0A-CEB7B37FDC0A}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D9C5BEAD-DF76-4B9F-A83E-E02624C3802D}"
 	ProjectSection(SolutionItems) = preProject
 		Solution Items\7za.exe = Solution Items\7za.exe
@@ -38,6 +36,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZARA", "ZARA\ZARA.csproj", "{93EA916C-4F5C-4136-8410-3AA87B474CC3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SmartPearProfiles", "SmartPearProfiles", "{C3D31CFA-6B93-4B28-AC3A-BA08A34567B1}"
+	ProjectSection(SolutionItems) = preProject
+		SmartPearProfiles\Smart_AE.xml = SmartPearProfiles\Smart_AE.xml
+		SmartPearProfiles\Smart_ALL.xml = SmartPearProfiles\Smart_ALL.xml
+		SmartPearProfiles\Smart_CH.xml = SmartPearProfiles\Smart_CH.xml
+		SmartPearProfiles\Smart_IR.xml = SmartPearProfiles\Smart_IR.xml
+		SmartPearProfiles\Smart_PK.xml = SmartPearProfiles\Smart_PK.xml
+		SmartPearProfiles\Smart_SA.xml = SmartPearProfiles\Smart_SA.xml
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeaRoxy.Updater", "PeaRoxy.Updater\PeaRoxy.Updater.csproj", "{9405B3D6-9A73-44C9-9F3F-28CEABCDC5B2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -73,9 +83,11 @@ Global
 		{C22FD32B-1361-42AC-8874-43A6A9424993}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{C22FD32B-1361-42AC-8874-43A6A9424993}.Debug|x86.Build.0 = Debug|Any CPU
 		{C22FD32B-1361-42AC-8874-43A6A9424993}.Release|x86.ActiveCfg = Release|Any CPU
+		{C22FD32B-1361-42AC-8874-43A6A9424993}.Release|x86.Build.0 = Release|Any CPU
 		{511CA971-9FAD-4BFA-9841-105CF644CF77}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{511CA971-9FAD-4BFA-9841-105CF644CF77}.Debug|x86.Build.0 = Debug|Any CPU
 		{511CA971-9FAD-4BFA-9841-105CF644CF77}.Release|x86.ActiveCfg = Release|Any CPU
+		{511CA971-9FAD-4BFA-9841-105CF644CF77}.Release|x86.Build.0 = Release|Any CPU
 		{F64700D4-2B90-4F95-9DB5-8D2E1E25D7E4}.Debug|x86.ActiveCfg = Production|PHP 5.2
 		{F64700D4-2B90-4F95-9DB5-8D2E1E25D7E4}.Release|x86.ActiveCfg = Production|PHP 5.2
 		{6FE76A55-F1D6-41C9-9D14-6E018F1F091E}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -86,14 +98,14 @@ Global
 		{7E227DF0-7F70-45E7-999B-01811E60CAB1}.Debug|x86.Build.0 = Debug|Any CPU
 		{7E227DF0-7F70-45E7-999B-01811E60CAB1}.Release|x86.ActiveCfg = Release|Any CPU
 		{7E227DF0-7F70-45E7-999B-01811E60CAB1}.Release|x86.Build.0 = Release|Any CPU
-		{51A9F6FA-3D62-4F59-8E0A-CEB7B37FDC0A}.Debug|x86.ActiveCfg = Debug|x86
-		{51A9F6FA-3D62-4F59-8E0A-CEB7B37FDC0A}.Debug|x86.Build.0 = Debug|x86
-		{51A9F6FA-3D62-4F59-8E0A-CEB7B37FDC0A}.Release|x86.ActiveCfg = Release|x86
-		{51A9F6FA-3D62-4F59-8E0A-CEB7B37FDC0A}.Release|x86.Build.0 = Release|x86
 		{93EA916C-4F5C-4136-8410-3AA87B474CC3}.Debug|x86.ActiveCfg = Debug|x86
 		{93EA916C-4F5C-4136-8410-3AA87B474CC3}.Debug|x86.Build.0 = Debug|x86
 		{93EA916C-4F5C-4136-8410-3AA87B474CC3}.Release|x86.ActiveCfg = Release|x86
 		{93EA916C-4F5C-4136-8410-3AA87B474CC3}.Release|x86.Build.0 = Release|x86
+		{9405B3D6-9A73-44C9-9F3F-28CEABCDC5B2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9405B3D6-9A73-44C9-9F3F-28CEABCDC5B2}.Debug|x86.Build.0 = Debug|Any CPU
+		{9405B3D6-9A73-44C9-9F3F-28CEABCDC5B2}.Release|x86.ActiveCfg = Release|Any CPU
+		{9405B3D6-9A73-44C9-9F3F-28CEABCDC5B2}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

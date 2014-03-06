@@ -69,7 +69,7 @@
                         <MenuItem Header="Disable" IsCheckable="True" Name="SmartPearDisableMenuItem"
                                   Click="MiSmartpearClick" />
                         <Separator />
-                        <MenuItem Header="Update" Click="MiSmartpearUpdateClick" IsEnabled="False">
+                        <MenuItem Header="Reset &#38; Update" Click="MiSmartpearUpdateClick">
                             <MenuItem.Icon>
                                 <Image Source="/PeaRoxy.Windows.WPFClient;component/Images/Toolbar/Menu_Update.png" />
                             </MenuItem.Icon>

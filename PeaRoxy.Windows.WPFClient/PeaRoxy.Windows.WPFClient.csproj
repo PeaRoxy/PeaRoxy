@@ -368,6 +368,10 @@
       <Project>{511CA971-9FAD-4BFA-9841-105CF644CF77}</Project>
       <Name>PeaRoxy.Platform</Name>
     </ProjectReference>
+    <ProjectReference Include="..\PeaRoxy.Updater\PeaRoxy.Updater.csproj">
+      <Project>{9405b3d6-9a73-44c9-9f3f-28ceabcdc5b2}</Project>
+      <Name>PeaRoxy.Updater</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PeaRoxy.Windows.Network.Hook\PeaRoxy.Windows.Network.Hook.csproj">
       <Project>{7e227df0-7f70-45e7-999b-01811e60cab1}</Project>
       <Name>PeaRoxy.Windows.Network.Hook</Name>

@@ -40,9 +40,20 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Management" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="VDialog">
+      <HintPath>..\Reference Libraries\VDialog.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Downloader.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Downloader.Designer.cs">
+      <DependentUpon>Downloader.cs</DependentUpon>
+    </Compile>
     <Compile Include="Job.cs" />
     <Compile Include="ProcessWatcher.cs" />
     <Compile Include="WindowsConnections.cs" />
@@ -110,11 +121,19 @@
       <Project>{511CA971-9FAD-4BFA-9841-105CF644CF77}</Project>
       <Name>PeaRoxy.Platform</Name>
     </ProjectReference>
+    <ProjectReference Include="..\PeaRoxy.Updater\PeaRoxy.Updater.csproj">
+      <Project>{9405b3d6-9a73-44c9-9f3f-28ceabcdc5b2}</Project>
+      <Name>PeaRoxy.Updater</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="PeaRoxy.Windows.snk" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Downloader.resx">
+      <DependentUpon>Downloader.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

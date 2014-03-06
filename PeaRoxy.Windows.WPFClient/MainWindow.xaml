@@ -42,7 +42,7 @@
                                                  OptionClick="ToolbarOptionsClick" HorizontalAlignment="Right"
                                                  ReConfigClick="ToolbarReConfigClick"
                                                  SmartPearSelectedChanged="ToolbarSmartPearSelectedChanged"
-                                                 GrabberSelectedChanged="ToolbarGrabberSelectedChanged" />
+                                                 GrabberSelectedChanged="ToolbarGrabberSelectedChanged" SmartPearUpdateClick="Toolbar_OnSmartPearUpdateClick" />
                     <Image Name="ImgLogo" Stretch="Uniform" StretchDirection="Both"
                            Source="/PeaRoxy.Windows.WPFClient;component/Images/MainPanel/Pear.png"
                            HorizontalAlignment="Left" Width="77" Height="104" VerticalAlignment="Bottom" Opacity="1"
