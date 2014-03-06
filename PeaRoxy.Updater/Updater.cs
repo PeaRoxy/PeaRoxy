@@ -45,9 +45,9 @@
         {
             const string SmartUrl = "https://github.com/PeaRoxy/PeaRoxy/blob/master/SmartPearProfiles";
             return string.Format(
-                "{0}/Smart_{1}.xml",
+                "{0}/Smart{1}.xml",
                 SmartUrl,
-                (!string.IsNullOrWhiteSpace(profile) ? profile.ToUpper().Trim() : "NONE"));
+                (!string.IsNullOrWhiteSpace(profile) ? "_" + profile.ToUpper().Trim() : ""));
         }
 
         public AppVersion GetLatestVersion()
