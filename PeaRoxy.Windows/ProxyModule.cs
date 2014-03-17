@@ -182,7 +182,7 @@ namespace PeaRoxy.Windows
             return false;
         }
 
-        public static void RefreshProxySettings()
+        private static void RefreshProxySettings()
         {
             InternetSetOption(IntPtr.Zero, InternetOptionProxySettingsChanged, IntPtr.Zero, 0);
             InternetSetOption(IntPtr.Zero, InternetOptionSettingsChanged, IntPtr.Zero, 0);
@@ -196,7 +196,7 @@ namespace PeaRoxy.Windows
             {
                 if (!IsProxyEnable())
                 {
-                    RefreshProxySettings();
+                    //RefreshProxySettings();
                     return true;
                 }
 
@@ -246,7 +246,7 @@ namespace PeaRoxy.Windows
             {
                 if (!IsProxyAutoConfigEnable())
                 {
-                    RefreshProxySettings();
+                    //RefreshProxySettings();
                     return true;
                 }
 
@@ -285,7 +285,7 @@ namespace PeaRoxy.Windows
                     if (registry != null
                         && ((string.IsNullOrWhiteSpace(address)
                              && !string.IsNullOrWhiteSpace((string)registry.GetValue("AutoConfigURL", string.Empty)))
-                            || registry.GetValue("AutoConfigURL", string.Empty).Equals(address)))
+                            || (!string.IsNullOrWhiteSpace(address) && registry.GetValue("AutoConfigURL", string.Empty).Equals(address))))
                     {
                         return true;
                     }

@@ -34,7 +34,6 @@ namespace PeaRoxy.Windows.WPFClient
 
     using PeaRoxy.ClientLibrary;
     using PeaRoxy.ClientLibrary.ServerModules;
-    using PeaRoxy.CommonLibrary;
     using PeaRoxy.Updater;
     using PeaRoxy.Windows.Network.Hook;
     using PeaRoxy.Windows.Network.TAP;
@@ -508,10 +507,11 @@ namespace PeaRoxy.Windows.WPFClient
                     if (this.listener != null && this.listener.Status.HasFlag(ProxyController.ControllerStatus.Proxy))
                     {
                         TapTunnelModule.AdapterAddressRange = IPAddress.Parse(Settings.Default.TAP_IPRange);
-                        TapTunnelModule.DnsResolvingAddress = IPAddress.Parse(Settings.Default.DNS_IPAddress);
-                        TapTunnelModule.DnsResolvingAddress2 = IPAddress.Parse(Settings.Default.Proxy_Address);
+                        TapTunnelModule.DnsResolvingAddress = IPAddress.Parse(Settings.Default.Proxy_Address);
                         TapTunnelModule.SocksProxyEndPoint =
                             new IPEndPoint(IPAddress.Parse(Settings.Default.Proxy_Address), this.listener.Port);
+                        TapTunnelModule.AutoDnsResolving = Settings.Default.DNS_Enable;
+                        TapTunnelModule.AutoDnsResolvingAddress = IPAddress.Parse(Settings.Default.DNS_IPAddress);
                         TapTunnelModule.TunnelName = "PeaRoxy Tunnel";
 
                         if (TapTunnelModule.StartTunnel())
@@ -530,14 +530,14 @@ namespace PeaRoxy.Windows.WPFClient
                                 App.Notify.ShowBalloonTip(
                                     5000,
                                     "TAP Grabber",
-                                    "Failed to start TAP Adapter. Tap grabber disabled.",
+                                    "Failed to start TAP Adapter. Tap grabber disabled. Please go to control panel and check if network adapter is disable.",
                                     ToolTipIcon.Warning);
                             }
                             else
                             {
                                 VDialog.Show(
                                     this,
-                                    "Failed to start TAP Adapter. Tap grabber disabled.",
+                                    "Failed to start TAP Adapter. Tap grabber disabled. Please go to control panel and check if network adapter is disable.",
                                     "TAP Grabber",
                                     MessageBoxButtons.OK,
                                     MessageBoxIcon.Warning);
@@ -971,7 +971,7 @@ namespace PeaRoxy.Windows.WPFClient
 
         private void SmartPearApplySettings()
         {
-            if (this.listener != null && this.listener.Status.HasFlag(ProxyController.ControllerStatus.Proxy))
+            if (this.listener != null)
             {
                 this.listener.SmartPear.DetectorDirectPort80AsHttp = Settings.Default.Smart_Direct_AutoRoutePort80AsHTTP;
                 this.listener.SmartPear.ForwarderHttpEnable = Settings.Default.Smart_HTTP_Enable;
