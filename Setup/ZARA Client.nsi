@@ -48,10 +48,6 @@ Section "Main Application" SecMain
   StrCmp $R0 0 0 +2
      ${nsProcess::KillProcess} "ZARA.exe" $R0
      
-  ${nsProcess::FindProcess} "tun2socks.exe" $R0
-  StrCmp $R0 0 0 +2
-     ${nsProcess::KillProcess} "tun2socks.exe" $R0
-     
   ${nsProcess::Unload}
 
   SectionIn RO
