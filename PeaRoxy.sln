@@ -39,8 +39,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZARA", "ZARA\ZARA.csproj", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SmartPearProfiles", "SmartPearProfiles", "{C3D31CFA-6B93-4B28-AC3A-BA08A34567B1}"
 	ProjectSection(SolutionItems) = preProject
+		SmartPearProfiles\Smart.xml = SmartPearProfiles\Smart.xml
 		SmartPearProfiles\Smart_AE.xml = SmartPearProfiles\Smart_AE.xml
-		SmartPearProfiles\Smart_ALL.xml = SmartPearProfiles\Smart_ALL.xml
 		SmartPearProfiles\Smart_CH.xml = SmartPearProfiles\Smart_CH.xml
 		SmartPearProfiles\Smart_IR.xml = SmartPearProfiles\Smart_IR.xml
 		SmartPearProfiles\Smart_PK.xml = SmartPearProfiles\Smart_PK.xml
