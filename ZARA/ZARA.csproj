@@ -126,6 +126,14 @@
       <Project>{511ca971-9fad-4bfa-9841-105cf644cf77}</Project>
       <Name>PeaRoxy.Platform</Name>
     </ProjectReference>
+    <ProjectReference Include="..\PeaRoxy.Updater\PeaRoxy.Updater.csproj">
+      <Project>{9405B3D6-9A73-44C9-9F3F-28CEABCDC5B2}</Project>
+      <Name>PeaRoxy.Updater</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PeaRoxy.Windows.Network.Hook\PeaRoxy.Windows.Network.Hook.csproj">
+      <Project>{7E227DF0-7F70-45E7-999B-01811E60CAB1}</Project>
+      <Name>PeaRoxy.Windows.Network.Hook</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PeaRoxy.Windows.Network.TAP\PeaRoxy.Windows.Network.TAP.csproj">
       <Project>{3a0f7a2e-216f-47f1-a31f-2a9a29949931}</Project>
       <Name>PeaRoxy.Windows.Network.TAP</Name>
@@ -181,12 +189,17 @@
   <ItemGroup>
     <None Include="Resources\host.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="ZipExcludeList.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>for /f %25%25i in ('"$(SolutionDir)Solution Items\VersionExtractor.exe" $(TargetPath)') do set version=%25%25i
 if $(ConfigurationName) == Release (
 del "$(SolutionDir)Binaries\ZARA-Win*.exe"
+del "$(SolutionDir)Binaries\ZARA-Win*.zip"
 "$(ProgramFiles)\NSIS\makensis.exe" /DVERSION=%25version%25 "$(SolutionDir)Setup\ZARA Client.nsi"
+"$(SolutionDir)Solution Items\7za" a -tzip "$(SolutionDir)Binaries\ZARA-Win-v%25version%25.zip" "$(SolutionDir)\bin\Zara\*" -mx9 -xr@"$(ProjectDir)ZipExcludeList.txt"
 )</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
