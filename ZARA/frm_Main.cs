@@ -14,6 +14,8 @@ namespace ZARA
 
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.Drawing;
     using System.Globalization;
@@ -30,7 +32,9 @@ namespace ZARA
 
     using PeaRoxy.ClientLibrary;
     using PeaRoxy.ClientLibrary.ServerModules;
+    using PeaRoxy.Updater;
     using PeaRoxy.Windows;
+    using PeaRoxy.Windows.Network.Hook;
     using PeaRoxy.Windows.Network.TAP;
 
     using WinFormAnimation;
@@ -39,13 +43,14 @@ namespace ZARA
 
     using Common = PeaRoxy.CommonLibrary.Common;
     using Timer = WinFormAnimation.Timer;
+    using WinCommon = PeaRoxy.Windows.Common;
 
     #endregion
 
     /// <summary>
     ///     The main form.
     /// </summary>
-    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter", 
+    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter",
         Justification = "Reviewed. Suppression is OK here.")]
 
     // ReSharper disable once InconsistentNaming
@@ -87,10 +92,16 @@ namespace ZARA
         /// </summary>
         private long downloadSpeed;
 
+        private AppVersion latestVersion;
+
         /// <summary>
         ///     The listener.
         /// </summary>
         private ProxyController listener;
+
+        private bool skipUpdate;
+
+        private BackgroundWorker updaterWorker;
 
         /// <summary>
         ///     The up speed.
@@ -134,18 +145,29 @@ namespace ZARA
             /// <summary>
             ///     The disconnected.
             /// </summary>
-            Disconnected, 
+            Disconnected,
 
             /// <summary>
             ///     The connected.
             /// </summary>
-            Connected, 
+            Connected,
 
             /// <summary>
             ///     The sleep.
             /// </summary>
             // ReSharper disable once UnusedMember.Global
-            Sleep, 
+            Sleep,
+        }
+
+        public enum GrabberType
+        {
+            None = 0,
+
+            Tap = 1,
+
+            Hook = 2,
+
+            Proxy = 3,
         }
 
         #endregion
@@ -160,6 +182,144 @@ namespace ZARA
         #endregion
 
         #region Public Methods and Operators
+
+        public void ReConfig(bool silent, bool? forceState = null)
+        {
+            bool isListenerActive = this.listener != null
+                                    && this.listener.Status.HasFlag(ProxyController.ControllerStatus.Proxy);
+            if (!forceState.HasValue || !forceState.Value)
+            {
+                if (!isListenerActive)
+                {
+                    ProxyModule.DisableProxy();
+                    ProxyModule.DisableProxyAutoConfig();
+                }
+
+                if (isListenerActive && TapTunnelModule.IsRunning())
+                {
+                    TapTunnelModule.StopTunnel();
+                }
+                TapTunnelModule.CleanAllTunnelProcesses();
+
+                if (isListenerActive && HookModule.IsHookProcessRunning())
+                {
+                    HookModule.StopHookProcess();
+                }
+                HookModule.CleanAllHookProcesses();
+            }
+
+            if ((forceState.HasValue && !forceState.Value) || !isListenerActive)
+            {
+                return;
+            }
+
+            switch ((GrabberType)Settings.Default.Grabber)
+            {
+                case GrabberType.Proxy:
+                    bool res = ProxyModule.SetActiveProxy(new IPEndPoint(IPAddress.Loopback, this.listener.Port));
+                    bool firefoxRes = ProxyModule.ForceFirefoxToUseSystemSettings();
+
+                    if (!res)
+                    {
+                        if (silent)
+                        {
+                            Program.Notify.ShowBalloonTip(
+                                5000,
+                                "Proxy Grabber",
+                                "We failed to register PeaRoxy as active proxy for this system. You may need to do it manually or restart/re-logon your PC and let us try again.",
+                                ToolTipIcon.Warning);
+                        }
+                        else
+                        {
+                            if (VDialog.Show(
+                                this,
+                                "We failed to register PeaRoxy as active proxy for this system. You may need to do it manually or restart/re-logon your PC and let us try again.\r\nDo want us to logoff your user account?! Please save your work in other applications before making a decision.",
+                                "Proxy Grabber",
+                                MessageBoxButtons.YesNo,
+                                MessageBoxIcon.Warning) == DialogResult.Yes)
+                            {
+                                WinCommon.LogOffUser();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (firefoxRes)
+                        {
+                            Program.Notify.ShowBalloonTip(
+                                5000,
+                                "Proxy Grabber",
+                                "PeaRoxy successfully registered as active proxy of this system. You may need to restart your browser to be able to use it along with PeaRoxy.",
+                                ToolTipIcon.Info);
+                        }
+                        else
+                        {
+                            Program.Notify.ShowBalloonTip(
+                                5000,
+                                "Proxy Grabber",
+                                "PeaRoxy successfully registered as active proxy of this system. Firefox probably need some manual configurations, also you may need to restart your browser to be able to use it along with PeaRoxy.",
+                                ToolTipIcon.Warning);
+                        }
+                    }
+
+                    break;
+                case GrabberType.Tap:
+                    if (this.listener != null && this.listener.Status.HasFlag(ProxyController.ControllerStatus.Proxy))
+                    {
+                        TapTunnelModule.AdapterAddressRange = IPAddress.Parse(Settings.Default.TAP_IPRange);
+                        TapTunnelModule.DnsResolvingAddress = IPAddress.Loopback;
+                        TapTunnelModule.SocksProxyEndPoint = new IPEndPoint(IPAddress.Loopback, this.listener.Port);
+                        TapTunnelModule.AutoDnsResolving = true;
+                        TapTunnelModule.AutoDnsResolvingAddress = IPAddress.Parse(Settings.Default.DNS_IPAddress);
+                        TapTunnelModule.TunnelName = "ZARA Tunnel";
+
+                        if (TapTunnelModule.StartTunnel())
+                        {
+                            Program.Notify.ShowBalloonTip(
+                                5000,
+                                "TAP Grabber",
+                                "TAP Adapter activated successfully. You are ready to go.",
+                                ToolTipIcon.Info);
+                        }
+                        else
+                        {
+                            TapTunnelModule.StopTunnel();
+                            if (silent)
+                            {
+                                Program.Notify.ShowBalloonTip(
+                                    5000,
+                                    "TAP Grabber",
+                                    "Failed to start TAP Adapter. Tap grabber disabled. Please go to control panel to see if network adapter is disable.",
+                                    ToolTipIcon.Warning);
+                            }
+                            else
+                            {
+                                VDialog.Show(
+                                    this,
+                                    "Failed to start TAP Adapter. Tap grabber disabled. Please go to control panel to see if network adapter is disable.",
+                                    "TAP Grabber",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Warning);
+                            }
+                        }
+                    }
+                    break;
+                case GrabberType.Hook:
+                    HookModule.StartHookProcess(
+                        Settings.Default.Hook_Processes.Split(
+                            new[] { Environment.NewLine },
+                            StringSplitOptions.RemoveEmptyEntries),
+                        new IPEndPoint(IPAddress.Loopback, this.listener.Port),
+                        string.Empty);
+
+                    Program.Notify.ShowBalloonTip(
+                        5000,
+                        "Hook Grabber",
+                        "Hook process started successfully and actively monitor running applications from now on. You are ready to go.",
+                        ToolTipIcon.Info);
+                    break;
+            }
+        }
 
         /// <summary>
         ///     The start server.
@@ -230,11 +390,11 @@ namespace ZARA
                 string serverAddress = Settings.Default.ServerAddress;
 
                 ServerType ser = new PeaRoxy(
-                    Settings.Default.ServerAddress, 
-                    Settings.Default.ServerPort, 
-                    string.Empty, 
-                    Settings.Default.UserAndPassword_User, 
-                    Settings.Default.UserAndPassword_Pass, 
+                    Settings.Default.ServerAddress,
+                    Settings.Default.ServerPort,
+                    string.Empty,
+                    Settings.Default.UserAndPassword_User,
+                    Settings.Default.UserAndPassword_Pass,
                     Common.EncryptionType.SimpleXor);
 
                 ser.NoDataTimeout = Settings.Default.Connection_NoDataTimeout;
@@ -250,35 +410,27 @@ namespace ZARA
                                     {
                                         this.listener.Start();
 
-                                        List<IPAddress> hostIps = new List<IPAddress>();
-                                        if (Common.IsIpAddress(serverAddress))
+                                        // Grabber Pro-Listen Settings
+                                        if ((GrabberType)Settings.Default.Grabber == GrabberType.Tap)
                                         {
-                                            hostIps.Add(IPAddress.Parse(serverAddress));
-                                        }
-                                        else
-                                        {
-                                            hostIps.AddRange(Dns.GetHostEntry(serverAddress).AddressList);
+                                            List<IPAddress> hostIps = new List<IPAddress>();
+                                            if (Common.IsIpAddress(serverAddress))
+                                            {
+                                                hostIps.Add(IPAddress.Parse(serverAddress));
+                                            }
+                                            else
+                                            {
+                                                hostIps.AddRange(Dns.GetHostEntry(serverAddress).AddressList);
+                                            }
+                                            TapTunnelModule.ExceptionIPs = hostIps.ToArray();
                                         }
 
-                                        TapTunnelModule.AdapterAddressRange = IPAddress.Parse(
-                                            Settings.Default.TAP_IPRange);
-                                        TapTunnelModule.ExceptionIPs = hostIps.ToArray();
-                                        TapTunnelModule.AutoDnsResolving = true;
-                                        TapTunnelModule.SocksProxyEndPoint = new IPEndPoint(
-                                            IPAddress.Loopback,
-                                            this.listener.Port);
-                                        TapTunnelModule.TunnelName = "ZARA Tunnel";
-
-                                        if (!TapTunnelModule.StartTunnel())
-                                        {
-                                            TapTunnelModule.StopTunnel();
-                                            throw new Exception("Failed to start TAP Adapter.");
-                                        }
+                                        this.ReConfig(false);
 
                                         Program.Notify.ShowBalloonTip(
-                                            2000, 
-                                            "Z A Я A", 
-                                            "Connected to the server\r\n" + ser.ToString(), 
+                                            2000,
+                                            "Z A Я A",
+                                            "Connected to the server\r\n" + ser.ToString(),
                                             ToolTipIcon.Info);
                                         Program.Notify.Text = @"Z A Я A - Working";
                                         this.Status = CurrentStatus.Connected;
@@ -292,9 +444,9 @@ namespace ZARA
                                 catch (Exception ex)
                                 {
                                     this.ShowDialog(
-                                        "Error: " + ex.Message + ex.StackTrace, 
-                                        "Start Error", 
-                                        MessageBoxButtons.OK, 
+                                        "Error: " + ex.Message + ex.StackTrace,
+                                        "Start Error",
+                                        MessageBoxButtons.OK,
                                         MessageBoxIcon.Error);
                                     if (this.listener != null)
                                     {
@@ -302,8 +454,12 @@ namespace ZARA
                                     }
 
                                     this.RefreshStatus();
+                                    if (!this.updaterWorker.IsBusy)
+                                    {
+                                        this.updaterWorker.RunWorkerAsync();
+                                    }
                                 }
-                            }, 
+                            },
                         new object[] { }));
 
                 return true;
@@ -341,7 +497,8 @@ namespace ZARA
                     }
 
                     this.Status = CurrentStatus.Disconnected;
-                    TapTunnelModule.StopTunnel();
+
+                    this.ReConfig(false);
                 }
 
                 this.SaveSettings();
@@ -372,37 +529,37 @@ namespace ZARA
         private static extern bool ReleaseCapture();
 
         /// <summary>
-        /// The send message.
+        ///     The send message.
         /// </summary>
         /// <param name="winH">
-        /// The window handler.
+        ///     The window handler.
         /// </param>
         /// <param name="msg">
-        /// The message.
+        ///     The message.
         /// </param>
         /// <param name="paramW">
-        /// The W parameter.
+        ///     The W parameter.
         /// </param>
         /// <param name="paramL">
-        /// The L parameter.
+        ///     The L parameter.
         /// </param>
         /// <returns>
-        /// The <see cref="int"/>.
+        ///     The <see cref="int" />.
         /// </returns>
         [DllImport("user32.dll")]
         private static extern int SendMessage(IntPtr winH, int msg, int paramW, int paramL);
 
         /// <summary>
-        /// The split by space.
+        ///     The split by space.
         /// </summary>
         /// <param name="str">
-        /// The string.
+        ///     The string.
         /// </param>
         /// <param name="a1">
-        /// The a 1.
+        ///     The a 1.
         /// </param>
         /// <param name="a2">
-        /// The a 2.
+        ///     The a 2.
         /// </param>
         private static void SplitBySpace(string str, Label a1, Label a2)
         {
@@ -414,13 +571,13 @@ namespace ZARA
         }
 
         /// <summary>
-        /// The split by space.
+        ///     The split by space.
         /// </summary>
         /// <param name="str">
-        /// The string.
+        ///     The string.
         /// </param>
         /// <param name="a1">
-        /// The a 1.
+        ///     The a 1.
         /// </param>
         private static void SplitBySpace(string str, CircularProgressBar a1)
         {
@@ -441,13 +598,13 @@ namespace ZARA
         }
 
         /// <summary>
-        /// The disconnect click.
+        ///     The disconnect click.
         /// </summary>
         /// <param name="sender">
-        /// The sender.
+        ///     The sender.
         /// </param>
         /// <param name="e">
-        /// The e.
+        ///     The e.
         /// </param>
         private void BtnDisconnectClick(object sender, EventArgs e)
         {
@@ -459,13 +616,13 @@ namespace ZARA
         }
 
         /// <summary>
-        /// The exit click.
+        ///     The exit click.
         /// </summary>
         /// <param name="sender">
-        /// The sender.
+        ///     The sender.
         /// </param>
         /// <param name="e">
-        /// The e.
+        ///     The e.
         /// </param>
         private void BtnExitClick(object sender, EventArgs e)
         {
@@ -474,13 +631,13 @@ namespace ZARA
         }
 
         /// <summary>
-        /// The login click.
+        ///     The login click.
         /// </summary>
         /// <param name="sender">
-        /// The sender.
+        ///     The sender.
         /// </param>
         /// <param name="e">
-        /// The e.
+        ///     The e.
         /// </param>
         private void BtnLoginClick(object sender, EventArgs e)
         {
@@ -492,13 +649,13 @@ namespace ZARA
         }
 
         /// <summary>
-        /// The minimize click.
+        ///     The minimize click.
         /// </summary>
         /// <param name="sender">
-        /// The sender.
+        ///     The sender.
         /// </param>
         /// <param name="e">
-        /// The e.
+        ///     The e.
         /// </param>
         private void BtnMinimizeClick(object sender, EventArgs e)
         {
@@ -515,13 +672,13 @@ namespace ZARA
         }
 
         /// <summary>
-        /// The mouse down.
+        ///     The mouse down.
         /// </summary>
         /// <param name="sender">
-        /// The sender.
+        ///     The sender.
         /// </param>
         /// <param name="e">
-        /// The e.
+        ///     The e.
         /// </param>
         private void DragMouseDown(object sender, MouseEventArgs e)
         {
@@ -533,10 +690,10 @@ namespace ZARA
         }
 
         /// <summary>
-        /// The fail disconnected.
+        ///     The fail disconnected.
         /// </summary>
         /// <param name="e">
-        /// The e.
+        ///     The e.
         /// </param>
         private void FailDisconnected(EventArgs e)
         {
@@ -545,29 +702,29 @@ namespace ZARA
                 (SimpleVoidDelegate)delegate
                     {
                         this.ShowDialog(
-                            "Connection to the server interrupted.", 
-                            "Z A Я A", 
-                            MessageBoxButtons.OK, 
+                            "Connection to the server interrupted.",
+                            "Z A Я A",
+                            MessageBoxButtons.OK,
                             MessageBoxIcon.Stop);
                         Program.Notify.ShowBalloonTip(
-                            1000, 
-                            "Z A Я A", 
-                            "Connection to the server interrupted.", 
+                            1000,
+                            "Z A Я A",
+                            "Connection to the server interrupted.",
                             ToolTipIcon.Error);
                         this.StopServer();
                         this.RefreshStatus();
-                    }, 
+                    },
                 new object[] { });
         }
 
         /// <summary>
-        /// The main form closing.
+        ///     The main form closing.
         /// </summary>
         /// <param name="sender">
-        /// The sender.
+        ///     The sender.
         /// </param>
         /// <param name="e">
-        /// The e.
+        ///     The e.
         /// </param>
         private void FrmMainFormClosing(object sender, FormClosingEventArgs e)
         {
@@ -575,13 +732,13 @@ namespace ZARA
         }
 
         /// <summary>
-        /// The main form load
+        ///     The main form load
         /// </summary>
         /// <param name="sender">
-        /// The sender.
+        ///     The sender.
         /// </param>
         /// <param name="e">
-        /// The e.
+        ///     The e.
         /// </param>
         private void FrmMainLoad(object sender, EventArgs e)
         {
@@ -599,6 +756,70 @@ namespace ZARA
             WindowsModule platform = new WindowsModule();
             platform.RegisterPlatform();
             this.ReloadSettings();
+
+            this.updaterWorker = new BackgroundWorker();
+            this.skipUpdate = !Settings.Default.AutoUpdate;
+            this.updaterWorker.DoWork += (s, args) =>
+                {
+                    this.latestVersion = null;
+                    try
+                    {
+                        if (!this.skipUpdate)
+                        {
+                            Updater updaterObject = new Updater(
+                                "ZARA",
+                                Assembly.GetExecutingAssembly().GetName().Version,
+                                this.listener != null
+                                && this.listener.Status.HasFlag(ProxyController.ControllerStatus.Proxy)
+                                    ? new WebProxy(this.listener.Ip + ":" + this.listener.Port, true)
+                                    : null);
+                            if (updaterObject.IsNewVersionAvailable())
+                            {
+                                this.latestVersion = updaterObject.GetLatestVersion();
+                            }
+                        }
+                    }
+                    catch (Exception)
+                    {
+                    }
+                };
+            this.updaterWorker.RunWorkerCompleted += (s, args) =>
+                {
+                    try
+                    {
+                        if (this.latestVersion != null)
+                        {
+                            VDialog updaterDialog = new VDialog
+                                                        {
+                                                            Content =
+                                                                "New version of this application is available for download, do you want us to open the release page so you can download it?",
+                                                            WindowTitle = "Auto Update Check",
+                                                            MainIcon = VDialogIcon.Question,
+                                                            Buttons =
+                                                                new[]
+                                                                    {
+                                                                        new VDialogButton(VDialogResult.No, "No"),
+                                                                        new VDialogButton(
+                                                                            VDialogResult.Yes,
+                                                                            "Yes",
+                                                                            true)
+                                                                    }
+                                                        };
+
+                            this.skipUpdate = updaterDialog.Show() != VDialogResult.Yes;
+                            if (!this.skipUpdate)
+                            {
+                                Process.Start(this.latestVersion.PageLink);
+                            }
+                        }
+                    }
+                    catch
+                    {
+                    }
+                };
+
+            this.updaterWorker.RunWorkerAsync();
+
             try
             {
                 Program.Notify.ContextMenu =
@@ -606,20 +827,20 @@ namespace ZARA
                         new[]
                             {
                                 new MenuItem(
-                                    "Show / Hide", 
+                                    "Show Window",
                                     delegate
                                         {
                                             Program.Notify.GetType()
                                                 .GetMethod(
-                                                    "OnDoubleClick", 
+                                                    "OnDoubleClick",
                                                     BindingFlags.Instance | BindingFlags.NonPublic)
                                                 .Invoke(Program.Notify, new object[] { null });
                                         })
                                     {
                                         DefaultItem = true
-                                    }, 
+                                    },
                                 new MenuItem("-", (EventHandler)null), new MenuItem(
-                                                                           "Exit", 
+                                                                           "Exit",
                                                                            delegate
                                                                                {
                                                                                    this.StopServer();
@@ -636,10 +857,10 @@ namespace ZARA
         }
 
         /// <summary>
-        /// The move page to.
+        ///     The move page to.
         /// </summary>
         /// <param name="pos">
-        /// The position.
+        ///     The position.
         /// </param>
         private void MovePageTo(int pos)
         {
@@ -648,10 +869,10 @@ namespace ZARA
             {
                 this.ani.SetPaths(
                     new Path2D(
-                        this.pnl_main.Location, 
-                        new Point(pos, this.pnl_main.Location.Y), 
-                        600, 
-                        300, 
+                        this.pnl_main.Location,
+                        new Point(pos, this.pnl_main.Location.Y),
+                        600,
+                        300,
                         Functions.CubicEaseOut));
                 this.ani.Play(this.pnl_main, x => x.Location);
             }
@@ -727,37 +948,37 @@ namespace ZARA
         }
 
         /// <summary>
-        /// The show dialog.
+        ///     The show dialog.
         /// </summary>
         /// <param name="message">
-        /// The message.
+        ///     The message.
         /// </param>
         /// <param name="title">
-        /// The title.
+        ///     The title.
         /// </param>
         /// <param name="messageBoxButtons">
-        /// The message box buttons.
+        ///     The message box buttons.
         /// </param>
         /// <param name="messageBoxIcon">
-        /// The message box icon.
+        ///     The message box icon.
         /// </param>
         private void ShowDialog(
-            string message, 
-            string title, 
-            MessageBoxButtons messageBoxButtons, 
+            string message,
+            string title,
+            MessageBoxButtons messageBoxButtons,
             MessageBoxIcon messageBoxIcon)
         {
             VDialog.Show(this, message, title, messageBoxButtons, messageBoxIcon);
         }
 
         /// <summary>
-        /// The stat timer_ tick.
+        ///     The stat timer_ tick.
         /// </summary>
         /// <param name="sender">
-        /// The sender.
+        ///     The sender.
         /// </param>
         /// <param name="e">
-        /// The e.
+        ///     The e.
         /// </param>
         private void StatTimerTick(object sender, EventArgs e)
         {
@@ -771,7 +992,7 @@ namespace ZARA
             if (this.listener != null && this.listener.Status.HasFlag(ProxyController.ControllerStatus.Proxy))
             {
                 Program.Notify.Text = string.Format(
-                    "Z A Я A\r\nCurrent Transfer Rate: {0}/s", 
+                    "Z A Я A\r\nCurrent Transfer Rate: {0}/s",
                     Common.FormatFileSizeAsString(this.downloadSpeed + this.uploadSpeed));
             }
 
@@ -788,12 +1009,12 @@ namespace ZARA
             this.lbl_stat_activeconnections.Text =
                 this.listener.RoutingConnections.ToString(CultureInfo.InvariantCulture);
             SplitBySpace(
-                Common.FormatFileSizeAsString(this.listener.ReceivedBytes), 
-                this.lbl_stat_downloaded, 
+                Common.FormatFileSizeAsString(this.listener.ReceivedBytes),
+                this.lbl_stat_downloaded,
                 this.lbl_stat_downloaded_v);
             SplitBySpace(
-                Common.FormatFileSizeAsString(this.listener.SentBytes), 
-                this.lbl_stat_uploaded, 
+                Common.FormatFileSizeAsString(this.listener.SentBytes),
+                this.lbl_stat_uploaded,
                 this.lbl_stat_uploaded_v);
             SplitBySpace(Common.FormatFileSizeAsString(this.downloadSpeed), this.cpb_stat_downloadrate);
             SplitBySpace(Common.FormatFileSizeAsString(this.uploadSpeed), this.cpb_stat_uploadrate);
@@ -811,13 +1032,13 @@ namespace ZARA
         }
 
         /// <summary>
-        /// The txt_ leave.
+        ///     The txt_ leave.
         /// </summary>
         /// <param name="sender">
-        /// The sender.
+        ///     The sender.
         /// </param>
         /// <param name="e">
-        /// The e.
+        ///     The e.
         /// </param>
         private void TxtLeave(object sender, EventArgs e)
         {
@@ -825,13 +1046,13 @@ namespace ZARA
         }
 
         /// <summary>
-        /// The txt_password_ enter.
+        ///     The txt_password_ enter.
         /// </summary>
         /// <param name="sender">
-        /// The sender.
+        ///     The sender.
         /// </param>
         /// <param name="e">
-        /// The e.
+        ///     The e.
         /// </param>
         private void TxtPasswordEnter(object sender, EventArgs e)
         {
@@ -843,13 +1064,13 @@ namespace ZARA
         }
 
         /// <summary>
-        /// The txt_server_ leave.
+        ///     The txt_server_ leave.
         /// </summary>
         /// <param name="sender">
-        /// The sender.
+        ///     The sender.
         /// </param>
         /// <param name="e">
-        /// The e.
+        ///     The e.
         /// </param>
         private void TxtServerLeave(object sender, EventArgs e)
         {
@@ -872,9 +1093,9 @@ namespace ZARA
             catch (Exception ex)
             {
                 VDialog.Show(
-                    "Value is not acceptable.\r\n" + ex.Message, 
-                    "Data Validation", 
-                    MessageBoxButtons.OK, 
+                    "Value is not acceptable.\r\n" + ex.Message,
+                    "Data Validation",
+                    MessageBoxButtons.OK,
                     MessageBoxIcon.Exclamation);
                 this.txt_server.Text = string.Empty;
                 new Thread(
@@ -882,9 +1103,7 @@ namespace ZARA
                         {
                             Thread.Sleep(10);
                             this.Invoke((SimpleVoidDelegate)(() => this.txt_server.Focus()), new object[] { });
-                        }) {
-                              IsBackground = true 
-                           }.Start();
+                        }) { IsBackground = true }.Start();
             }
 
             this.SaveSettings();

