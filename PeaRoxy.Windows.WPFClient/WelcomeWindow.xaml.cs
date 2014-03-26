@@ -161,10 +161,11 @@
 
         private void GrabberRadioButtonChecked(object sender, RoutedEventArgs e)
         {
-            if (!this.IsLoaded)
-            {
-                return;
-            }
+            //if (!this.IsLoaded)
+            //{
+            //    return;
+            //}
+
             bool? @checked = this.HookRadioButton.IsChecked;
             if (@checked != null && @checked.Value)
             {
