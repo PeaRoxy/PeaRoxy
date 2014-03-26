@@ -43,7 +43,7 @@
 
         public static string GetSmartPearProfileAddress(string profile)
         {
-            const string SmartUrl = "https://github.com/PeaRoxy/PeaRoxy/blob/master/SmartPearProfiles";
+            const string SmartUrl = "https://raw.github.com/PeaRoxy/PeaRoxy/master/SmartPearProfiles";
             return string.Format(
                 "{0}/Smart{1}.xml",
                 SmartUrl,

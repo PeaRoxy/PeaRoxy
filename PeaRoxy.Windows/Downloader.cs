@@ -96,6 +96,10 @@
             this.downloader.DownloadFileCompleted +=
                 (AsyncCompletedEventHandler)delegate(object s, AsyncCompletedEventArgs ea)
                     {
+                        if (!this.Visible)
+                        {
+                            return;
+                        }
                         this.progressBar.Style = ProgressBarStyle.Marquee;
                         this.progressBar.Value = 0;
                         if (ea.Cancelled || ea.Error != null)

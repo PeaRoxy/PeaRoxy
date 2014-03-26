@@ -169,7 +169,7 @@ idman
 dap</Value>
     </Setting>
     <Setting Name="Settings_Version" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">3</Value>
+      <Value Profile="(Default)">4</Value>
     </Setting>
     <Setting Name="Welcome_Shown" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
