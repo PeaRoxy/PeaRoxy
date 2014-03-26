@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <SmartProfile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <HttpRules>
-    <string>*google.c*</string>
-    <string>*facebook.c*</string>
-    <string>*youtube.c*</string>
-    <string>*twitter.c*</string>
-    <string>*paypal*</string>
-    <string>*amazon.c*</string>
+    <string>*google.c* | *</string>
+    <string>*facebook.c* | *</string>
+    <string>*youtube.c* | *</string>
+    <string>*twitter.c* | *</string>
+    <string>*paypal* | *</string>
+    <string>*amazon.c* | *</string>
   </HttpRules>
   <DirectRules>
-    <string>*google.c*:*</string>
-    <string>*facebook.c*:*</string>
-    <string>*youtube.c*:*</string>
-    <string>*twitter.c*:*</string>
-    <string>*paypal*:*</string>
-    <string>*amazon.c*:*</string>
+    <string>*google.c*:* | *</string>
+    <string>*facebook.c*:* | *</string>
+    <string>*youtube.c*:* | *</string>
+    <string>*twitter.c*:* | *</string>
+    <string>*paypal*:* | *</string>
+    <string>*amazon.c*:* | *</string>
   </DirectRules>
   <AntiDnsPoisoningRule>^(10.10.*.*)$</AntiDnsPoisoningRule>
   <AntiBlockPageRule>^HTTP/1.1 403 Forbidden(\r\nConnection:close)*</AntiBlockPageRule>

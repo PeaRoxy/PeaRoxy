@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <SmartProfile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <HttpRules>
-    <string>*google.c*</string>
-    <string>facebook.c*</string>
-    <string>*youtube.c*</string>
-    <string>*twitter.c*</string>
+    <string>*google.c* | *</string>
+    <string>facebook.c* | *</string>
+    <string>*youtube.c* | *</string>
+    <string>*twitter.c* | *</string>
   </HttpRules>
   <DirectRules>
-    <string>*google.c*:*</string>
-    <string>*facebook.c*:*</string>
-    <string>*youtube.c*:*</string>
-    <string>*twitter.c*:*</string>
+    <string>*google.c*:* | *</string>
+    <string>*facebook.c*:* | *</string>
+    <string>*youtube.c*:* | *</string>
+    <string>*twitter.c*:* | *</string>
   </DirectRules>
   <AntiDnsPoisoningRule>^(78.16.49.15|46.82.174.68|243.185.187.39|37.61.54.158|159.106.121.75|59.24.3.173|8.7.198.45|93.46.8.89|203.98.7.65)$</AntiDnsPoisoningRule>
   <AntiBlockPageRule />
