@@ -58,7 +58,11 @@ namespace PeaRoxy.Windows.Network.TAP
                 string osBit = Environment.Is64BitOperatingSystem ? "x64" : "x86";
                 Common.CreateProcess(
                     "TAPDriver\\" + osBit + "\\tapinstall.exe",
-                    "install \"TAPDriver\\" + osBit + "\\OemWin2k.inf\" " + DriverServiceName).WaitForExit();
+                    "install \"OemWin2k.inf\" " + DriverServiceName,
+                    true,
+                    false,
+                    false,
+                    true).WaitForExit();
             }
 
             net = NetworkAdapter.GetByServiceName(DriverServiceName);
