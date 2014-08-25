@@ -136,4 +136,7 @@
   <data name="Smart_SA" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\..\SmartPearProfiles\Smart_SA.xml;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;windows-1256</value>
   </data>
+  <data name="Smart_TR" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\..\SmartPearProfiles\Smart_TR.xml;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;windows-1256</value>
+  </data>
 </root>

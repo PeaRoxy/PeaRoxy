@@ -105,12 +105,12 @@ namespace PeaRoxy.Windows
                             while (!sr.EndOfStream)
                             {
                                 string data = sr.ReadLine();
-                                if (data != null && !data.ToLower().Contains("\"network.proxy.type\""))
+                                if (data != null && !data.ToLower().Contains("\"network.proxy.type\"") && !data.ToLower().Contains("\"network.proxy.socks_remote_dns\""))
                                 {
                                     fileKeeper += data + Environment.NewLine;
                                 }
                             }
-
+                            fileKeeper += "user_pref(\"network.proxy.socks_remote_dns\", true);" + Environment.NewLine;
                             fs.Position = 0;
                             fs.SetLength(0);
                             StreamWriter sw = new StreamWriter(fs);
@@ -153,25 +153,42 @@ namespace PeaRoxy.Windows
                 {
                     if (File.Exists(Path.Combine(profileAddress, "prefs.js")))
                     {
-                        FileStream fs = File.Open(
-                            Path.Combine(profileAddress, "prefs.js"), 
-                            FileMode.Open, 
-                            FileAccess.Read, 
-                            FileShare.ReadWrite);
-                        StreamReader sr = new StreamReader(fs);
-                        while (!sr.EndOfStream)
+                        bool isSocksDns = false;
+                        using (FileStream fs = File.Open(
+                            Path.Combine(profileAddress, "prefs.js"),
+                            FileMode.Open,
+                            FileAccess.Read,
+                            FileShare.ReadWrite))
                         {
-                            string readLine = sr.ReadLine();
-                            if (readLine != null && readLine.ToLower().Contains("\"network.proxy.type\""))
+                            using (StreamReader sr = new StreamReader(fs))
                             {
+                                while (!sr.EndOfStream)
+                                {
+                                    string readLine = sr.ReadLine();
+                                    if (readLine != null)
+                                    {
+                                        if (readLine.ToLower().Contains("\"network.proxy.type\""))
+                                        {
+                                            sr.Close();
+                                            fs.Close();
+                                            return true;
+                                        }
+                                        if (!isSocksDns)
+                                        {
+                                            isSocksDns = readLine.ToLower().Contains("\"network.proxy.socks_remote_dns\"") && readLine.ToLower().Contains("true");
+                                        }
+                                    }
+                                }
                                 sr.Close();
                                 fs.Close();
-                                return true;
+                                if (!isSocksDns)
+                                {
+                                    sr.Close();
+                                    fs.Close();
+                                    return true;
+                                }
                             }
                         }
-
-                        sr.Close();
-                        fs.Close();
                     }
                 }
             }
@@ -330,6 +347,10 @@ namespace PeaRoxy.Windows
         {
             try
             {
+                if (gateway.Address.Equals(IPAddress.Any))
+                {
+                    gateway.Address = IPAddress.Loopback;
+                }
                 string proxyString = string.Format("{0}:{1}", gateway.Address, gateway.Port);
                 proxyString = string.Format("http={0};" + "https={0};" + "socks={0};", proxyString);
                 if (IsProxyEnable(proxyString))

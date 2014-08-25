@@ -111,7 +111,6 @@ namespace PeaRoxy.ClientLibrary
 
             this.Status = StatusCodes.Connected;
             this.LastError = string.Empty;
-            this.IsSmartForwarderEnable = false;
             this.NoDataTimeOut = 60;
             this.IsSmartForwarderEnable = parent.SmartPear.ForwarderHttpEnable
                                           || parent.SmartPear.ForwarderHttpsEnable

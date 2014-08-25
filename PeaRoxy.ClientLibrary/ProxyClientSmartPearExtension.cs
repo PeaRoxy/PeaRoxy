@@ -14,7 +14,9 @@ namespace PeaRoxy.ClientLibrary
 
     using System;
     using System.Net;
+    using System.Security.Policy;
     using System.Text;
+    using System.Windows.Forms;
 
     using PeaRoxy.ClientLibrary.ProxyModules;
     using PeaRoxy.ClientLibrary.ServerModules;
@@ -514,7 +516,7 @@ namespace PeaRoxy.ClientLibrary
         public static bool HttpDataSentCallback(this ProxyClient currentClient, byte[] binary)
         {
             SmartPear smart = currentClient.Controller.SmartPear;
-            if (smart.ForwarderHttpEnable && smart.DetectorHttpEnable)
+            if (smart.ForwarderHttpEnable && (smart.DetectorHttpEnable || smart.DetectorDnsGrabberEnable))
             {
                 // If we have Forwarder Enabled
                 if (currentClient.IsSmartForwarderEnable)
@@ -568,7 +570,8 @@ namespace PeaRoxy.ClientLibrary
             string p = currentClient.RequestAddress.ToLower();
             if (p.IndexOf("http://", StringComparison.OrdinalIgnoreCase) == 0)
             {
-                p = name + p.Substring(p.IndexOf("://", StringComparison.Ordinal) + 3);
+                var parsedUrl = new Uri(p);
+                p = name + parsedUrl.Host;
                 for (int i = 0; i < smart.ForwarderHttpList.Count; i++)
                     if (Common.IsMatchWildCard(p, smart.ForwarderHttpList[i]))
                         return true;

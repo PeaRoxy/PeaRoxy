@@ -184,18 +184,24 @@ namespace PeaRoxy.Windows.WPFClient
                 // Application Services
                 ApplicationRestartRecoveryManager.RegisterForApplicationRestart(
                     new RestartSettings(string.Empty, RestartRestrictions.None));
+            }
+            catch (Exception)
+            {
+            }
+            try
+            {
                 Notify = new NotifyIcon { Visible = false };
                 defualtApp.InitializeComponent();
                 defualtApp.DispatcherUnhandledException += (s, e) =>
-                    {
-                        VDialog.Show(
-                            e.Exception.Message + "\r\n\r\n" + e.Exception.StackTrace,
-                            "FATAL ERROR",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Error);
-                        e.Handled = false;
-                        End();
-                    };
+                {
+                    VDialog.Show(
+                        e.Exception.Message + "\r\n\r\n" + e.Exception.StackTrace,
+                        "FATAL ERROR",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                    e.Handled = false;
+                    End();
+                };
                 defualtApp.Run();
             }
             catch (Exception)

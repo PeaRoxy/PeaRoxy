@@ -45,6 +45,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SmartPearProfiles", "SmartP
 		SmartPearProfiles\Smart_IR.xml = SmartPearProfiles\Smart_IR.xml
 		SmartPearProfiles\Smart_PK.xml = SmartPearProfiles\Smart_PK.xml
 		SmartPearProfiles\Smart_SA.xml = SmartPearProfiles\Smart_SA.xml
+		SmartPearProfiles\Smart_TR.xml = SmartPearProfiles\Smart_TR.xml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeaRoxy.Updater", "PeaRoxy.Updater\PeaRoxy.Updater.csproj", "{9405B3D6-9A73-44C9-9F3F-28CEABCDC5B2}"

@@ -61,16 +61,18 @@ namespace PeaRoxy.Windows.WPFClient.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
-        /// </summary>
-        internal static string Smart_AE {
-            get {
-                return ResourceManager.GetString("Smart_AE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+        ///&lt;SmartProfile xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
+        ///  &lt;HttpRules /&gt;
+        ///  &lt;DirectRules /&gt;
+        ///  &lt;AntiDnsPoisoningRule /&gt;
+        ///  &lt;AntiBlockPageRule /&gt;
+        ///  &lt;DirectTimeout&gt;60&lt;/DirectTimeout&gt;
+        ///  &lt;IsHttpSupported&gt;false&lt;/IsHttpSupported&gt;
+        ///  &lt;IsHttpsSupported&gt;false&lt;/IsHttpsSupported&gt;
+        ///  &lt;IsSocksSupported&gt;false&lt;/IsSocksSupported&gt;
+        ///  &lt;HttpBlockPageDetection&gt;false&lt;/HttpBlockPageDetection&gt;
+        ///  &lt;DnsPoisoningDetection&gt;false&lt;/DnsPo [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Smart {
             get {
@@ -79,7 +81,39 @@ namespace PeaRoxy.Windows.WPFClient.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+        ///&lt;SmartProfile xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
+        ///  &lt;HttpRules /&gt;
+        ///  &lt;DirectRules /&gt;
+        ///  &lt;AntiDnsPoisoningRule /&gt;
+        ///  &lt;AntiBlockPageRule /&gt;
+        ///  &lt;DirectTimeout&gt;60&lt;/DirectTimeout&gt;
+        ///  &lt;IsHttpSupported&gt;false&lt;/IsHttpSupported&gt;
+        ///  &lt;IsHttpsSupported&gt;false&lt;/IsHttpsSupported&gt;
+        ///  &lt;IsSocksSupported&gt;false&lt;/IsSocksSupported&gt;
+        ///  &lt;HttpBlockPageDetection&gt;false&lt;/HttpBlockPageDetection&gt;
+        ///  &lt;DnsPoisoningDetection&gt;false&lt;/DnsPo [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string Smart_AE {
+            get {
+                return ResourceManager.GetString("Smart_AE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+        ///&lt;SmartProfile xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
+        ///  &lt;HttpRules&gt;
+        ///    &lt;string&gt;* | *google.c*&lt;/string&gt;
+        ///    &lt;string&gt;* | *facebook.c*&lt;/string&gt;
+        ///    &lt;string&gt;* | *youtube.c*&lt;/string&gt;
+        ///    &lt;string&gt;* | *twitter.c*&lt;/string&gt;
+        ///  &lt;/HttpRules&gt;
+        ///  &lt;DirectRules&gt;
+        ///    &lt;string&gt;* | *google.c*:*&lt;/string&gt;
+        ///    &lt;string&gt;* | *facebook.c*:*&lt;/string&gt;
+        ///    &lt;string&gt;* | *youtube.c*:*&lt;/string&gt;
+        ///    &lt;string&gt;* | *twitter.c*:*&lt;/string [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Smart_CH {
             get {
@@ -88,12 +122,20 @@ namespace PeaRoxy.Windows.WPFClient.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to *google.c*
-        ///*facebook.c*
-        ///*youtube.c*
-        ///*twitter.c*
-        ///*paypal*
-        ///*amazon.c*.
+        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+        ///&lt;SmartProfile xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
+        ///  &lt;HttpRules&gt;
+        ///    &lt;string&gt;* | *google.c*&lt;/string&gt;
+        ///    &lt;string&gt;* | *facebook.c*&lt;/string&gt;
+        ///    &lt;string&gt;* | *youtube.c*&lt;/string&gt;
+        ///    &lt;string&gt;* | *twitter.c*&lt;/string&gt;
+        ///    &lt;string&gt;* | *paypal*&lt;/string&gt;
+        ///    &lt;string&gt;* | *amazon.c*&lt;/string&gt;
+        ///  &lt;/HttpRules&gt;
+        ///  &lt;DirectRules&gt;
+        ///    &lt;string&gt;* | *google.c*:*&lt;/string&gt;
+        ///    &lt;string&gt;* | *facebook.c*:*&lt;/string&gt;
+        ///    &lt; [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Smart_IR {
             get {
@@ -102,7 +144,18 @@ namespace PeaRoxy.Windows.WPFClient.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+        ///&lt;SmartProfile xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
+        ///  &lt;HttpRules /&gt;
+        ///  &lt;DirectRules /&gt;
+        ///  &lt;AntiDnsPoisoningRule /&gt;
+        ///  &lt;AntiBlockPageRule /&gt;
+        ///  &lt;DirectTimeout&gt;60&lt;/DirectTimeout&gt;
+        ///  &lt;IsHttpSupported&gt;false&lt;/IsHttpSupported&gt;
+        ///  &lt;IsHttpsSupported&gt;false&lt;/IsHttpsSupported&gt;
+        ///  &lt;IsSocksSupported&gt;false&lt;/IsSocksSupported&gt;
+        ///  &lt;HttpBlockPageDetection&gt;false&lt;/HttpBlockPageDetection&gt;
+        ///  &lt;DnsPoisoningDetection&gt;false&lt;/DnsPo [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Smart_PK {
             get {
@@ -111,11 +164,44 @@ namespace PeaRoxy.Windows.WPFClient.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+        ///&lt;SmartProfile xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
+        ///  &lt;HttpRules /&gt;
+        ///  &lt;DirectRules /&gt;
+        ///  &lt;AntiDnsPoisoningRule /&gt;
+        ///  &lt;AntiBlockPageRule /&gt;
+        ///  &lt;DirectTimeout&gt;60&lt;/DirectTimeout&gt;
+        ///  &lt;IsHttpSupported&gt;false&lt;/IsHttpSupported&gt;
+        ///  &lt;IsHttpsSupported&gt;false&lt;/IsHttpsSupported&gt;
+        ///  &lt;IsSocksSupported&gt;false&lt;/IsSocksSupported&gt;
+        ///  &lt;HttpBlockPageDetection&gt;false&lt;/HttpBlockPageDetection&gt;
+        ///  &lt;DnsPoisoningDetection&gt;false&lt;/DnsPo [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string Smart_SA {
             get {
                 return ResourceManager.GetString("Smart_SA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+        ///&lt;SmartProfile xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
+        ///  &lt;HttpRules&gt;
+        ///    &lt;string&gt;* | *youtube.c*&lt;/string&gt;
+        ///    &lt;string&gt;* | *twitter.c*&lt;/string&gt;
+        ///  &lt;/HttpRules&gt;
+        ///  &lt;DirectRules&gt;
+        ///    &lt;string&gt;* | *youtube.c*:*&lt;/string&gt;
+        ///    &lt;string&gt;* | *twitter.c*:*&lt;/string&gt;
+        ///  &lt;/DirectRules&gt;
+        ///  &lt;AntiDnsPoisoningRule&gt;^195.175.254.*&lt;/AntiDnsPoisoningRule&gt;
+        ///  &lt;AntiBlockPageRule /&gt;
+        ///  &lt;DirectTimeout&gt;20&lt;/DirectTimeout&gt;
+        ///  &lt;IsHttpS [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string Smart_TR {
+            get {
+                return ResourceManager.GetString("Smart_TR", resourceCulture);
             }
         }
     }

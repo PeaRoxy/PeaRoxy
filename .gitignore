@@ -10,3 +10,4 @@ Packages/repositories.config
 Binaries/*/*
 packages
 packages/*
+*.exe

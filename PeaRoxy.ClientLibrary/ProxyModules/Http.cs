@@ -96,6 +96,7 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
                         ac.NoDataTimeout = client.Controller.SmartPear.DetectorTimeout;
                     }
 
+                    client.HttpDataSentCallback(firstResponse);
                     ac.Establish(
                         clientConnectionAddress, 
                         clientConnectionPort, 
@@ -109,9 +110,12 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
                                     return false;
                                 }
 
-                                return true;
+                                return thisclient.HttpDataSentCallback(data);
                             }, 
-                        null, 
+                        delegate(ref byte[] data, ServerType thisactiveServer, ProxyClient thisclient)
+                            {
+                                return thisclient.HttpDataReceivedCallback(ref data, thisactiveServer);
+                            }, 
                         delegate(bool success, ServerType thisactiveServer, ProxyClient thisclient)
                             {
                                 return thisclient.HttpConnectionStatusCallback(thisactiveServer, success);
@@ -122,7 +126,7 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
             {
                 ServerType ac = client.Controller.ActiveServer.Clone();
                 if (!client.IsSmartForwarderEnable && client.Controller.SmartPear.ForwarderHttpEnable
-                    && client.Controller.SmartPear.DetectorHttpEnable)
+                    && (client.Controller.SmartPear.DetectorHttpEnable || client.Controller.SmartPear.DetectorDnsGrabberEnable))
                 {
                     ac.Establish(
                         clientConnectionAddress, 
