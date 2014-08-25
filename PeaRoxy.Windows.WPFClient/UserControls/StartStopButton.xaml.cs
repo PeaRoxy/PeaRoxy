@@ -187,8 +187,6 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
                     this.BtnDisconnect.Visibility = Visibility.Hidden;
                     this.BtnConnect.Visibility = Visibility.Hidden;
                     this.BtnExit.Visibility = Visibility.Hidden;
-                    this.cc3d_Exit.AnimationLength = 800;
-                    this.Cc3DStopStart.AnimationLength = 900;
                     if (value == Status.ShowStop)
                     {
                         this.BtnDisconnect.Visibility = Visibility.Visible;
@@ -223,20 +221,20 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
 
                     if (value == Status.Hide)
                     {
-                        this.cc3d_Exit.BringFrontSideIntoView();
+                        this.BtnExit.Visibility = Visibility.Hidden;
                     }
                     else if (this.currentStatus == Status.Hide)
                     {
-                        this.cc3d_Exit.BringBackSideIntoView();
+                        this.BtnExit.Visibility = Visibility.Visible;
                     }
 
                     if (value == Status.ShowStart || (value == Status.Hide && this.currentStatus == Status.ShowStop))
                     {
-                        this.Cc3DStopStart.BringBackSideIntoView();
+                        this.BtnDisconnect.Visibility = Visibility.Hidden;
                     }
                     else if (value == Status.ShowStop || (value == Status.Hide && this.currentStatus == Status.ShowStart))
                     {
-                        this.Cc3DStopStart.BringFrontSideIntoView();
+                        this.BtnConnect.Visibility = Visibility.Hidden;
                     }
 
                     this.currentStatus = value;
@@ -245,18 +243,11 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
                 new Thread(
                     delegate()
                         {
-                            // int timeOut = 0;
                             while (this.inAnimation)
                             {
-                                // && timeOut < 20)
                                 this.Dispatcher.Invoke(
                                     (App.SimpleVoidDelegate)delegate
                                         {
-                                            if (this.Cc3DStopStart.IsRotating || this.cc3d_Exit.IsRotating)
-                                            {
-                                                return;
-                                            }
-
                                             if (this.currentStatus == Status.ShowStop)
                                             {
                                                 this.BtnDisconnect.IsEnabled = true;
@@ -272,8 +263,6 @@ namespace PeaRoxy.Windows.WPFClient.UserControls
                                         }, 
                                     new object[] { });
                                 Thread.Sleep(100);
-
-                                // timeOut++;
                             }
 
                             this.Dispatcher.Invoke(

@@ -119,9 +119,6 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
-    <Reference Include="Thriple">
-      <HintPath>..\Reference Libraries\Thriple.dll</HintPath>
-    </Reference>
     <Reference Include="VDialog">
       <HintPath>..\Reference Libraries\VDialog.dll</HintPath>
     </Reference>

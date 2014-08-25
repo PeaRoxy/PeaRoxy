@@ -108,10 +108,7 @@
             try
             {
                 WebClient client = new WebClient();
-                if (this.Proxy != null)
-                {
-                    client.Proxy = this.Proxy;
-                }
+                client.Proxy = this.Proxy ?? new WebProxy();
                 client.UploadString(SmartUrl + "?profile=" + profile.ToLower().Trim(), xml);
                 return true;
             }
@@ -135,10 +132,7 @@
             try
             {
                 WebClient client = new WebClient();
-                if (this.Proxy != null)
-                {
-                    client.Proxy = this.Proxy;
-                }
+                client.Proxy = this.Proxy ?? new WebProxy();
                 string xml = client.DownloadString(FeedUrl);
                 return this.feedCache = XDocument.Parse(xml).Root;
             }

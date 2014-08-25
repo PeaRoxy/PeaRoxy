@@ -3,40 +3,23 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:thriple="http://thriple.codeplex.com/"
              mc:Ignorable="d"
              d:DesignHeight="60" d:DesignWidth="200" Height="60" Width="200" MinWidth="200" MinHeight="60"
              MaxWidth="200" MaxHeight="60">
-    <Grid>
-        <thriple:ContentControl3D Height="108" Width="108" Margin="0,0,92,0" Name="Cc3DStopStart"
-                                  VerticalAlignment="Top" RotationDirection="BottomToTop" EasingMode="Whiplash"
-                                  HorizontalAlignment="Right" Focusable="False" ToolTip="Discounnect from server"
-                                  HorizontalContentAlignment="Right">
-            <thriple:ContentControl3D.BackContent>
-                <Grid Width="75" Height="75">
-                    <Button HorizontalAlignment="Center" Content="Start" Height="23" Name="BtnConnect"
+    <Grid HorizontalAlignment="Right" Width="200">
+        <Grid Margin="19,18,0,19" HorizontalAlignment="Left" Width="75">
+            <Button HorizontalAlignment="Center" Content="Start" Height="23" Name="BtnConnect"
                             VerticalAlignment="Top" Width="75" Click="BtnConnectClick" IsEnabled="False"
                             ToolTip="Connect to server using current settings" />
-                </Grid>
-            </thriple:ContentControl3D.BackContent>
-            <thriple:ContentControl3D.Content>
-                <Grid Width="75" Height="75">
-                    <Button Content="Stop" Height="23" Visibility="Hidden" HorizontalAlignment="Center"
+
+            <Button Content="Stop" Height="23" Visibility="Hidden" HorizontalAlignment="Center"
                             Name="BtnDisconnect" VerticalAlignment="Top" Width="75" IsDefault="True" IsEnabled="False"
                             Click="BtnDissconnectClick" x:FieldModifier="private" />
-                </Grid>
-            </thriple:ContentControl3D.Content>
-        </thriple:ContentControl3D>
-        <thriple:ContentControl3D Height="108" Width="108" HorizontalAlignment="Right" Margin="0" Name="cc3d_Exit"
-                                  VerticalAlignment="Top" RotationDirection="BottomToTop" EasingMode="Whiplash"
-                                  Focusable="False" HorizontalContentAlignment="Right">
-            <thriple:ContentControl3D.BackContent>
-                <Grid Width="75" Height="75">
-                    <Button Content="Minimize" Height="23" HorizontalAlignment="Right" Name="BtnExit"
+        </Grid>
+        <Grid Width="75" Height="23" Margin="0,18,19,19" HorizontalAlignment="Right">
+            <Button Content="Minimize" Height="23" HorizontalAlignment="Right" Name="BtnExit"
                             VerticalAlignment="Top" Width="75" IsCancel="True" Click="BtnExitClick"
                             ToolTip="Minimize PeaRoxy to system tray" x:FieldModifier="private" />
-                </Grid>
-            </thriple:ContentControl3D.BackContent>
-        </thriple:ContentControl3D>
+        </Grid>
     </Grid>
 </UserControl>

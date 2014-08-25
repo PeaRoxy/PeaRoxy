@@ -129,8 +129,6 @@ namespace PeaRoxy.Windows.WPFClient
                                               ? StartStopButton.Status.ShowStop
                                               : StartStopButton.Status.ShowStart;
 
-            this.MainPage.ShowTitle = true;
-
             if (appstart && Settings.Default.Startup_StartServer)
             {
                 new Thread(
@@ -268,7 +266,6 @@ namespace PeaRoxy.Windows.WPFClient
         private void HideForm()
         {
             this.Activate();
-            this.MainPage.ShowTitle = false;
             this.RefreshStatus();
             this.Controls.CurrentStatus = StartStopButton.Status.Hide;
             DoubleAnimation hideWindowAnimation = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromSeconds(0.6)));

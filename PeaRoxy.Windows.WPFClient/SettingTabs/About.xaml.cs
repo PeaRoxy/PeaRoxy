@@ -28,8 +28,6 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
     using PeaRoxy.Windows.Network.TAP;
     using PeaRoxy.Windows.WPFClient.Properties;
 
-    using Thriple.Panels;
-
     using MessageBox = System.Windows.MessageBox;
 
     #endregion
@@ -124,7 +122,6 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
                 this.MainVersion.Content = this.MainVersion.Content.ToString()
                     .Replace("%version", Assembly.GetExecutingAssembly().GetName().Version.ToString());
                 this.Libraries.Content =
-                        "Thriple.dll (3D Controls) \r\n" +
                         "VDialog.dll (Win7 Dialogs) \r\n" +
                         "EasyHook.dll \r\n" +
                         "Tun2Socks \r\n" +
@@ -133,14 +130,12 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
                         "Images";
                 this.Versions.Content =
                     string.Format(
-                        "v{0} © Josh Smith\r\n" +
-                        "v{1} © Łukasz Świątkowski\r\n" +
-                        "v{2} © EasyHook Team\r\n" +
+                        "v{0} © Łukasz Świątkowski\r\n" +
+                        "v{1} © EasyHook Team\r\n" +
                         "© Ambroz Bizjak\r\n" +
                         "SourceForge.net/projects/dns2socks\r\n" +
                         "© OpenVPN.net\r\n" +
                         "© Icons8.com",
-                        Assembly.GetAssembly(typeof(Panel3D)).GetName().Version.ToString(3),
                         Assembly.GetAssembly(typeof(VDialog)).GetName().Version.ToString(3),
                         Assembly.GetAssembly(typeof(RemoteHooking)).GetName().Version.ToString(3));
             }

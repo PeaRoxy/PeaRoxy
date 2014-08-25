@@ -78,11 +78,7 @@
 
         private void Download()
         {
-            this.downloader = new WebClient();
-            if (this.Proxy != null)
-            {
-                this.downloader.Proxy = this.Proxy;
-            }
+            this.downloader = new WebClient { Proxy = this.Proxy ?? new WebProxy() };
             this.downloader.DownloadProgressChanged +=
                 (DownloadProgressChangedEventHandler)delegate(object s, DownloadProgressChangedEventArgs ea)
                     {

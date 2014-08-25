@@ -4,7 +4,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:uc="clr-namespace:PeaRoxy.Windows.WPFClient.UserControls"
-             xmlns:thriple="http://thriple.codeplex.com/"
              xmlns:d3="http://research.microsoft.com/DynamicDataDisplay/1.0"
              mc:Ignorable="d"
              d:DesignHeight="319" d:DesignWidth="610" Height="319" MinHeight="319" MaxHeight="319" Width="610"
@@ -30,16 +29,9 @@
                Source="/PeaRoxy.Windows.WPFClient;component/Images/MainPanel/Connected.png" Stretch="Fill"
                VerticalAlignment="Bottom" Opacity="0" x:FieldModifier="private" />
         <Grid Margin="18,0,6,239">
-            <thriple:ContentControl3D Height="36" HorizontalAlignment="Left" Name="TitleControl3D" VerticalAlignment="Top"
-                                      Width="200" Margin="-34,0,0,0" x:FieldModifier="private">
-                <thriple:ContentControl3D.BackContent>
-                    <Grid Width="150" Height="150">
-                        <Label Content="PeaRoxy Client" FontSize="20" FontWeight="Bold" Foreground="White" Height="39"
-                               Width="150" HorizontalAlignment="Left" VerticalAlignment="Center"
+            <Label Content="PeaRoxy Client" FontSize="20" FontWeight="Bold" Foreground="White" Height="39"
+                               Width="150" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0,0,0"
                                ToolTip="PeaRoxy.com" />
-                    </Grid>
-                </thriple:ContentControl3D.BackContent>
-            </thriple:ContentControl3D>
         </Grid>
         <Rectangle Height="39" HorizontalAlignment="Left" Name="RActive" VerticalAlignment="Top" Width="12"
                    Opacity="0" x:FieldModifier="private">

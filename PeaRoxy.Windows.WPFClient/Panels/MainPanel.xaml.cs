@@ -26,8 +26,6 @@ namespace PeaRoxy.Windows.WPFClient.Panels
     using PeaRoxy.Windows.WPFClient.Properties;
     using PeaRoxy.Windows.WPFClient.UserControls;
 
-    using Thriple.Controls;
-
     #endregion
 
     /// <summary>
@@ -83,26 +81,6 @@ namespace PeaRoxy.Windows.WPFClient.Panels
                 if (Math.Abs(this.RInactive.Opacity - (!value).GetHashCode()) > 0.01)
                 {
                     this.RInactive.BeginAnimation(OpacityProperty, hideImageAnimation);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Sets a value indicating whether show title.
-        /// </summary>
-        public bool ShowTitle
-        {
-            set
-            {
-                if (value)
-                {
-                    this.TitleControl3D.RotationDirection = RotationDirection.BottomToTop;
-                    this.TitleControl3D.BringBackSideIntoView();
-                }
-                else
-                {
-                    this.TitleControl3D.RotationDirection = RotationDirection.TopToBottom;
-                    this.TitleControl3D.BringFrontSideIntoView();
                 }
             }
         }
