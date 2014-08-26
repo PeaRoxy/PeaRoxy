@@ -83,7 +83,9 @@ namespace PeaRoxy.Windows
             }
 
             this.ProcessId = processId;
-            this.ProcessString = CommonFunctions.GetProcessNameByPId(this.ProcessId);
+            Win32Process process = Win32Process.GetProcessByPidWithCache(this.ProcessId);
+            this.ProcessName = process.Name;
+            this.ProcessPath = process.ExecutablePath;
         }
 
         /// <summary>
@@ -105,7 +107,9 @@ namespace PeaRoxy.Windows
             }
 
             this.ProcessId = processId;
-            this.ProcessString = CommonFunctions.GetProcessNameByPId(this.ProcessId);
+            Win32Process process = Win32Process.GetProcessByPidWithCache(this.ProcessId);
+            this.ProcessName = process.Name;
+            this.ProcessPath = process.ExecutablePath;
         }
 
         /// <summary>
@@ -686,15 +690,6 @@ namespace PeaRoxy.Windows
         /// </summary>
         private static class CommonFunctions
         {
-            #region Static Fields
-
-            /// <summary>
-            /// The process cache.
-            /// </summary>
-            private static readonly Dictionary<int, Process> ProcessCache = new Dictionary<int, Process>();
-
-            #endregion
-
             #region Public Methods and Operators
 
             /// <summary>
@@ -779,50 +774,7 @@ namespace PeaRoxy.Windows
                 return BitConverter.ToUInt16(b, 0);
             }
 
-            /// <summary>
-            /// The get process name by p id.
-            /// </summary>
-            /// <param name="pId">
-            /// The p id.
-            /// </param>
-            /// <returns>
-            /// The <see cref="string"/>.
-            /// </returns>
-            [DebuggerStepThrough]
-            public static string GetProcessNameByPId(int pId)
-            {
-                try
-                {
-                    Process p = null;
-                    if (ProcessCache.ContainsKey(pId))
-                    {
-                        p = ProcessCache[pId];
-                    }
-                    else
-                    {
-                        ProcessCache.Clear();
-                        Process[] pr = Process.GetProcesses();
-                        foreach (Process process in pr)
-                        {
-                            ProcessCache.Add(process.Id, process);
-                            if (process.Id == pId)
-                            {
-                                p = process;
-                            }
-                        }
-                    }
 
-                    if (p != null)
-                    {
-                        return p.ProcessName;
-                    }
-                }
-                catch (Exception)
-                {
-                }
-
-                return string.Empty;
-            }
 
             #endregion
         }

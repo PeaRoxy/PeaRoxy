@@ -56,6 +56,7 @@
     </Compile>
     <Compile Include="Job.cs" />
     <Compile Include="ProcessWatcher.cs" />
+    <Compile Include="Win32Process.cs" />
     <Compile Include="WindowsConnections.cs" />
     <Compile Include="WindowsCertManager.cs" />
     <Compile Include="Common.cs" />

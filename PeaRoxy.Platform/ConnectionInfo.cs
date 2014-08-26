@@ -121,9 +121,15 @@ namespace PeaRoxy.Platform
         public int ProcessId { get; protected set; }
 
         /// <summary>
-        ///     Gets or sets the process string.
+        ///     Gets or sets the process name.
         /// </summary>
-        public string ProcessString { get; protected set; }
+        public string ProcessName { get; protected set; }
+
+
+        /// <summary>
+        ///     Gets or sets the process path.
+        /// </summary>
+        public string ProcessPath { get; protected set; }
 
         /// <summary>
         ///     Gets or sets the protocol type.

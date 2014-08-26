@@ -150,35 +150,31 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
                 if (conInfo != null && conInfo.ProcessId > 0)
                 {
                     processName = conInfo.ProcessId.ToString(CultureInfo.InvariantCulture);
-                    if (conInfo.ProcessString == string.Empty)
+                    if (conInfo.ProcessName == string.Empty)
                     {
                         processName = "[PID: " + processName + "] (Unknown)";
                     }
                     else
                     {
-                        processName = "[PID: " + processName + "] " + conInfo.ProcessString;
+                        processName = "[PID: " + processName + "] " + conInfo.ProcessName;
                         if (!this.processIconCache.ContainsKey(processName))
                         {
                             try
                             {
-                                using (Process p = Process.GetProcessById(conInfo.ProcessId))
+                                if (!string.IsNullOrEmpty(conInfo.ProcessPath))
                                 {
-                                    if (!string.IsNullOrEmpty(p.MainModule.FileName))
+                                    string fileName = conInfo.ProcessPath;
+                                    if (File.Exists(fileName))
                                     {
-                                        string fileName = p.MainModule.FileName;
-                                        if (File.Exists(fileName))
+                                        using (Icon icon = Icon.ExtractAssociatedIcon(fileName))
                                         {
-                                            using (Icon icon = Icon.ExtractAssociatedIcon(fileName))
+                                            if (icon != null)
                                             {
-                                                if (icon != null)
-                                                {
-                                                    BitmapSource iconImage =
-                                                        Imaging.CreateBitmapSourceFromHIcon(
-                                                            icon.Handle,
-                                                            Int32Rect.Empty,
-                                                            BitmapSizeOptions.FromWidthAndHeight(16, 16));
-                                                    this.processIconCache.Add(processName, iconImage);
-                                                }
+                                                BitmapSource iconImage = Imaging.CreateBitmapSourceFromHIcon(
+                                                    icon.Handle,
+                                                    Int32Rect.Empty,
+                                                    BitmapSizeOptions.FromWidthAndHeight(16, 16));
+                                                this.processIconCache.Add(processName, iconImage);
                                             }
                                         }
                                     }
