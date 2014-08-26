@@ -61,7 +61,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
         /// </summary>
         public NoServer()
         {
-            this.IsDisconnected = false;
+            this.IsClosed = false;
             this.IsServerValid = false;
             this.NoDataTimeout = 60;
             this.IsDataSent = false;
@@ -95,7 +95,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
         /// <summary>
         ///     Gets or sets a value indicating whether is disconnected.
         /// </summary>
-        public override bool IsDisconnected { get; protected set; }
+        public override bool IsClosed { get; protected set; }
 
         /// <summary>
         ///     Gets or sets a value indicating whether is server valid.
@@ -141,7 +141,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             {
                 if ((this.ParentClient.BusyWrite || this.BusyWrite
                      || (Common.IsSocketConnected(this.UnderlyingSocket)
-                         && Common.IsSocketConnected(this.ParentClient.Client))) && this.currentTimeout > 0)
+                        && this.ParentClient.Client != null && Common.IsSocketConnected(this.ParentClient.Client))) && this.currentTimeout > 0)
                 {
                     if (this.ParentClient.IsSmartForwarderEnable && this.ParentClient.SmartResponseBuffer.Length > 0
                         && (this.currentTimeout <= this.NoDataTimeout * 500
@@ -456,7 +456,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                     this.ParentClient.Close(title, message, code, async);
                 }
 
-                this.IsDisconnected = true;
+                this.IsClosed = true;
 
                 if (async)
                 {

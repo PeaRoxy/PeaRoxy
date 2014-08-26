@@ -26,7 +26,7 @@ namespace PeaRoxy.CommonLibrary
     /// <summary>
     /// The common.
     /// </summary>
-    public class Common
+    public static class Common
     {
         #region Enums
 

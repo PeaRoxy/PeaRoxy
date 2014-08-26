@@ -74,7 +74,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
         /// <summary>
         ///     Gets or sets a value indicating whether is disconnected.
         /// </summary>
-        public abstract bool IsDisconnected { get; protected set; }
+        public abstract bool IsClosed { get; protected set; }
 
         /// <summary>
         ///     Gets or sets a value indicating whether is server valid.

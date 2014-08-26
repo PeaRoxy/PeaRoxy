@@ -8,11 +8,11 @@
              MaxWidth="200" MaxHeight="60">
     <Grid HorizontalAlignment="Right" Width="200">
         <Grid Margin="19,18,0,19" HorizontalAlignment="Left" Width="75">
-            <Button HorizontalAlignment="Center" Content="Start" Height="23" Name="BtnConnect"
+            <Button HorizontalAlignment="Center" Content="Connect" Height="23" Name="BtnConnect"
                             VerticalAlignment="Top" Width="75" Click="BtnConnectClick" IsEnabled="False"
-                            ToolTip="Connect to server using current settings" />
+                            ToolTip="Connect to server using current settings"/>
 
-            <Button Content="Stop" Height="23" Visibility="Hidden" HorizontalAlignment="Center"
+            <Button Content="Disconnect" Height="23" Visibility="Hidden" HorizontalAlignment="Center"
                             Name="BtnDisconnect" VerticalAlignment="Top" Width="75" IsDefault="True" IsEnabled="False"
                             Click="BtnDissconnectClick" x:FieldModifier="private" />
         </Grid>

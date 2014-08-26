@@ -637,7 +637,7 @@ namespace PeaRoxy.ClientLibrary
                         return;
                     }
 
-                    if (activeServer.ParentClient.IsDisconnected)
+                    if (activeServer.ParentClient.IsClosed)
                     {
                         throw new Exception("Connection dropped by server.");
                     }
@@ -798,15 +798,11 @@ namespace PeaRoxy.ClientLibrary
                                         SendPacketSize =
                                             this.SendPacketSize
                                     });
-
-                        // Create a client and send TCPClient to it, Let add this client to list too, So we can close it when needed
                     }
 
                     if (this.ConnectedClients.Count > 0)
                     {
-                        ProxyClient[] st;
-                        lock (this.ConnectedClients) st = this.ConnectedClients.ToArray();
-                        foreach (ProxyClient t in st)
+                        foreach (ProxyClient t in this.GetConnectedClients())
                         {
                             if (t != null && !t.IsSendingStarted)
                             {
@@ -872,28 +868,24 @@ namespace PeaRoxy.ClientLibrary
         {
             try
             {
-                lock (ConnectedClients)
+                foreach (ProxyClient client in this.GetConnectedClients())
                 {
-                    if (this.ConnectedClients.Count > 0)
+                    try
                     {
-                        ProxyClient[] st = this.ConnectedClients.ToArray();
-                        foreach (ProxyClient client in st)
-                        {
-                            try
-                            {
-                                client.Close();
-                            }
-                            catch { }
-                        }
+                        client.Close();
+                    }
+                    catch
+                    {
                     }
                 }
-
                 lock (this.routingClients)
                 {
                     this.routingClients.Clear();
                 }
             }
-            catch { }
+            catch
+            {
+            }
         }
 
         /// <summary>
@@ -919,7 +911,7 @@ namespace PeaRoxy.ClientLibrary
                         lock (this.routingClients) st = this.routingClients.ToArray();
                         foreach (ServerType server in st)
                         {
-                            if (server != null && !server.IsDisconnected)
+                            if (server != null && !server.IsClosed)
                             {
                                 server.DoRoute();
                             }
