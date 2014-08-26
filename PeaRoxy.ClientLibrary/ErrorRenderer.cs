@@ -294,20 +294,22 @@ namespace PeaRoxy.ClientLibrary
                         return false;
                     }
 
-                    X509Certificate certificate = new X509Certificate2(certAddress, string.Empty);
-                    if (sslStream == null)
+                    try
                     {
-                        client.Client.Blocking = true;
-                        Stream stream = new NetworkStream(client.Client);
-                        sslStream = new SslStream(stream) { ReadTimeout = 30 * 1000, WriteTimeout = 30 * 1000 };
-                        sslStream.AuthenticateAsServer(certificate);
-                    }
+                        X509Certificate certificate = new X509Certificate2(certAddress, string.Empty);
+                        if (sslStream == null)
+                        {
+                            client.Client.Blocking = true;
+                            Stream stream = new NetworkStream(client.Client);
+                            sslStream = new SslStream(stream) { ReadTimeout = 30 * 1000, WriteTimeout = 30 * 1000 };
+                            sslStream.AuthenticateAsServer(certificate);
+                        }
 
-                    sslStream.BeginWrite(
-                        db, 
-                        0, 
-                        db.Length, 
-                        delegate(IAsyncResult ar)
+                        sslStream.BeginWrite(
+                            db,
+                            0,
+                            db.Length,
+                            delegate(IAsyncResult ar)
                             {
                                 try
                                 {
@@ -319,8 +321,12 @@ namespace PeaRoxy.ClientLibrary
                                 catch (Exception)
                                 {
                                 }
-                            }, 
-                        null);
+                            },
+                            null);
+                    }
+                    catch
+                    {
+                    }
                 }
                 else
                 {
