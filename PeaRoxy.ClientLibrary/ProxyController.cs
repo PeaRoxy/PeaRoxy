@@ -589,7 +589,7 @@ namespace PeaRoxy.ClientLibrary
                     Application.DoEvents();
                 }
             }
-            else
+            else if (this.Status != ControllerStatus.None)
             {
                 this.Status = ControllerStatus.AutoConfig;
                 CloseAllClients();
