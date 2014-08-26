@@ -14,6 +14,7 @@ namespace PeaRoxy.ClientLibrary
 
     using System;
     using System.IO;
+    using System.Linq;
     using System.Net;
     using System.Net.Security;
     using System.Net.Sockets;
@@ -21,8 +22,12 @@ namespace PeaRoxy.ClientLibrary
     using System.Threading;
 
     using PeaRoxy.ClientLibrary.ProxyModules;
+    using PeaRoxy.ClientLibrary.ServerModules;
     using PeaRoxy.CommonLibrary;
     using PeaRoxy.Platform;
+
+    using Https = PeaRoxy.ClientLibrary.ProxyModules.Https;
+    using Socks5 = PeaRoxy.ClientLibrary.ProxyModules.Socks5;
 
     #endregion
 
@@ -83,16 +88,16 @@ namespace PeaRoxy.ClientLibrary
         #region Constructors and Destructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ProxyClient"/> class.
+        ///     Initializes a new instance of the <see cref="ProxyClient" /> class.
         /// </summary>
         /// <param name="client">
-        /// The client.
+        ///     The client.
         /// </param>
         /// <param name="parent">
-        /// The parent.
+        ///     The parent.
         /// </param>
         /// <param name="isDirectConnection">
-        /// The is direct connection.
+        ///     The is direct connection.
         /// </param>
         public ProxyClient(Socket client, ProxyController parent, bool isDirectConnection = false)
         {
@@ -112,12 +117,11 @@ namespace PeaRoxy.ClientLibrary
             this.Status = StatusCodes.Connected;
             this.LastError = string.Empty;
             this.NoDataTimeOut = 60;
-            this.IsSmartForwarderEnable = parent.SmartPear.ForwarderHttpEnable
-                                          || parent.SmartPear.ForwarderHttpsEnable
+            this.IsSmartForwarderEnable = parent.SmartPear.ForwarderHttpEnable || parent.SmartPear.ForwarderHttpsEnable
                                           || parent.SmartPear.ForwarderSocksEnable;
             this.SendPacketSize = 1024;
             this.ReceivePacketSize = 8192;
-            this.IsDisconnected = false;
+            this.IsClosed = false;
             this.Controller = parent;
             this.Client = client;
             if (this.Client != null)
@@ -140,12 +144,12 @@ namespace PeaRoxy.ClientLibrary
             /// <summary>
             ///     This is a TCP Client
             /// </summary>
-            Tcp, 
+            Tcp,
 
             /// <summary>
             ///     This is a UDP Client
             /// </summary>
-            Udp, 
+            Udp,
 
             /// <summary>
             ///     this is a DNS Client
@@ -161,17 +165,17 @@ namespace PeaRoxy.ClientLibrary
             /// <summary>
             ///     Client is connected
             /// </summary>
-            Connected, 
+            Connected,
 
             /// <summary>
             ///     Client is waiting
             /// </summary>
-            Waiting, 
+            Waiting,
 
             /// <summary>
             ///     Client is routing
             /// </summary>
-            Routing, 
+            Routing,
 
             /// <summary>
             ///     Client is closing
@@ -193,7 +197,10 @@ namespace PeaRoxy.ClientLibrary
                 long bytesReceived = this.ReceivedBytes - this.oldReceivedBytes;
                 this.oldReceivedBytes = this.ReceivedBytes;
                 double timeE = (Environment.TickCount - this.oldReceiveSpeed) / (double)1000;
-                if (timeE <= 0) return 0;
+                if (timeE <= 0)
+                {
+                    return 0;
+                }
                 this.oldReceiveSpeed = Environment.TickCount;
                 return (long)(bytesReceived / timeE);
             }
@@ -209,7 +216,10 @@ namespace PeaRoxy.ClientLibrary
                 long bytesSent = this.SentBytes - this.oldSentBytes;
                 this.oldSentBytes = this.SentBytes;
                 double timeE = (Environment.TickCount - this.oldSendSpeed) / (double)1000;
-                if (timeE <= 0) return 0;
+                if (timeE <= 0)
+                {
+                    return 0;
+                }
                 this.oldSendSpeed = Environment.TickCount;
                 return (long)(bytesSent / timeE);
             }
@@ -223,7 +233,9 @@ namespace PeaRoxy.ClientLibrary
             get
             {
                 if (this.writeBuffer.Length > 0)
+                {
                     this.Write(null);
+                }
 
                 return this.writeBuffer.Length > 0;
             }
@@ -242,7 +254,7 @@ namespace PeaRoxy.ClientLibrary
         /// <summary>
         ///     Gets a value indicating whether is disconnected.
         /// </summary>
-        public bool IsDisconnected { get; private set; }
+        public bool IsClosed { get; private set; }
 
         /// <summary>
         ///     Gets a value indicating whether is receiving started.
@@ -334,6 +346,518 @@ namespace PeaRoxy.ClientLibrary
 
         #region Public Methods and Operators
 
+        public bool IsConnected
+        {
+            get
+            {
+                return !this.IsClosed && this.Client != null && Common.IsSocketConnected(this.Client);
+            }
+        }
+
+        /// <summary>
+        ///     The direct_ connection status callback.
+        /// </summary>
+        /// <param name="currentActiveServer">
+        ///     The current active server.
+        /// </param>
+        /// <param name="success">
+        ///     The success.
+        /// </param>
+        /// <param name="isSocks">
+        ///     The is socks.
+        /// </param>
+        /// <returns>
+        ///     The <see cref="bool" />.
+        /// </returns>
+        public bool DirectConnectionStatusCallback(ServerType currentActiveServer, bool success, bool isSocks)
+        {
+            if (this.IsSmartForwarderEnable)
+            {
+                SmartPear smart = this.Controller.SmartPear;
+                if (!success)
+                {
+                    if (smart.ForwarderHttpsEnable && (!isSocks || smart.ForwarderSocksEnable)
+                        && smart.DetectorTimeoutEnable)
+                    {
+                        this.IsSmartForwarderEnable = false;
+                        if (isSocks)
+                        {
+                            Socks5.DirectHandle(
+                                this,
+                                currentActiveServer.GetAddress(),
+                                currentActiveServer.GetPort(),
+                                this.SmartRequestBuffer);
+                        }
+                        else
+                        {
+                            Https.DirectHandle(
+                                this,
+                                currentActiveServer.GetAddress(),
+                                currentActiveServer.GetPort(),
+                                this.SmartRequestBuffer);
+                        }
+
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (smart.ForwarderHttpsEnable && (!isSocks || smart.ForwarderSocksEnable)
+                        && smart.DetectorDnsGrabberEnable && currentActiveServer.UnderlyingSocket != null)
+                    {
+                        if (currentActiveServer.UnderlyingSocket.RemoteEndPoint != null
+                            && smart.DetectorDnsGrabberRegEx.IsMatch(
+                                ((IPEndPoint)currentActiveServer.UnderlyingSocket.RemoteEndPoint).Address.ToString()))
+                        {
+                            this.IsSmartForwarderEnable = false;
+                            if (isSocks)
+                            {
+                                Socks5.DirectHandle(
+                                    this,
+                                    currentActiveServer.GetAddress(),
+                                    currentActiveServer.GetPort(),
+                                    this.SmartRequestBuffer);
+                            }
+                            else
+                            {
+                                Https.DirectHandle(
+                                    this,
+                                    currentActiveServer.GetAddress(),
+                                    currentActiveServer.GetPort(),
+                                    this.SmartRequestBuffer);
+                            }
+
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        ///     The direct_ data received callback.
+        /// </summary>
+        /// <param name="binary">
+        ///     The binary.
+        /// </param>
+        /// <param name="currentActiveServer">
+        ///     The current active server.
+        /// </param>
+        /// <param name="isSocks">
+        ///     The is socks.
+        /// </param>
+        /// <returns>
+        ///     The <see cref="bool" />.
+        /// </returns>
+        public bool DirectDataReceivedCallback(ref byte[] binary, ServerType currentActiveServer, bool isSocks)
+        {
+            SmartPear smart = this.Controller.SmartPear;
+            if (smart.ForwarderHttpsEnable && (!isSocks || smart.ForwarderSocksEnable))
+            {
+                // If HTTPS Forwarded
+                if (!this.IsSmartForwarderEnable
+                    && ((smart.DetectorDirectPort80AsHttp && smart.ForwarderDirectPort80AsHttp)
+                        || smart.DetectorStatusDnsGrabber || smart.DetectorStatusTimeout))
+                {
+                    // If using proxy, and forwarder HTTPS is enable
+                    Uri url;
+                    if (this.RequestAddress != string.Empty
+                        && Uri.TryCreate(this.RequestAddress, UriKind.Absolute, out url))
+                    {
+                        if (smart.DetectorDirectPort80AsHttp && smart.ForwarderDirectPort80AsHttp && url.Port == 80
+                            && Http.IsHttp(this.SmartRequestBuffer))
+                        {
+                            smart.AddRuleToHttpForwarder(
+                                "* | *" + url.Host.ToLower().TrimEnd(new[] { '/', '\\' }) + "*");
+                        }
+                        else
+                        {
+                            smart.AddRuleToDirectForwarder("* | *" + url.Host.ToLower() + ":" + url.Port);
+                        }
+                    }
+
+                    currentActiveServer.ReceiveDataDelegate = null;
+                    return true;
+                }
+
+                if (smart.ForwarderDirectPort80AsHttp && smart.DetectorDirectPort80AsHttp
+                    && this.RequestAddress.EndsWith(":80") && Http.IsHttp(this.SmartRequestBuffer))
+                {
+                    // If we have Forwarder Enabled
+                    bool blocked = false;
+                    if (smart.DetectorStatusHttp && this.SmartResponseBuffer.Length < smart.DetectorHttpMaxBuffering)
+                    {
+                        // If detector is enable and responce is less than buffer size
+                        byte[] smartResponseBuffer = this.SmartResponseBuffer;
+                        Array.Resize(ref smartResponseBuffer, smartResponseBuffer.Length + binary.Length);
+                        Array.Copy(
+                            binary,
+                            0,
+                            smartResponseBuffer,
+                            smartResponseBuffer.Length - binary.Length,
+                            binary.Length);
+                        Array.Resize(ref binary, 0);
+                        if (smart.DetectorHttpRegEx.IsMatch(Encoding.ASCII.GetString(smartResponseBuffer)))
+                        {
+                            // If Responce is FILTERED
+                            blocked = true;
+                        }
+
+                        this.SmartResponseBuffer = smartResponseBuffer;
+                    }
+
+                    if (blocked)
+                    {
+                        currentActiveServer.ReceiveDataDelegate = null;
+                        if (this.IsSmartForwarderEnable)
+                        {
+                            // If client use NoServer
+                            byte[] localReqBackup = new byte[this.SmartRequestBuffer.Length];
+                            Array.Copy(this.SmartRequestBuffer, localReqBackup, localReqBackup.Length);
+                            this.ForwarderClean();
+                            this.IsSmartForwarderEnable = false;
+                            Http.DirectHandle(
+                                this,
+                                currentActiveServer.GetAddress(),
+                                currentActiveServer.GetPort(),
+                                localReqBackup);
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        // Responce is OK
+                        if (!this.IsSmartForwarderEnable
+                            && (smart.DetectorStatusHttp || smart.DetectorStatusDnsGrabber
+                                || smart.DetectorStatusTimeout))
+                        {
+                            // If client use Proxy and one of possible detectors is enable
+                            Uri url;
+                            if (this.RequestAddress != string.Empty
+                                && Uri.TryCreate(this.RequestAddress, UriKind.Absolute, out url))
+                            {
+                                smart.AddRuleToHttpForwarder(
+                                    "* | *" + url.Host.ToLower().TrimEnd(new[] { '/', '\\' }) + "*");
+
+                                // Bug: I dont have time to solve it and also not importante as if a address is blocked, so other case of that address is also blocked.
+                            }
+
+                            currentActiveServer.ReceiveDataDelegate = null;
+                        }
+                    }
+
+                    if (this.SmartResponseBuffer.Length > 0
+                        && (!this.IsSmartForwarderEnable
+                            || this.SmartResponseBuffer.Length >= smart.DetectorHttpMaxBuffering))
+                    {
+                        // If we have any thing in Responce and (Client use Proxy or Client use NoServer but Responce buffer is bigger than buffer)
+                        this.ForwarderFlush(smart.ForwarderHttpEnable);
+                        currentActiveServer.ReceiveDataDelegate = null;
+                    }
+                }
+            }
+            else
+            {
+                currentActiveServer.ReceiveDataDelegate = null;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        ///     The direct_ data sent callback.
+        /// </summary>
+        /// <param name="binary">
+        ///     The binary.
+        /// </param>
+        /// <param name="isSocks">
+        ///     The is socks.
+        /// </param>
+        /// <returns>
+        ///     The <see cref="bool" />.
+        /// </returns>
+        public bool DirectDataSentCallback(byte[] binary, bool isSocks)
+        {
+            SmartPear smart = this.Controller.SmartPear;
+            if (this.IsSmartForwarderEnable && smart.ForwarderHttpsEnable && (!isSocks || smart.ForwarderSocksEnable))
+            {
+                byte[] smartRequestBuffer = this.SmartRequestBuffer;
+                Array.Resize(ref smartRequestBuffer, smartRequestBuffer.Length + binary.Length);
+                Array.Copy(binary, 0, smartRequestBuffer, smartRequestBuffer.Length - binary.Length, binary.Length);
+                this.SmartRequestBuffer = smartRequestBuffer;
+            }
+            else if (this.SmartResponseBuffer.Length > 0)
+            {
+                this.ForwarderFlush(smart.ForwarderHttpsEnable && (!isSocks || smart.ForwarderSocksEnable));
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        ///     The forwarder_ clean.
+        /// </summary>
+        /// <param name="enable">
+        ///     The enable.
+        /// </param>
+        public void ForwarderClean(bool? enable = null)
+        {
+            this.IsSmartForwarderEnable = (enable == null)
+                                              ? this.Controller.SmartPear.ForwarderHttpEnable
+                                              : (bool)enable;
+            this.SmartResponseBuffer = new byte[0];
+            this.SmartRequestBuffer = new byte[0];
+        }
+
+        /// <summary>
+        ///     The forwarder_ flush.
+        /// </summary>
+        /// <param name="enable">
+        ///     The enable.
+        /// </param>
+        public void ForwarderFlush(bool enable)
+        {
+            this.Write(this.SmartResponseBuffer);
+            this.ForwarderClean(enable);
+            this.IsSmartForwarderEnable = false;
+        }
+
+        /// <summary>
+        ///     The http connection status callback.
+        /// </summary>
+        /// <param name="currentActiveServer">
+        ///     The current active server.
+        /// </param>
+        /// <param name="success">
+        ///     The success.
+        /// </param>
+        /// <returns>
+        ///     The <see cref="bool" />.
+        /// </returns>
+        public bool HttpConnectionStatusCallback(ServerType currentActiveServer, bool success)
+        {
+            if (this.IsSmartForwarderEnable)
+            {
+                SmartPear smart = this.Controller.SmartPear;
+                if (!success)
+                {
+                    if (smart.ForwarderHttpEnable && smart.DetectorTimeoutEnable)
+                    {
+                        this.IsSmartForwarderEnable = false;
+                        Http.DirectHandle(
+                            this,
+                            currentActiveServer.GetAddress(),
+                            currentActiveServer.GetPort(),
+                            this.SmartRequestBuffer);
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (smart.ForwarderHttpEnable && smart.DetectorDnsGrabberEnable
+                        && currentActiveServer.UnderlyingSocket != null)
+                    {
+                        if (currentActiveServer.UnderlyingSocket.RemoteEndPoint != null
+                            && smart.DetectorDnsGrabberRegEx.IsMatch(
+                                ((IPEndPoint)currentActiveServer.UnderlyingSocket.RemoteEndPoint).Address.ToString()))
+                        {
+                            this.IsSmartForwarderEnable = false;
+                            Http.DirectHandle(
+                                this,
+                                currentActiveServer.GetAddress(),
+                                currentActiveServer.GetPort(),
+                                this.SmartRequestBuffer);
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        ///     The http data received callback.
+        /// </summary>
+        /// <param name="binary">
+        ///     The binary.
+        /// </param>
+        /// <param name="currentActiveServer">
+        ///     The current active server.
+        /// </param>
+        /// <returns>
+        ///     The <see cref="bool" />.
+        /// </returns>
+        public bool HttpDataReceivedCallback(ref byte[] binary, ServerType currentActiveServer)
+        {
+            SmartPear smart = this.Controller.SmartPear;
+            if (smart.ForwarderHttpEnable)
+            {
+                // If we have Forwarder Enabled
+                bool blocked = false;
+                if (smart.DetectorStatusHttp && this.SmartResponseBuffer.Length < smart.DetectorHttpMaxBuffering)
+                {
+                    // If detector is enable and responce is less than buffer size
+                    byte[] smartResponseBuffer = this.SmartResponseBuffer;
+                    Array.Resize(ref smartResponseBuffer, smartResponseBuffer.Length + binary.Length);
+                    Array.Copy(
+                        binary,
+                        0,
+                        smartResponseBuffer,
+                        smartResponseBuffer.Length - binary.Length,
+                        binary.Length);
+                    Array.Resize(ref binary, 0);
+                    if (smart.DetectorHttpRegEx.IsMatch(Encoding.ASCII.GetString(smartResponseBuffer)))
+                    {
+                        // If Responce is FILTERED
+                        blocked = true;
+                    }
+
+                    this.SmartResponseBuffer = smartResponseBuffer;
+                }
+
+                if (blocked)
+                {
+                    currentActiveServer.ReceiveDataDelegate = null;
+                    if (this.IsSmartForwarderEnable)
+                    {
+                        // If client use NoServer
+                        byte[] localReqBackup = new byte[this.SmartRequestBuffer.Length];
+                        Array.Copy(this.SmartRequestBuffer, localReqBackup, localReqBackup.Length);
+                        this.ForwarderClean();
+                        this.IsSmartForwarderEnable = false;
+                        Http.DirectHandle(
+                            this,
+                            currentActiveServer.GetAddress(),
+                            currentActiveServer.GetPort(),
+                            localReqBackup);
+                        return false;
+                    }
+                }
+                else
+                {
+                    // Responce is OK
+                    if (!this.IsSmartForwarderEnable
+                        && (smart.DetectorStatusHttp || smart.DetectorStatusDnsGrabber || smart.DetectorStatusTimeout))
+                    {
+                        // If client use Proxy and one of possible detectors is enable
+                        Uri url;
+                        if (this.RequestAddress != string.Empty
+                            && Uri.TryCreate(this.RequestAddress, UriKind.Absolute, out url))
+                        {
+                            smart.AddRuleToHttpForwarder(
+                                "* | *" + url.Host.ToLower().TrimEnd(new[] { '/', '\\' }) + "*");
+
+                            // Bug: I dont have time to solve it and also not importante as if a address is blocked, so other case of that address is also blocked.
+                        }
+
+                        currentActiveServer.ReceiveDataDelegate = null;
+                    }
+                }
+
+                if (this.SmartResponseBuffer.Length > 0
+                    && (!this.IsSmartForwarderEnable
+                        || this.SmartResponseBuffer.Length >= smart.DetectorHttpMaxBuffering))
+                {
+                    // If we have any thing in Responce and (Client use Proxy or Client use NoServer but Responce buffer is bigger than buffer)
+                    this.ForwarderFlush(smart.ForwarderHttpEnable);
+                    currentActiveServer.ReceiveDataDelegate = null;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        ///     The http data sent callback.
+        /// </summary>
+        /// <param name="binary">
+        ///     The binary.
+        /// </param>
+        /// <returns>
+        ///     The <see cref="bool" />.
+        /// </returns>
+        public bool HttpDataSentCallback(byte[] binary)
+        {
+            SmartPear smart = this.Controller.SmartPear;
+            if (smart.ForwarderHttpEnable && (smart.DetectorHttpEnable || smart.DetectorDnsGrabberEnable))
+            {
+                // If we have Forwarder Enabled
+                if (this.IsSmartForwarderEnable)
+                {
+                    // If Client using NoServer
+                    byte[] smartRequestBuffer = this.SmartRequestBuffer;
+                    Array.Resize(ref smartRequestBuffer, smartRequestBuffer.Length + binary.Length);
+                    Array.Copy(binary, 0, smartRequestBuffer, smartRequestBuffer.Length - binary.Length, binary.Length);
+                    this.SmartRequestBuffer = smartRequestBuffer;
+                }
+                else if (this.SmartResponseBuffer.Length > 0)
+                {
+                    // If client use Proxy and there is a responce already.
+                    this.ForwarderFlush(smart.ForwarderHttpEnable);
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        ///     The is need forwarding.
+        /// </summary>
+        /// <returns>
+        ///     The <see cref="bool" />.
+        /// </returns>
+        public bool IsNeedForwarding()
+        {
+            if (this.RequestAddress == string.Empty)
+            {
+                return false;
+            }
+
+            string name = "Unknown | ";
+
+            ConnectionInfo conInfo = this.GetExtendedInfo();
+            if (conInfo != null && conInfo.ProcessName != string.Empty)
+            {
+                name = conInfo.ProcessName + " | ";
+            }
+
+            SmartPear smart = this.Controller.SmartPear;
+            string p = this.RequestAddress.ToLower();
+            if (p.IndexOf("http://", StringComparison.OrdinalIgnoreCase) == 0)
+            {
+                Uri parsedUrl = new Uri(p);
+                p = name + parsedUrl.Host;
+                if (smart.ForwarderHttpList.Any(t => Common.IsMatchWildCard(p, t)))
+                {
+                    return true;
+                }
+            }
+            else if (p.IndexOf("socks://", StringComparison.OrdinalIgnoreCase) == 0
+                     || p.IndexOf("https://", StringComparison.OrdinalIgnoreCase) == 0)
+            {
+                p = name + p.Substring(p.IndexOf("://", StringComparison.Ordinal) + 3);
+                if (smart.ForwarderDirectList.Any(t => Common.IsMatchWildCard(p, t)))
+                {
+                    return true;
+                }
+
+                if (smart.ForwarderDirectPort80AsHttp && p.IndexOf(":", StringComparison.Ordinal) != -1
+                    && p.Substring(p.IndexOf(":", StringComparison.Ordinal) + 1) == "80")
+                {
+                    p = p.Substring(0, p.IndexOf(":", StringComparison.Ordinal));
+                    if (smart.ForwarderHttpList.Any(t => Common.IsMatchWildCard(p, t)))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         /// <summary>
         ///     The accepting process
         /// </summary>
@@ -343,7 +867,10 @@ namespace PeaRoxy.ClientLibrary
             {
                 if (Common.IsSocketConnected(this.Client))
                 {
-                    if (this.IsSendingStarted) return;
+                    if (this.IsSendingStarted)
+                    {
+                        return;
+                    }
                     if (this.Client.Available > 0)
                     {
                         this.Status = StatusCodes.Waiting;
@@ -357,10 +884,10 @@ namespace PeaRoxy.ClientLibrary
 
                         Array.Resize(ref this.reqBuffer, this.reqBuffer.Length + clientData.Length);
                         Array.Copy(
-                            clientData, 
-                            0, 
-                            this.reqBuffer, 
-                            this.reqBuffer.Length - clientData.Length, 
+                            clientData,
+                            0,
+                            this.reqBuffer,
+                            this.reqBuffer.Length - clientData.Length,
                             clientData.Length);
                         this.IsSendingStarted = true;
                         if (this.Controller.Status == ProxyController.ControllerStatus.None)
@@ -375,7 +902,8 @@ namespace PeaRoxy.ClientLibrary
                         {
                             Https.Handle(this.reqBuffer, this);
                         }
-                        else if (Socks5.IsSocks(this.reqBuffer) && this.Controller.Status.HasFlag(ProxyController.ControllerStatus.Proxy))
+                        else if (Socks5.IsSocks(this.reqBuffer)
+                                 && this.Controller.Status.HasFlag(ProxyController.ControllerStatus.Proxy))
                         {
                             Socks5.Handle(this.reqBuffer, this);
                         }
@@ -390,8 +918,8 @@ namespace PeaRoxy.ClientLibrary
                         if (this.reqBuffer.Length != 0)
                         {
                             this.Close(
-                                "Unknown proxy connection", 
-                                "Header: " + Encoding.ASCII.GetString(this.reqBuffer), 
+                                "Unknown proxy connection",
+                                "Header: " + Encoding.ASCII.GetString(this.reqBuffer),
                                 ErrorRenderer.HttpHeaderCode.C501NotImplemented);
                         }
                     }
@@ -410,28 +938,28 @@ namespace PeaRoxy.ClientLibrary
         }
 
         /// <summary>
-        /// The close.
+        ///     The close.
         /// </summary>
         /// <param name="title">
-        /// The title.
+        ///     The title.
         /// </param>
         /// <param name="message">
-        /// The message.
+        ///     The message.
         /// </param>
         /// <param name="code">
-        /// The code.
+        ///     The code.
         /// </param>
         /// <param name="async">
-        /// The async.
+        ///     The async.
         /// </param>
         /// <param name="sslstream">
-        /// The SSL stream.
+        ///     The SSL stream.
         /// </param>
         public void Close(
-            string title = null, 
-            string message = null, 
-            ErrorRenderer.HttpHeaderCode code = ErrorRenderer.HttpHeaderCode.C500ServerError, 
-            bool async = false, 
+            string title = null,
+            string message = null,
+            ErrorRenderer.HttpHeaderCode code = ErrorRenderer.HttpHeaderCode.C500ServerError,
+            bool async = false,
             SslStream sslstream = null)
         {
             this.Status = StatusCodes.Closing;
@@ -464,10 +992,10 @@ namespace PeaRoxy.ClientLibrary
                             if (this.Client != null)
                             {
                                 this.Client.BeginSend(
-                                    db, 
-                                    0, 
-                                    db.Length, 
-                                    SocketFlags.None, 
+                                    db,
+                                    0,
+                                    db.Length,
+                                    SocketFlags.None,
                                     delegate(IAsyncResult ar)
                                         {
                                             try
@@ -478,7 +1006,7 @@ namespace PeaRoxy.ClientLibrary
                                             catch (Exception)
                                             {
                                             }
-                                        }, 
+                                        },
                                     null);
                             }
                         }
@@ -496,7 +1024,7 @@ namespace PeaRoxy.ClientLibrary
             {
             }
 
-            this.IsDisconnected = true;
+            this.IsClosed = true;
             this.Controller.Disconnected(this);
         }
 
@@ -524,7 +1052,7 @@ namespace PeaRoxy.ClientLibrary
                             this.extendedInfo =
                                 ClassRegistry.GetClass<ConnectionInfo>()
                                     .GetTcpConnectionByLocalAddress(
-                                        ((IPEndPoint)this.Client.RemoteEndPoint).Address, 
+                                        ((IPEndPoint)this.Client.RemoteEndPoint).Address,
                                         (ushort)((IPEndPoint)this.Client.RemoteEndPoint).Port);
                         }
                         else if (this.Type == ClientType.Udp)
@@ -532,7 +1060,7 @@ namespace PeaRoxy.ClientLibrary
                             this.extendedInfo =
                                 ClassRegistry.GetClass<ConnectionInfo>()
                                     .GetUdpConnectionByLocalAddress(
-                                        ((IPEndPoint)this.Client.RemoteEndPoint).Address, 
+                                        ((IPEndPoint)this.Client.RemoteEndPoint).Address,
                                         (ushort)((IPEndPoint)this.Client.RemoteEndPoint).Port);
                         }
                     }
@@ -549,7 +1077,8 @@ namespace PeaRoxy.ClientLibrary
         ///     The read.
         /// </summary>
         /// <returns>
-        ///     The <see>
+        ///     The
+        ///     <see>
         ///         <cref>byte[]</cref>
         ///     </see>
         ///     .
@@ -586,13 +1115,13 @@ namespace PeaRoxy.ClientLibrary
         }
 
         /// <summary>
-        /// The write.
+        ///     The write.
         /// </summary>
         /// <param name="bytes">
-        /// The bytes.
+        ///     The bytes.
         /// </param>
         /// <param name="toStream">
-        /// The to stream.
+        ///     The to stream.
         /// </param>
         public void Write(byte[] bytes, Stream toStream = null)
         {
@@ -613,10 +1142,10 @@ namespace PeaRoxy.ClientLibrary
                         int bytesWritten = this.Client.Send(this.writeBuffer, SocketFlags.None);
                         this.DataReceived(this.writeBuffer.Length);
                         Array.Copy(
-                            this.writeBuffer, 
-                            bytesWritten, 
-                            this.writeBuffer, 
-                            0, 
+                            this.writeBuffer,
+                            bytesWritten,
+                            this.writeBuffer,
+                            0,
                             this.writeBuffer.Length - bytesWritten);
                         Array.Resize(ref this.writeBuffer, this.writeBuffer.Length - bytesWritten);
                     }
@@ -638,10 +1167,10 @@ namespace PeaRoxy.ClientLibrary
         #region Methods
 
         /// <summary>
-        /// The data received.
+        ///     The data received.
         /// </summary>
         /// <param name="p">
-        /// The p.
+        ///     The p.
         /// </param>
         private void DataReceived(int p)
         {
@@ -653,10 +1182,10 @@ namespace PeaRoxy.ClientLibrary
         }
 
         /// <summary>
-        /// The data sent.
+        ///     The data sent.
         /// </summary>
         /// <param name="p">
-        /// The p.
+        ///     The p.
         /// </param>
         private void DataSent(int p)
         {

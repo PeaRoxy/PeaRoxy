@@ -52,7 +52,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DnsResolver.cs" />
-    <Compile Include="ProxyClientSmartPearExtension.cs" />
     <Compile Include="ErrorRenderer.cs" />
     <Compile Include="SmartPear.cs" />
     <Compile Include="ProxyModules\Http.cs" />
