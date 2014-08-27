@@ -522,7 +522,6 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                     string certAddress = url.DnsSafeHost;
                     if (!Common.IsIpAddress(certAddress))
                     {
-                        certAddress = Common.GetNextLevelDomain(certAddress);
                         if (string.IsNullOrEmpty(certAddress))
                         {
                             this.Close(

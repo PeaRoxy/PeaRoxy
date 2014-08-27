@@ -255,7 +255,6 @@ namespace PeaRoxy.ClientLibrary
                     string certAddress = url.DnsSafeHost;
                     if (!Common.IsIpAddress(certAddress))
                     {
-                        certAddress = Common.GetNextLevelDomain(certAddress);
                         if (string.IsNullOrEmpty(certAddress))
                         {
                             return false;
