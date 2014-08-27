@@ -208,7 +208,7 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
                         ProxyClient connectedClient = connectionNode.Tag as ProxyClient;
                         if (connectedClient != null && processConnections.Contains(connectedClient))
                         {
-                            connectionNode.Resources["Type"] = connectedClient.Type.ToString();
+                            connectionNode.Resources["Type"] = connectedClient.RequestType.ToString();
                             connectionNode.Resources["Status"] = connectedClient.Status.ToString();
                             connectionNode.Resources["Download"] = "D: "
                                                                    + Common.FormatFileSizeAsString(
@@ -239,7 +239,7 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
                                                               Tag = connectedClient,
                                                               ContextMenu = this.connectionContextMenu
                                                           };
-                        connectionNode.Resources.Add("Type", connectedClient.Type.ToString());
+                        connectionNode.Resources.Add("Type", connectedClient.RequestType.ToString());
                         connectionNode.Resources.Add("Status", connectedClient.Status.ToString());
                         connectionNode.Resources.Add(
                             "Download", 

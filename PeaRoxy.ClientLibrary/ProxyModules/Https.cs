@@ -3,48 +3,24 @@
 //   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
 //   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
 // </copyright>
-// <summary>
-//   The proxy_ https.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.ClientLibrary.ProxyModules
 {
-    #region
-
     using System;
     using System.Text;
 
     using PeaRoxy.ClientLibrary.ServerModules;
 
-    #endregion
-
     /// <summary>
-    /// The https proxy module
+    ///     The HTTPS Proxy Handler Module
     /// </summary>
     internal static class Https
     {
-        #region Public Methods and Operators
-
-        /// <summary>
-        /// The direct handle.
-        /// </summary>
-        /// <param name="client">
-        /// The client.
-        /// </param>
-        /// <param name="clientConnectionAddress">
-        /// The client connection address.
-        /// </param>
-        /// <param name="clientConnectionPort">
-        /// The client connection port.
-        /// </param>
-        /// <param name="firstResponse">
-        /// The first response.
-        /// </param>
         public static void DirectHandle(
-            ProxyClient client, 
-            string clientConnectionAddress, 
-            ushort clientConnectionPort, 
+            ProxyClient client,
+            string clientConnectionAddress,
+            ushort clientConnectionPort,
             byte[] firstResponse)
         {
             if (client.IsSmartForwarderEnable && client.Controller.SmartPear.ForwarderHttpsEnable)
@@ -57,24 +33,18 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
                     ac.NoDataTimeout = client.Controller.SmartPear.DetectorTimeout;
                 }
 
-                client.DirectDataSentCallback(firstResponse, false);
+                client.SmartDataSentCallbackForDirectConnections(firstResponse, false);
                 ac.Establish(
-                    clientConnectionAddress, 
-                    clientConnectionPort, 
-                    client, 
-                    firstResponse, 
-                    delegate(ref byte[] data, ServerType thisactiveServer, ProxyClient thisclient)
-                        {
-                            return thisclient.DirectDataSentCallback(data, false);
-                        }, 
-                    delegate(ref byte[] data, ServerType thisactiveServer, ProxyClient thisclient)
-                        {
-                            return thisclient.DirectDataReceivedCallback(ref data, thisactiveServer, false);
-                        }, 
-                    delegate(bool success, ServerType thisactiveServer, ProxyClient thisclient)
-                        {
-                            return thisclient.DirectConnectionStatusCallback(thisactiveServer, success, false);
-                        });
+                    clientConnectionAddress,
+                    clientConnectionPort,
+                    client,
+                    firstResponse,
+                    (ref byte[] data, ServerType thisactiveServer, ProxyClient thisclient) =>
+                    thisclient.SmartDataSentCallbackForDirectConnections(data, false),
+                    (ref byte[] data, ServerType thisactiveServer, ProxyClient thisclient) =>
+                    thisclient.SmartDataReceivedCallbackForDirrectConnections(ref data, thisactiveServer, false),
+                    (success, thisactiveServer, thisclient) =>
+                    thisclient.SmartStatusCallbackForDirectConnections(thisactiveServer, success, false));
             }
             else
             {
@@ -82,35 +52,24 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
                 ServerType ac = client.Controller.ActiveServer.Clone();
                 if (client.Controller.SmartPear.ForwarderHttpsEnable)
                 {
-                    // If we have forwarding enable then we need to send rcv callback
+                    // If we have forwarding enabled then we need to have a receive callback
                     ac.Establish(
-                        clientConnectionAddress, 
-                        clientConnectionPort, 
-                        client, 
-                        firstResponse, 
-                        null, 
-                        delegate(ref byte[] data, ServerType thisactiveServer, ProxyClient thisclient)
-                            {
-                                return thisclient.DirectDataReceivedCallback(ref data, thisactiveServer, false);
-                            });
+                        clientConnectionAddress,
+                        clientConnectionPort,
+                        client,
+                        firstResponse,
+                        null,
+                        (ref byte[] data, ServerType thisactiveServer, ProxyClient thisclient) =>
+                        thisclient.SmartDataReceivedCallbackForDirrectConnections(ref data, thisactiveServer, false));
                 }
                 else
                 {
-                    // If we dont so SmartPear is disabled
+                    // If we don't so SmartPear is disabled
                     ac.Establish(clientConnectionAddress, clientConnectionPort, client, firstResponse);
                 }
             }
         }
 
-        /// <summary>
-        /// The handle.
-        /// </summary>
-        /// <param name="firstResponse">
-        /// The first response.
-        /// </param>
-        /// <param name="client">
-        /// The client.
-        /// </param>
         public static void Handle(byte[] firstResponse, ProxyClient client)
         {
             if (!client.Controller.IsHttpsSupported || !IsHttps(firstResponse))
@@ -149,21 +108,12 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
             else
             {
                 client.Close(
-                    "Currently we only serve AutoConfig files. Try restarting your browser.", 
-                    null, 
+                    "Currently we only serve AutoConfig files. Try restarting your browser.",
+                    null,
                     ErrorRenderer.HttpHeaderCode.C417ExpectationFailed);
             }
         }
 
-        /// <summary>
-        /// The is https.
-        /// </summary>
-        /// <param name="firstresponse">
-        /// The first response.
-        /// </param>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
         public static bool IsHttps(byte[] firstresponse)
         {
             string textData = Encoding.ASCII.GetString(firstresponse);
@@ -172,9 +122,8 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
                 return false;
             }
 
-            return textData.ToUpper().IndexOf("CONNECT ", StringComparison.OrdinalIgnoreCase) == 0 || textData.ToUpper().IndexOf("FASTCONNECT ", StringComparison.OrdinalIgnoreCase) == 0;
+            return textData.ToUpper().IndexOf("CONNECT ", StringComparison.OrdinalIgnoreCase) == 0
+                   || textData.ToUpper().IndexOf("FASTCONNECT ", StringComparison.OrdinalIgnoreCase) == 0;
         }
-
-        #endregion
     }
 }

@@ -37,7 +37,7 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
         public Log()
         {
             this.InitializeComponent();
-            ProxyController.NewLog += this.NewLog;
+            ProxyController.LogNotify += this.NewLog;
         }
 
         #endregion

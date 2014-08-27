@@ -3,18 +3,14 @@
 //   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
 //   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
 // </copyright>
-// <summary>
-//   The error renderer.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.ClientLibrary
 {
-    #region
-
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Net.Security;
     using System.Net.Sockets;
     using System.Reflection;
@@ -25,99 +21,85 @@ namespace PeaRoxy.ClientLibrary
     using PeaRoxy.CommonLibrary;
     using PeaRoxy.Platform;
 
-    #endregion
-
     /// <summary>
-    /// The error renderer.
+    ///     The error renderer class is responsible for printing the error messages to the output
     /// </summary>
     public class ErrorRenderer
     {
-        #region Constructors and Destructors
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="ErrorRenderer"/> class.
-        /// </summary>
-        public ErrorRenderer()
-        {
-            this.OnPort443Direct = true;
-            this.OnPort80Direct = true;
-            this.Enable = true;
-
-            if (ClassRegistry.GetClass<CertManager>().CreateAuthority("PeaRoxy Authority", "PeaRoxy.crt"))
-                ClassRegistry.GetClass<CertManager>().RegisterAuthority("PeaRoxy Authority", "PeaRoxy.crt");
-        }
-
-        #endregion
-
-        #region Enums
-
-        /// <summary>
-        /// The http header code.
+        ///     The HTTP header codes
         /// </summary>
         public enum HttpHeaderCode
         {
             /// <summary>
-            /// 200 ok.
+            ///     200 OK.
             /// </summary>
-            C200Ok, 
+            C200Ok,
 
             /// <summary>
-            /// 500 server error.
+            ///     500 Server Error.
             /// </summary>
-            C500ServerError, 
+            C500ServerError,
 
             /// <summary>
-            /// 501 not implemented.
+            ///     501 Not Implemented.
             /// </summary>
-            C501NotImplemented, 
+            C501NotImplemented,
 
             /// <summary>
-            /// 502 bad gateway.
+            ///     502 Bad Gateway.
             /// </summary>
-            C502BadGateway, 
+            C502BadGateway,
 
             /// <summary>
-            /// 504 gateway timeout.
+            ///     504 Gateway Timeout.
             /// </summary>
-            C504GatewayTimeout, 
+            C504GatewayTimeout,
 
             /// <summary>
-            /// 417 expectation failed.
+            ///     417 Expectation Failed.
             /// </summary>
-            C417ExpectationFailed, 
+            C417ExpectationFailed,
         }
 
-        #endregion
-
-        #region Public Properties
-
         /// <summary>
-        /// Gets or sets a value indicating whether direct error rendering_ port 443.
+        ///     Initializes a new instance of the <see cref="ErrorRenderer" /> class.
         /// </summary>
-        public bool OnPort443Direct { get; set; }
+        public ErrorRenderer()
+        {
+            this.EnableOnPort443 = true;
+            this.EnableOnPort80 = true;
+            this.EnableOnHttp = true;
+
+            if (ClassRegistry.GetClass<CertManager>().CreateAuthority("PeaRoxy Authority", "PeaRoxy.crt"))
+            {
+                ClassRegistry.GetClass<CertManager>().RegisterAuthority("PeaRoxy Authority", "PeaRoxy.crt");
+            }
+        }
 
         /// <summary>
-        /// Gets or sets a value indicating whether direct error rendering_ port 80.
+        ///     Gets or sets a value indicating whether error rendering should response to the direct requests on port 443
         /// </summary>
-        public bool OnPort80Direct { get; set; }
+        public bool EnableOnPort443 { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether http error rendering is active
+        ///     Gets or sets a value indicating whether error rendering should response to the direct requests on port 80
         /// </summary>
-        public bool Enable { get; set; }
-
-        #endregion
-
-        #region Public Methods and Operators
+        public bool EnableOnPort80 { get; set; }
 
         /// <summary>
-        /// The get cert for domain.
+        ///     Gets or sets a value indicating whether error rendering should response to the HTTP requests
+        /// </summary>
+        public bool EnableOnHttp { get; set; }
+
+        /// <summary>
+        ///     Generating or locating a certification for the specified domain name
         /// </summary>
         /// <param name="domainName">
-        /// The domain name.
+        ///     The domain name.
         /// </param>
         /// <returns>
-        /// The <see cref="string"/>.
+        ///     File path of the certification file or NULL if any error occurred.
         /// </returns>
         public static string GetCertForDomain(string domainName)
         {
@@ -133,31 +115,31 @@ namespace PeaRoxy.ClientLibrary
         }
 
         /// <summary>
-        /// The render error.
+        ///     Render the error message on the specified Proxy Client
         /// </summary>
         /// <param name="client">
-        /// The client.
+        ///     The client.
         /// </param>
         /// <param name="title">
-        /// The title.
+        ///     The title.
         /// </param>
         /// <param name="message">
-        /// The message.
+        ///     The message.
         /// </param>
         /// <param name="code">
-        /// The code.
+        ///     The HTTP code.
         /// </param>
         /// <param name="sslStream">
-        /// The SSL stream.
+        ///     The SSL stream if any.
         /// </param>
         /// <returns>
-        /// The <see cref="bool"/>.
+        ///     <see cref="bool" /> showing if the process ended successfully.
         /// </returns>
         public bool RenderError(
-            ProxyClient client, 
-            string title, 
-            string message, 
-            HttpHeaderCode code = HttpHeaderCode.C500ServerError, 
+            ProxyClient client,
+            string title,
+            string message,
+            HttpHeaderCode code = HttpHeaderCode.C500ServerError,
             SslStream sslStream = null)
         {
             try
@@ -174,18 +156,17 @@ namespace PeaRoxy.ClientLibrary
                 }
 
                 bool https = false;
-                if (url.Scheme == "http")
+                if (url.Scheme.Equals("HTTP", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!this.Enable)
+                    if (!this.EnableOnHttp)
                     {
                         return false;
                     }
                 }
-                else if (url.Scheme == "https" || url.Scheme == "socks")
+                else if (url.Scheme.Equals("HTTPS", StringComparison.OrdinalIgnoreCase)
+                         || url.Scheme.Equals("SOCKS", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (
-                        !((this.OnPort80Direct && url.Port == 80)
-                          || (this.OnPort443Direct && url.Port == 443)))
+                    if (!((this.EnableOnPort80 && url.Port == 80) || (this.EnableOnPort443 && url.Port == 443)))
                     {
                         return false;
                     }
@@ -223,21 +204,14 @@ namespace PeaRoxy.ClientLibrary
                     args.Add("P:HTTPS");
                 }
 
-                if (client.Controller.SmartPear.ForwarderSocksEnable
-                    && client.Controller.SmartPear.ForwarderHttpsEnable)
+                if (client.Controller.SmartPear.ForwarderSocksEnable && client.Controller.SmartPear.ForwarderHttpsEnable)
                 {
                     args.Add("P:SOCKS");
                 }
 
                 if (args.Count > 0)
                 {
-                    conString += " (";
-                    foreach (string arg in args)
-                    {
-                        conString += " " + arg + "; ";
-                    }
-
-                    conString += ")";
+                    conString = args.Aggregate(conString + " (", (current, arg) => current + (" " + arg + "; ")) + ")";
                 }
 
                 html = html.Replace("%CONSTRING", conString);
@@ -271,7 +245,7 @@ namespace PeaRoxy.ClientLibrary
                                 + "Content-Type: text/html;" + NewLineSep + NewLineSep;
                 byte[] db = Encoding.ASCII.GetBytes(header + html);
 
-                if (!Common.IsSocketConnected(client.Client))
+                if (!Common.IsSocketConnected(client.UnderlyingSocket))
                 {
                     return false;
                 }
@@ -299,8 +273,8 @@ namespace PeaRoxy.ClientLibrary
                         X509Certificate certificate = new X509Certificate2(certAddress, string.Empty);
                         if (sslStream == null)
                         {
-                            client.Client.Blocking = true;
-                            Stream stream = new NetworkStream(client.Client);
+                            client.UnderlyingSocket.Blocking = true;
+                            Stream stream = new NetworkStream(client.UnderlyingSocket);
                             sslStream = new SslStream(stream) { ReadTimeout = 30 * 1000, WriteTimeout = 30 * 1000 };
                             sslStream.AuthenticateAsServer(certificate);
                         }
@@ -310,18 +284,18 @@ namespace PeaRoxy.ClientLibrary
                             0,
                             db.Length,
                             delegate(IAsyncResult ar)
-                            {
-                                try
                                 {
-                                    sslStream.EndWrite(ar);
-                                    sslStream.Flush();
-                                    sslStream.Close();
-                                    client.Client.Close();
-                                }
-                                catch (Exception)
-                                {
-                                }
-                            },
+                                    try
+                                    {
+                                        sslStream.EndWrite(ar);
+                                        sslStream.Flush();
+                                        sslStream.Close();
+                                        client.UnderlyingSocket.Close();
+                                    }
+                                    catch (Exception)
+                                    {
+                                    }
+                                },
                             null);
                     }
                     catch
@@ -330,22 +304,22 @@ namespace PeaRoxy.ClientLibrary
                 }
                 else
                 {
-                    client.Client.BeginSend(
-                        db, 
-                        0, 
-                        db.Length, 
-                        SocketFlags.None, 
+                    client.UnderlyingSocket.BeginSend(
+                        db,
+                        0,
+                        db.Length,
+                        SocketFlags.None,
                         delegate(IAsyncResult ar)
                             {
                                 try
                                 {
-                                    client.Client.EndSend(ar);
-                                    client.Client.Close();
+                                    client.UnderlyingSocket.EndSend(ar);
+                                    client.UnderlyingSocket.Close();
                                 }
                                 catch (Exception)
                                 {
                                 }
-                            }, 
+                            },
                         null);
                 }
 
@@ -358,7 +332,5 @@ namespace PeaRoxy.ClientLibrary
 
             return false;
         }
-
-        #endregion
     }
 }

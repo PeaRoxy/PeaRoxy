@@ -749,7 +749,7 @@ namespace PeaRoxy.Windows.WPFClient
                 {
                     this.listener.SmartPear.ForwarderHttpEnable = this.listener.ActiveServer is NoServer;
                     this.listener.SmartPear.ForwarderHttpsEnable = false;
-                    this.listener.SmartPear.DetectorDnsGrabberEnable = false;
+                    this.listener.SmartPear.DetectorDnsPoisoningEnable = false;
                 }
 
                 Settings.Default.Save();
@@ -778,13 +778,13 @@ namespace PeaRoxy.Windows.WPFClient
                         {
                             this.listener.SmartPear.ForwarderHttpEnable = true;
                             this.listener.SmartPear.ForwarderHttpsEnable = false;
-                            this.listener.SmartPear.DetectorDnsGrabberEnable = true;
+                            this.listener.SmartPear.DetectorDnsPoisoningEnable = true;
                         }
                         else
                         {
                             this.listener.SmartPear.ForwarderHttpEnable = true;
                             this.listener.SmartPear.ForwarderHttpsEnable = true;
-                            this.listener.SmartPear.DetectorDnsGrabberEnable = true;
+                            this.listener.SmartPear.DetectorDnsPoisoningEnable = true;
                         }
                     }
 

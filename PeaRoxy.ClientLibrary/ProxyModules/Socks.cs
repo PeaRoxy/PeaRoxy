@@ -3,15 +3,10 @@
 //   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
 //   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
 // </copyright>
-// <summary>
-//   The proxy_ socks.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.ClientLibrary.ProxyModules
 {
-    #region
-
     using System;
     using System.Net;
     using System.Net.Sockets;
@@ -19,34 +14,15 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
 
     using PeaRoxy.ClientLibrary.ServerModules;
 
-    #endregion
-
     /// <summary>
-    /// The socks 5 proxy module.
+    ///     The SOCKS 4/5 Proxy Handler Module.
     /// </summary>
-    internal static class Socks5
+    internal static class Socks
     {
-        #region Public Methods and Operators
-
-        /// <summary>
-        /// The direct handle.
-        /// </summary>
-        /// <param name="client">
-        /// The client.
-        /// </param>
-        /// <param name="clientConnectionAddress">
-        /// The client connection address.
-        /// </param>
-        /// <param name="clientConnectionPort">
-        /// The client connection port.
-        /// </param>
-        /// <param name="firstResponse">
-        /// The first response.
-        /// </param>
         public static void DirectHandle(
-            ProxyClient client, 
-            string clientConnectionAddress, 
-            ushort clientConnectionPort, 
+            ProxyClient client,
+            string clientConnectionAddress,
+            ushort clientConnectionPort,
             byte[] firstResponse)
         {
             if (client.IsSmartForwarderEnable && client.Controller.SmartPear.ForwarderHttpsEnable
@@ -60,61 +36,43 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
                     ac.NoDataTimeout = client.Controller.SmartPear.DetectorTimeout;
                 }
 
-                client.DirectDataSentCallback(firstResponse, true);
+                client.SmartDataSentCallbackForDirectConnections(firstResponse, true);
                 ac.Establish(
-                    clientConnectionAddress, 
-                    clientConnectionPort, 
-                    client, 
+                    clientConnectionAddress,
+                    clientConnectionPort,
+                    client,
                     firstResponse,
-                    delegate(ref byte[] data, ServerType thisactiveServer, ProxyClient thisclient)
-                        {
-                            return thisclient.DirectDataSentCallback(data, true);
-                        },
-                    delegate(ref byte[] data, ServerType thisactiveServer, ProxyClient thisclient)
-                        {
-                            return thisclient.DirectDataReceivedCallback(ref data, thisactiveServer, true);
-                        },
-                    delegate(bool success, ServerType thisactiveServer, ProxyClient thisclient)
-                        {
-                            return thisclient.DirectConnectionStatusCallback(thisactiveServer, success, true);
-                        });
+                    (ref byte[] data, ServerType thisactiveServer, ProxyClient thisclient) =>
+                    thisclient.SmartDataSentCallbackForDirectConnections(data, true),
+                    (ref byte[] data, ServerType thisactiveServer, ProxyClient thisclient) =>
+                    thisclient.SmartDataReceivedCallbackForDirrectConnections(ref data, thisactiveServer, true),
+                    (success, thisactiveServer, thisclient) =>
+                    thisclient.SmartStatusCallbackForDirectConnections(thisactiveServer, success, true));
             }
             else
             {
                 // Forwarder is Disable or Client is in proxy connection mode
                 ServerType ac = client.Controller.ActiveServer.Clone();
-                if (client.Controller.SmartPear.ForwarderHttpsEnable
-                    && client.Controller.SmartPear.ForwarderSocksEnable)
+                if (client.Controller.SmartPear.ForwarderHttpsEnable && client.Controller.SmartPear.ForwarderSocksEnable)
                 {
-                    // If we have forwarding enable then we need to send rcv callback
+                    // If we have forwarding enable then we need to have the receive callback
                     ac.Establish(
-                        clientConnectionAddress, 
-                        clientConnectionPort, 
-                        client, 
-                        firstResponse, 
+                        clientConnectionAddress,
+                        clientConnectionPort,
+                        client,
+                        firstResponse,
                         null,
-                        delegate(ref byte[] data, ServerType thisactiveServer, ProxyClient thisclient)
-                            {
-                                return thisclient.DirectDataReceivedCallback(ref data, thisactiveServer, true);
-                            });
+                        (ref byte[] data, ServerType thisactiveServer, ProxyClient thisclient) =>
+                        thisclient.SmartDataReceivedCallbackForDirrectConnections(ref data, thisactiveServer, true));
                 }
                 else
                 {
-                    // If we dont so SmartPear is disabled
+                    // If we don't so SmartPear is disabled
                     ac.Establish(clientConnectionAddress, clientConnectionPort, client, firstResponse);
                 }
             }
         }
 
-        /// <summary>
-        /// The handle.
-        /// </summary>
-        /// <param name="firstResponse">
-        /// The first response.
-        /// </param>
-        /// <param name="client">
-        /// The client.
-        /// </param>
         public static void Handle(byte[] firstResponse, ProxyClient client)
         {
             if (!client.Controller.IsSocksSupported || !IsSocks(firstResponse))
@@ -132,13 +90,16 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
                 byte[] serverResponse = new byte[2];
                 if (clientSupportedAuths.Length == 0)
                 {
-                    client.Close("No auth method found.", null, ErrorRenderer.HttpHeaderCode.C417ExpectationFailed);
+                    client.Close(
+                        "No authentication method found.",
+                        null,
+                        ErrorRenderer.HttpHeaderCode.C417ExpectationFailed);
                     return;
                 }
 
                 serverResponse[0] = clientVersion;
 
-                // -------------Selecting auth type
+                // -------------Selecting authentication type
                 byte serverSelectedAuth = 255;
                 foreach (byte item in clientSupportedAuths)
                 {
@@ -152,36 +113,36 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
                 client.Write(serverResponse);
                 client.IsReceivingStarted = false;
 
-                // -------------Doing auth
+                // -------------Doing authentication
                 if (serverSelectedAuth == 255)
                 {
                     client.Close(
-                        "SOCKS Connection only accept clients with no authentication information.", 
-                        null, 
+                        "SOCKS Connection only accept clients with no authentication information.",
+                        null,
                         ErrorRenderer.HttpHeaderCode.C417ExpectationFailed);
                     return;
                 }
 
                 // -------------Establishing connection
-                byte[] response = new byte[client.Client.ReceiveBufferSize];
-                client.Client.ReceiveTimeout = client.NoDataTimeOut;
-                client.Client.BeginReceive(
-                    response, 
-                    0, 
-                    response.Length, 
-                    SocketFlags.None, 
+                byte[] response = new byte[client.UnderlyingSocket.ReceiveBufferSize];
+                client.UnderlyingSocket.ReceiveTimeout = client.NoDataTimeOut;
+                client.UnderlyingSocket.BeginReceive(
+                    response,
+                    0,
+                    response.Length,
+                    SocketFlags.None,
                     delegate(IAsyncResult ar)
                         {
                             try
                             {
-                                int bytes = client.Client.EndReceive(ar);
+                                int bytes = client.UnderlyingSocket.EndReceive(ar);
                                 Array.Resize(ref response, bytes);
 
                                 if (response == null || response.Length == 0)
                                 {
                                     client.Close(
-                                        "No request received. Connection Timeout.", 
-                                        null, 
+                                        "No request received. Connection Timeout.",
+                                        null,
                                         ErrorRenderer.HttpHeaderCode.C417ExpectationFailed);
                                     return;
                                 }
@@ -189,8 +150,8 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
                                 if (response[0] != clientVersion)
                                 {
                                     client.Close(
-                                        "Unknown SOCKS version, Expected " + clientVersion, 
-                                        null, 
+                                        "Unknown SOCKS version, Expected " + clientVersion,
+                                        null,
                                         ErrorRenderer.HttpHeaderCode.C417ExpectationFailed);
                                     return;
                                 }
@@ -213,8 +174,7 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
                                         Array.Copy(response, 4, clientUnformatedConnectionAddress, 0, 4);
                                         clientConnectionAddress =
                                             new IPAddress(clientUnformatedConnectionAddress).ToString();
-                                        clientConnectionPort =
-                                            (ushort)((ushort)(response[8] * 256) + response[9]);
+                                        clientConnectionPort = (ushort)((ushort)(response[8] * 256) + response[9]);
                                         break;
                                     case 3:
                                         clientUnformatedConnectionAddress = new byte[response[4]];
@@ -223,16 +183,14 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
                                             Encoding.ASCII.GetString(clientUnformatedConnectionAddress);
                                         clientConnectionPort =
                                             (ushort)
-                                            ((ushort)(response[5 + response[4]] * 256)
-                                             + response[5 + response[4] + 1]);
+                                            ((ushort)(response[5 + response[4]] * 256) + response[5 + response[4] + 1]);
                                         break;
                                     case 4:
                                         clientUnformatedConnectionAddress = new byte[16];
                                         Array.Copy(response, 4, clientUnformatedConnectionAddress, 0, 16);
                                         clientConnectionAddress =
                                             new IPAddress(clientUnformatedConnectionAddress).ToString();
-                                        clientConnectionPort =
-                                            (ushort)((ushort)(response[20] * 256) + response[21]);
+                                        clientConnectionPort = (ushort)((ushort)(response[20] * 256) + response[21]);
                                         break;
                                     default:
                                         serverAresponse = 8;
@@ -252,9 +210,9 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
                                 if (serverAresponse != 0)
                                 {
                                     client.Close(
-                                        "Response Error, Code: " + serverAresponse, 
-                                        null, 
-                                        ErrorRenderer.HttpHeaderCode.C417ExpectationFailed, 
+                                        "Response Error, Code: " + serverAresponse,
+                                        null,
+                                        ErrorRenderer.HttpHeaderCode.C417ExpectationFailed,
                                         true);
                                     return;
                                 }
@@ -266,7 +224,7 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
                             {
                                 client.Close(e.Message, e.StackTrace);
                             }
-                        }, 
+                        },
                     response);
             }
             else if (clientVersion == 4)
@@ -305,8 +263,8 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
                         if (domainEnd != 0 && domainStart != 0)
                         {
                             clientConnectionAddress = Encoding.ASCII.GetString(
-                                firstResponse, 
-                                domainStart, 
+                                firstResponse,
+                                domainStart,
                                 domainEnd - domainStart);
                         }
                         else
@@ -320,16 +278,15 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
                     serverResponse[1] = serverAresponse;
                     Array.Copy(firstResponse, 2, serverResponse, 2, 2); // PORT
                     Array.Copy(firstResponse, 4, serverResponse, 4, 4); // IP
-                    client.RequestAddress = "socks://" + clientConnectionAddress + ":"
-                                            + clientConnectionPort;
+                    client.RequestAddress = "socks://" + clientConnectionAddress + ":" + clientConnectionPort;
                     client.Write(serverResponse);
                     client.IsReceivingStarted = false;
                     if (serverAresponse != 90)
                     {
                         client.Close(
-                            "Response Error, Code: " + serverAresponse, 
-                            null, 
-                            ErrorRenderer.HttpHeaderCode.C417ExpectationFailed, 
+                            "Response Error, Code: " + serverAresponse,
+                            null,
+                            ErrorRenderer.HttpHeaderCode.C417ExpectationFailed,
                             true);
                         return;
                     }
@@ -344,21 +301,11 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
             }
         }
 
-        /// <summary>
-        /// The is socks.
-        /// </summary>
-        /// <param name="firstresponse">
-        /// The first response.
-        /// </param>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
         public static bool IsSocks(byte[] firstresponse)
         {
             byte clientVersion = firstresponse[0];
-            return (clientVersion == 5 || clientVersion == 4) && (clientVersion != 5 || firstresponse.Length >= 3) && (clientVersion != 4 || firstresponse.Length >= 8);
+            return (clientVersion == 5 || clientVersion == 4) && (clientVersion != 5 || firstresponse.Length >= 3)
+                   && (clientVersion != 4 || firstresponse.Length >= 8);
         }
-
-        #endregion
     }
 }

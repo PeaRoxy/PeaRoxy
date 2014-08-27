@@ -3,15 +3,10 @@
 //   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
 //   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
 // </copyright>
-// <summary>
-//   The Socks 5 server handler
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.ClientLibrary.ServerModules
 {
-    #region
-
     using System;
     using System.Net;
     using System.Net.Sockets;
@@ -20,65 +15,45 @@ namespace PeaRoxy.ClientLibrary.ServerModules
 
     using global::PeaRoxy.CommonLibrary;
 
-    #endregion
-
     /// <summary>
-    /// The Socks 5 server module
+    ///     The Socks 5 Server Module
     /// </summary>
     public sealed class Socks5 : ServerType, IDisposable
     {
-        /// <summary>
-        /// The protocol version
-        /// </summary>
         public const byte ProtocolVersion = 5;
 
-        #region Fields
-
-        /// <summary>
-        /// The address of the requested connection
-        /// </summary>
-        private string destinationAddress = string.Empty;
-
-        /// <summary>
-        /// The current timeout.
-        /// </summary>
         private int currentTimeout;
 
-        /// <summary>
-        /// The port of the requested connected
-        /// </summary>
-        private ushort destinationPort;
+        private string requestedAddress = string.Empty;
 
-        /// <summary>
-        /// The write buffer.
-        /// </summary>
+        private ushort requestedPort;
+
         private byte[] writeBuffer = new byte[0];
 
-        #endregion
-
-        #region Constructors and Destructors
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="Socks5"/> class.
+        ///     Initializes a new instance of the <see cref="Socks5" /> class.
         /// </summary>
         /// <param name="address">
-        /// The address.
+        ///     The server address.
         /// </param>
         /// <param name="port">
-        /// The port.
+        ///     The server port.
         /// </param>
         /// <param name="username">
-        /// The username.
+        ///     The user name to authenticate, leave empty for no authentication.
         /// </param>
         /// <param name="password">
-        /// The password.
+        ///     The password to authenticate, leave empty for no authentication.
         /// </param>
         /// <exception cref="ArgumentException">
-        /// Invalid or Empty address
+        ///     Invalid server address or port number
         /// </exception>
         public Socks5(string address, ushort port, string username = "", string password = "")
         {
-            if (string.IsNullOrEmpty(address)) throw new ArgumentException(@"Invalid value.", "address");
+            if (string.IsNullOrEmpty(address))
+            {
+                throw new ArgumentException(@"Invalid value.", "address");
+            }
 
             IPAddress ip;
             if (IPAddress.TryParse(address, out ip))
@@ -107,32 +82,28 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             this.IsClosed = false;
         }
 
-        #endregion
-
-        #region Public Properties
-
         /// <summary>
-        /// Gets or sets the password of the server
+        ///     Gets or sets the password of the server
         /// </summary>
         public string Password { get; set; }
 
         /// <summary>
-        /// Gets or sets the address of the server
+        ///     Gets or sets the address of the server
         /// </summary>
         public string ServerAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets the port of the server
+        ///     Gets or sets the port number of the server
         /// </summary>
         public ushort ServerPort { get; set; }
 
         /// <summary>
-        /// Gets or sets the username of the server
+        ///     Gets or sets the user name of the server
         /// </summary>
         public string Username { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether we are busy writing
+        ///     Gets a value indicating whether we are busy writing to the server.
         /// </summary>
         public bool BusyWrite
         {
@@ -148,59 +119,35 @@ namespace PeaRoxy.ClientLibrary.ServerModules
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether data is sent
+        ///     Gets or sets a value indicating whether we had sent some data to the server
         /// </summary>
         public override bool IsDataSent { get; protected set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether we are disconnected
+        ///     Gets or sets a value indicating whether we had a close request on the underlying connection
         /// </summary>
         public override bool IsClosed { get; protected set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether server is valid
+        ///     Gets or sets a value indicating whether server exists and is valid.
         /// </summary>
         public override bool IsServerValid { get; protected set; }
 
         /// <summary>
-        /// Gets or sets the no data timeout.
+        ///     Gets or sets the number of seconds after last data transmission to close the connection
         /// </summary>
         public override int NoDataTimeout { get; set; }
 
         /// <summary>
-        /// Gets or sets the parent client.
+        ///     Gets the parent client.
         /// </summary>
         public override ProxyClient ParentClient { get; protected set; }
 
         /// <summary>
-        /// Gets or sets the underlying socket.
+        ///     Gets the underlying socket to the server.
         /// </summary>
         public override Socket UnderlyingSocket { get; protected set; }
 
-        #endregion
-
-        #region Public Methods and Operators
-
-        /// <summary>
-        /// The clone.
-        /// </summary>
-        /// <returns>
-        /// The <see cref="ServerType"/>.
-        /// </returns>
-        public override ServerType Clone()
-        {
-            return new Socks5(this.ServerAddress, this.ServerPort, this.Username, this.Password)
-                       {
-                           NoDataTimeout
-                               =
-                               this
-                               .NoDataTimeout
-                       };
-        }
-
-        /// <summary>
-        /// The dispose.
-        /// </summary>
         public void Dispose()
         {
             if (this.UnderlyingSocket != null)
@@ -210,15 +157,31 @@ namespace PeaRoxy.ClientLibrary.ServerModules
         }
 
         /// <summary>
-        /// The do route.
+        ///     The clone method is to make another copy of this class with exactly same settings
         /// </summary>
-        public override void DoRoute()
+        /// <returns>
+        ///     The <see cref="ServerType" />.
+        /// </returns>
+        public override ServerType Clone()
+        {
+            return new Socks5(this.ServerAddress, this.ServerPort, this.Username, this.Password)
+                       {
+                           NoDataTimeout =
+                               this
+                               .NoDataTimeout
+                       };
+        }
+
+        /// <summary>
+        ///     The method to handle the routing process, should call repeatedly
+        /// </summary>
+        public override void Route()
         {
             try
             {
                 if ((this.ParentClient.BusyWrite || this.BusyWrite
-                     || (Common.IsSocketConnected(this.UnderlyingSocket)
-                         && this.ParentClient.Client != null && Common.IsSocketConnected(this.ParentClient.Client))) && this.currentTimeout > 0)
+                     || (Common.IsSocketConnected(this.UnderlyingSocket) && this.ParentClient.UnderlyingSocket != null
+                         && Common.IsSocketConnected(this.ParentClient.UnderlyingSocket))) && this.currentTimeout > 0)
                 {
                     if (this.ParentClient.IsSmartForwarderEnable && this.ParentClient.SmartResponseBuffer.Length > 0
                         && (this.currentTimeout <= this.NoDataTimeout * 500
@@ -253,7 +216,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                         }
                     }
 
-                    if (!this.BusyWrite && this.ParentClient.Client.Available > 0)
+                    if (!this.BusyWrite && this.ParentClient.UnderlyingSocket.Available > 0)
                     {
                         this.IsDataSent = true;
                         this.currentTimeout = this.NoDataTimeout * 1000;
@@ -302,50 +265,50 @@ namespace PeaRoxy.ClientLibrary.ServerModules
         }
 
         /// <summary>
-        /// The establish.
+        ///     The establish method is used to connect to the server and try to request access to the specific address.
         /// </summary>
         /// <param name="address">
-        /// The address.
+        ///     The requested address.
         /// </param>
         /// <param name="port">
-        /// The port.
+        ///     The requested port.
         /// </param>
         /// <param name="client">
-        /// The client.
+        ///     The client to connect with.
         /// </param>
         /// <param name="headerData">
-        /// The header data.
+        ///     The data to send after connecting.
         /// </param>
         /// <param name="sendDataDelegate">
-        /// The send callback.
+        ///     The send callback.
         /// </param>
         /// <param name="receiveDataDelegate">
-        /// The receive callback.
+        ///     The receive callback.
         /// </param>
         /// <param name="connectionStatusCallback">
-        /// The connection status callback.
+        ///     The connection status changed callback.
         /// </param>
         public override void Establish(
-            string address, 
-            ushort port, 
-            ProxyClient client, 
-            byte[] headerData = null, 
-            DataCallbackDelegate sendDataDelegate = null, 
+            string address,
+            ushort port,
+            ProxyClient client,
+            byte[] headerData = null,
+            DataCallbackDelegate sendDataDelegate = null,
             DataCallbackDelegate receiveDataDelegate = null,
             ConnectionCallbackDelegate connectionStatusCallback = null)
         {
             try
             {
-                this.destinationAddress = address;
-                this.destinationPort = port;
+                this.requestedAddress = address;
+                this.requestedPort = port;
                 this.ParentClient = client;
                 this.SendDataDelegate = sendDataDelegate;
                 this.ReceiveDataDelegate = receiveDataDelegate;
                 this.ConnectionStatusCallback = connectionStatusCallback;
                 this.UnderlyingSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 this.UnderlyingSocket.BeginConnect(
-                    this.ServerAddress, 
-                    this.ServerPort, 
+                    this.ServerAddress,
+                    this.ServerPort,
                     delegate(IAsyncResult ar)
                         {
                             try
@@ -358,16 +321,16 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                                 {
                                     Array.Resize(ref clientRequest, 4);
                                     clientRequest[0] = ProtocolVersion; // version
-                                    clientRequest[1] = 2; // 2 auth method
-                                    clientRequest[2] = 0; // No auth
+                                    clientRequest[1] = 2; // 2 authentication methods
+                                    clientRequest[2] = 0; // No authentication
                                     clientRequest[3] = 2; // User and pass
                                 }
                                 else
                                 {
                                     Array.Resize(ref clientRequest, 3);
                                     clientRequest[0] = ProtocolVersion; // version
-                                    clientRequest[1] = 1; // 1 auth method
-                                    clientRequest[2] = 0; // No auth
+                                    clientRequest[1] = 1; // 1 authentication method
+                                    clientRequest[2] = 0; // No authentication
                                 }
 
                                 this.Write(clientRequest, false);
@@ -375,8 +338,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                                 if (serverResponse == null || serverResponse.Length < 2)
                                 {
                                     this.Close(
-                                        "Connection timeout.", 
-                                        null, 
+                                        "Connection timeout.",
+                                        null,
                                         ErrorRenderer.HttpHeaderCode.C504GatewayTimeout);
                                     return;
                                 }
@@ -384,8 +347,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                                 if (serverResponse[0] != ProtocolVersion)
                                 {
                                     this.Close(
-                                        "Unsupported version of proxy.", 
-                                        null, 
+                                        "Unsupported version of proxy.",
+                                        null,
                                         ErrorRenderer.HttpHeaderCode.C502BadGateway);
                                     return;
                                 }
@@ -395,8 +358,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                                         && !(this.Username.Trim() != string.Empty && this.Password != string.Empty)))
                                 {
                                     this.Close(
-                                        "Unsupported authentication method.", 
-                                        null, 
+                                        "Unsupported authentication method.",
+                                        null,
                                         ErrorRenderer.HttpHeaderCode.C502BadGateway);
                                     return;
                                 }
@@ -409,14 +372,14 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                                     if (username.Length > byte.MaxValue)
                                     {
                                         this.Close(
-                                            "Username is to long.", 
-                                            null, 
+                                            "Username is to long.",
+                                            null,
                                             ErrorRenderer.HttpHeaderCode.C417ExpectationFailed);
                                         return;
                                     }
 
                                     Array.Resize(ref clientRequest, username.Length + password.Length + 3);
-                                    clientRequest[0] = 1; // Auth version
+                                    clientRequest[0] = 1; // Authenticator version
                                     clientRequest[1] = (byte)username.Length;
                                     clientRequest[username.Length + 2] = (byte)password.Length;
                                     Array.Copy(username, 0, clientRequest, 2, username.Length);
@@ -426,8 +389,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                                     if (serverResponse == null || serverResponse.Length < 2)
                                     {
                                         this.Close(
-                                            "Connection timeout.", 
-                                            null, 
+                                            "Connection timeout.",
+                                            null,
                                             ErrorRenderer.HttpHeaderCode.C504GatewayTimeout);
                                         return;
                                     }
@@ -435,8 +398,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                                     if (serverResponse[0] != 1)
                                     {
                                         this.Close(
-                                            "Unsupported version of proxy's user/pass authentication method.", 
-                                            null, 
+                                            "Unsupported version of proxy's user/pass authentication method.",
+                                            null,
                                             ErrorRenderer.HttpHeaderCode.C502BadGateway);
                                         return;
                                     }
@@ -444,8 +407,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                                     if (serverResponse[1] != 0)
                                     {
                                         this.Close(
-                                            "Authentication failed.", 
-                                            null, 
+                                            "Authentication failed.",
+                                            null,
                                             ErrorRenderer.HttpHeaderCode.C417ExpectationFailed);
                                         return;
                                     }
@@ -454,7 +417,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                                 IPAddress clientIp;
                                 byte[] clientAddressBytes;
                                 byte clientAddressType;
-                                if (IPAddress.TryParse(address, out clientIp))
+                                if (IPAddress.TryParse(this.requestedAddress, out clientIp))
                                 {
                                     clientAddressBytes = clientIp.GetAddressBytes();
                                     if (clientAddressBytes.Length == 16)
@@ -468,8 +431,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                                     else
                                     {
                                         this.Close(
-                                            "Unknown IP Type.", 
-                                            null, 
+                                            "Unknown IP Type.",
+                                            null,
                                             ErrorRenderer.HttpHeaderCode.C417ExpectationFailed);
                                         return;
                                     }
@@ -477,7 +440,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                                 else
                                 {
                                     clientAddressType = 3;
-                                    clientAddressBytes = Encoding.ASCII.GetBytes(address);
+                                    clientAddressBytes = Encoding.ASCII.GetBytes(this.requestedAddress);
                                 }
 
                                 clientRequest =
@@ -491,8 +454,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                                     if (clientAddressBytes.Length > 255)
                                     {
                                         this.Close(
-                                            "Hostname is too long.", 
-                                            null, 
+                                            "Hostname is too long.",
+                                            null,
                                             ErrorRenderer.HttpHeaderCode.C417ExpectationFailed);
                                         return;
                                     }
@@ -501,21 +464,22 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                                 }
 
                                 Array.Copy(
-                                    clientAddressBytes, 
-                                    0, 
-                                    clientRequest, 
-                                    4 + ((clientAddressType == 3) ? 1 : 0), 
+                                    clientAddressBytes,
+                                    0,
+                                    clientRequest,
+                                    4 + ((clientAddressType == 3) ? 1 : 0),
                                     clientAddressBytes.Length);
-                                clientRequest[clientRequest.GetUpperBound(0) - 1] = (byte)Math.Floor(port / 256d);
-                                clientRequest[clientRequest.GetUpperBound(0)] = (byte)(port % 256);
+                                clientRequest[clientRequest.GetUpperBound(0) - 1] =
+                                    (byte)Math.Floor(this.requestedPort / 256d);
+                                clientRequest[clientRequest.GetUpperBound(0)] = (byte)(this.requestedPort % 256);
 
                                 this.Write(clientRequest, false);
                                 serverResponse = this.Read();
                                 if (serverResponse == null)
                                 {
                                     this.Close(
-                                        "Connection timeout.", 
-                                        null, 
+                                        "Connection timeout.",
+                                        null,
                                         ErrorRenderer.HttpHeaderCode.C504GatewayTimeout);
                                     return;
                                 }
@@ -523,8 +487,11 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                                 if (serverResponse[0] != clientRequest[0])
                                 {
                                     this.Close(
-                                        string.Format("Server version is different from what we expect. Server's version: {0}, Expected: {1}", serverResponse[0], clientRequest[0]), 
-                                        null, 
+                                        string.Format(
+                                            "Server version is different from what we expect. Server's version: {0}, Expected: {1}",
+                                            serverResponse[0],
+                                            clientRequest[0]),
+                                        null,
                                         ErrorRenderer.HttpHeaderCode.C502BadGateway);
                                     return;
                                 }
@@ -535,56 +502,56 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                                     {
                                         case 1:
                                             this.Close(
-                                                "Connection failed, Error Code: " + serverResponse[1], 
-                                                null, 
+                                                "Connection failed, Error Code: " + serverResponse[1],
+                                                null,
                                                 ErrorRenderer.HttpHeaderCode.C502BadGateway);
                                             break;
                                         case 2:
                                             this.Close(
-                                                "SOCKS Error Message: General failure.", 
-                                                null, 
+                                                "SOCKS Error Message: General failure.",
+                                                null,
                                                 ErrorRenderer.HttpHeaderCode.C502BadGateway);
                                             break;
                                         case 3:
                                             this.Close(
-                                                "SOCKS Error Message: Connection not allowed by rule set.", 
-                                                null, 
+                                                "SOCKS Error Message: Connection not allowed by rule set.",
+                                                null,
                                                 ErrorRenderer.HttpHeaderCode.C502BadGateway);
                                             break;
                                         case 4:
                                             this.Close(
-                                                "SOCKS Error Message: Network unreachable.", 
-                                                null, 
+                                                "SOCKS Error Message: Network unreachable.",
+                                                null,
                                                 ErrorRenderer.HttpHeaderCode.C502BadGateway);
                                             break;
                                         case 5:
                                             this.Close(
-                                                "SOCKS Error Message: Connection refused by destination host.", 
-                                                null, 
+                                                "SOCKS Error Message: Connection refused by destination host.",
+                                                null,
                                                 ErrorRenderer.HttpHeaderCode.C502BadGateway);
                                             break;
                                         case 6:
                                             this.Close(
-                                                "SOCKS Error Message: TTL expired.", 
-                                                null, 
+                                                "SOCKS Error Message: TTL expired.",
+                                                null,
                                                 ErrorRenderer.HttpHeaderCode.C502BadGateway);
                                             break;
                                         case 7:
                                             this.Close(
-                                                "SOCKS Error Message: Command not supported / protocol error.", 
-                                                null, 
+                                                "SOCKS Error Message: Command not supported / protocol error.",
+                                                null,
                                                 ErrorRenderer.HttpHeaderCode.C502BadGateway);
                                             break;
                                         case 8:
                                             this.Close(
-                                                "SOCKS Error Message: Address type not supported.", 
-                                                null, 
+                                                "SOCKS Error Message: Address type not supported.",
+                                                null,
                                                 ErrorRenderer.HttpHeaderCode.C502BadGateway);
                                             break;
                                         default:
                                             this.Close(
-                                                "Connection failed, Error Code: " + serverResponse[1], 
-                                                null, 
+                                                "Connection failed, Error Code: " + serverResponse[1],
+                                                null,
                                                 ErrorRenderer.HttpHeaderCode.C502BadGateway);
                                             break;
                                     }
@@ -599,17 +566,14 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                                 }
 
                                 this.currentTimeout = this.NoDataTimeout * 1000;
-                                client.Controller.MoveToRouting(this);
+                                client.Controller.ClientMoveToRouting(this);
                             }
                             catch (Exception ex)
                             {
                                 this.ParentClient.Controller.FailAttempts++;
-                                this.Close(
-                                    ex.Message, 
-                                    ex.StackTrace, 
-                                    ErrorRenderer.HttpHeaderCode.C504GatewayTimeout);
+                                this.Close(ex.Message, ex.StackTrace, ErrorRenderer.HttpHeaderCode.C504GatewayTimeout);
                             }
-                        }, 
+                        },
                     null);
             }
             catch (Exception e)
@@ -619,73 +583,42 @@ namespace PeaRoxy.ClientLibrary.ServerModules
         }
 
         /// <summary>
-        /// The get address.
+        ///     Get the latest requested address
         /// </summary>
         /// <returns>
-        /// The <see cref="string"/>.
+        ///     The requested address as <see cref="string" />.
         /// </returns>
-        public override string GetAddress()
+        public override string GetRequestedAddress()
         {
-            return this.destinationAddress;
+            return this.requestedAddress;
         }
 
         /// <summary>
-        /// The get port.
+        ///     Get the latest requested port number
         /// </summary>
         /// <returns>
-        /// The <see cref="ushort"/>.
+        ///     The requested port number as <see cref="ushort" />.
         /// </returns>
-        public override ushort GetPort()
+        public override ushort GetRequestedPort()
         {
-            return this.destinationPort;
+            return this.requestedPort;
         }
 
-        /// <summary>
-        /// The to string.
-        /// </summary>
-        /// <returns>
-        /// The <see cref="string"/>.
-        /// </returns>
         public override string ToString()
         {
             return "Socks5 Module " + this.ServerAddress + ":" + this.ServerPort
                    + ((this.Username != string.Empty) ? " Using USN/PSW" : " Open");
         }
 
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// The close.
-        /// </summary>
-        /// <param name="async">
-        /// The async.
-        /// </param>
         private void Close(bool async)
         {
             this.Close(null, null, ErrorRenderer.HttpHeaderCode.C500ServerError, async);
         }
 
-        /// <summary>
-        /// The close.
-        /// </summary>
-        /// <param name="title">
-        /// The title.
-        /// </param>
-        /// <param name="message">
-        /// The message.
-        /// </param>
-        /// <param name="code">
-        /// The code.
-        /// </param>
-        /// <param name="async">
-        /// The async.
-        /// </param>
         private void Close(
-            string title = null, 
-            string message = null, 
-            ErrorRenderer.HttpHeaderCode code = ErrorRenderer.HttpHeaderCode.C500ServerError, 
+            string title = null,
+            string message = null,
+            ErrorRenderer.HttpHeaderCode code = ErrorRenderer.HttpHeaderCode.C500ServerError,
             bool async = false)
         {
             try
@@ -703,10 +636,10 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                     if (this.UnderlyingSocket != null)
                     {
                         this.UnderlyingSocket.BeginSend(
-                            db, 
-                            0, 
-                            db.Length, 
-                            SocketFlags.None, 
+                            db,
+                            0,
+                            db.Length,
+                            SocketFlags.None,
                             delegate(IAsyncResult ar)
                                 {
                                     try
@@ -717,7 +650,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                                     catch
                                     {
                                     }
-                                }, 
+                                },
                             null);
                     }
                 }
@@ -734,15 +667,6 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             }
         }
 
-        /// <summary>
-        /// The read.
-        /// </summary>
-        /// <returns>
-        /// The <see>
-        ///         <cref>byte[]</cref>
-        ///     </see>
-        ///     .
-        /// </returns>
         private byte[] Read()
         {
             try
@@ -772,15 +696,6 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             return null;
         }
 
-        /// <summary>
-        /// The write.
-        /// </summary>
-        /// <param name="bytes">
-        /// The bytes.
-        /// </param>
-        /// <param name="async">
-        /// The async.
-        /// </param>
         private void Write(byte[] bytes, bool async = true)
         {
             try
@@ -795,10 +710,10 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                 {
                     int bytesWritten = this.UnderlyingSocket.Send(this.writeBuffer, SocketFlags.None);
                     Array.Copy(
-                        this.writeBuffer, 
-                        bytesWritten, 
-                        this.writeBuffer, 
-                        0, 
+                        this.writeBuffer,
+                        bytesWritten,
+                        this.writeBuffer,
+                        0,
                         this.writeBuffer.Length - bytesWritten);
                     Array.Resize(ref this.writeBuffer, this.writeBuffer.Length - bytesWritten);
                 }
@@ -824,7 +739,5 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                 this.Close(e.Message, e.StackTrace);
             }
         }
-
-        #endregion
     }
 }

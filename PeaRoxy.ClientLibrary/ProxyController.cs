@@ -3,15 +3,10 @@
 //   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
 //   //   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
 // </copyright>
-// <summary>
-//   The proxy_ controller.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.ClientLibrary
 {
-    #region
-
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
@@ -25,110 +20,86 @@ namespace PeaRoxy.ClientLibrary
 
     using PeaRoxy.ClientLibrary.ServerModules;
 
-    #endregion
-
     /// <summary>
-    ///     The proxy controller.
+    ///     The proxy controller class which handle all incoming connections and is the starting point of the library
     /// </summary>
     public class ProxyController : IDisposable
     {
-        #region Fields
+        public delegate void AutoDisconnectedDueToFailureNotifyDelegate(EventArgs e);
+
+        public delegate void NewLogNotifyDelegate(string message, EventArgs e);
+
+        public delegate void OperationWithErrorMessageFinishedDelegate(bool success, string error);
 
         /// <summary>
-        ///     The connected clients.
+        ///     The supported mime types fro auto config.
         /// </summary>
+        public enum AutoConfigMimeType
+        {
+            Netscape = 1,
+
+            Javascript = 2,
+        }
+
+        /// <summary>
+        ///     The Controller statuses
+        /// </summary>
+        [Flags]
+        public enum ControllerStatus
+        {
+            None = 0,
+
+            Proxy = 1,
+
+            AutoConfig = 2,
+        }
+
         internal readonly List<ProxyClient> ConnectedClients = new List<ProxyClient>();
 
-        /// <summary>
-        ///     The accepting worker.
-        /// </summary>
         private readonly BackgroundWorker acceptingWorker;
 
-        /// <summary>
-        ///     The routing clients.
-        /// </summary>
         private readonly List<ServerType> routingClients = new List<ServerType>();
 
-        /// <summary>
-        ///     The routing worker.
-        /// </summary>
         private readonly BackgroundWorker routingWorker;
 
-        /// <summary>
-        ///     The scheduled tasks.
-        /// </summary>
         private readonly Dictionary<ThreadStart, int> scheduledTasks = new Dictionary<ThreadStart, int>();
 
-        /// <summary>
-        ///     The accepting cycle last time.
-        /// </summary>
+        private int acceptingCycle;
+
         private int acceptingCycleLastTime = 1;
 
-        /// <summary>
-        ///     The listener socket.
-        /// </summary>
+        private int failAttempts;
+
+        private long lastReceivedBytes;
+
+        private long lastReceivingSpeedCalculationTime;
+
+        private long lastSendingSpeedCalculationTime;
+
+        private long lastSentBytes;
+
         private Socket listenerSocket;
 
-        /// <summary>
-        ///     The routing cycle last time.
-        /// </summary>
+        private int routingCycle;
+
         private int routingCycleLastTime = 1;
 
         /// <summary>
-        ///     The accepting cycle.
-        /// </summary>
-        private int acceptingCycle;
-
-        /// <summary>
-        ///     The fail attempts.
-        /// </summary>
-        private int failAttempts;
-
-        /// <summary>
-        ///     The number of bytes we received (old)
-        /// </summary>
-        private long oldReceivedBytes;
-
-        /// <summary>
-        ///     The receive speed (old)
-        /// </summary>
-        private long oldReceiveSpeed;
-
-        /// <summary>
-        ///     The number of bytes we sent (old)
-        /// </summary>
-        private long oldSentBytes;
-
-        /// <summary>
-        ///     The send speed (old)
-        /// </summary>
-        private long oldSendSpeed;
-
-        /// <summary>
-        ///     The routing cycle.
-        /// </summary>
-        private int routingCycle;
-
-        #endregion
-
-        #region Constructors and Destructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ProxyController"/> class.
+        ///     Initializes a new instance of the <see cref="ProxyController" /> class.
         /// </summary>
         /// <param name="activeServer">
-        /// The active server.
+        ///     The active server to use for handling the requests.
         /// </param>
         /// <param name="ip">
-        /// The IP.
+        ///     The IP address to listen on.
         /// </param>
         /// <param name="port">
-        /// The port.
+        ///     The port number to bind to.
         /// </param>
         public ProxyController(ServerType activeServer, IPAddress ip, ushort port)
         {
-            this.oldSendSpeed = this.oldReceiveSpeed = Environment.TickCount;
-            this.oldSentBytes = this.oldReceivedBytes = this.ReceivedBytes = this.SentBytes = 0;
+            this.lastSendingSpeedCalculationTime = this.lastReceivingSpeedCalculationTime = Environment.TickCount;
+            this.lastSentBytes = this.lastReceivedBytes = this.ReceivedBytes = this.SentBytes = 0;
             this.AutoDisconnect = true;
             this.LastConnectedClient = 0;
             this.AutoConfigMime = AutoConfigMimeType.Javascript;
@@ -150,95 +121,8 @@ namespace PeaRoxy.ClientLibrary
             this.routingWorker.DoWork += this.RoutingWorkerDoWork;
         }
 
-        #endregion
-
-        #region Delegates
-
         /// <summary>
-        ///     The fail disconnected del.
-        /// </summary>
-        /// <param name="e">
-        ///     The e.
-        /// </param>
-        public delegate void FailDisconnectedDel(EventArgs e);
-
-        /// <summary>
-        ///     The new log delegate.
-        /// </summary>
-        /// <param name="message">
-        ///     The message.
-        /// </param>
-        /// <param name="e">
-        ///     The e.
-        /// </param>
-        public delegate void NewLogDelegate(string message, EventArgs e);
-
-        /// <summary>
-        ///     The operation with error message finished.
-        /// </summary>
-        /// <param name="success">
-        ///     The success.
-        /// </param>
-        /// <param name="error">
-        ///     The error.
-        /// </param>
-        public delegate void OperationWithErrorMessageFinished(bool success, string error);
-
-        #endregion
-
-        #region Public Events
-
-        /// <summary>
-        ///     The new log.
-        /// </summary>
-        public static event NewLogDelegate NewLog;
-
-        /// <summary>
-        ///     The fail disconnected.
-        /// </summary>
-        public event FailDisconnectedDel FailDisconnected;
-
-        #endregion
-
-        #region Enums
-
-        /// <summary>
-        ///     The auto config mime type.
-        /// </summary>
-        public enum AutoConfigMimeType
-        {
-            /// <summary>
-            ///     The netscape.
-            /// </summary>
-            Netscape = 1, 
-
-            /// <summary>
-            ///     The java script.
-            /// </summary>
-            Javascript = 2, 
-        }
-
-        /// <summary>
-        ///     The controller status enum.
-        /// </summary>
-        [Flags]
-        public enum ControllerStatus
-        {
-            None = 0,
-
-            Proxy = 1,
-
-            AutoConfig = 2,
-
-            ProxyAndAutoConfig = Proxy | AutoConfig,
-        }
-
-        #endregion
-
-        #region Public Properties
-
-        /// <summary>
-        ///     Gets the accepting cycle.
+        ///     Gets the accepting cycles in each second.
         /// </summary>
         public int AcceptingClock
         {
@@ -257,38 +141,38 @@ namespace PeaRoxy.ClientLibrary
         }
 
         /// <summary>
-        ///     Gets or sets the active server.
+        ///     Gets or sets the active server to handle the requests
         /// </summary>
         public ServerType ActiveServer { get; set; }
 
         /// <summary>
-        ///     Gets or sets the auto config mime.
+        ///     Gets or sets the auto config's mime type.
         /// </summary>
         public AutoConfigMimeType AutoConfigMime { get; set; }
 
         /// <summary>
-        ///     Gets or sets the auto config path.
+        ///     Gets or sets the auto config's script path.
         /// </summary>
         public string AutoConfigPath { get; set; }
 
         /// <summary>
-        ///     Gets or sets a value indicating whether auto disconnect.
+        ///     Gets or sets a value indicating whether we should auto disconnect if we failed to restore a connection.
         /// </summary>
         public bool AutoDisconnect { get; set; }
 
         /// <summary>
-        ///     Gets the average receiving speed.
+        ///     Gets the average receiving speed in bytes/second
         /// </summary>
         public long AverageReceivingSpeed
         {
             get
             {
-                long bytesReceived = this.ReceivedBytes - this.oldReceivedBytes;
-                this.oldReceivedBytes = this.ReceivedBytes;
-                double timeE = (Environment.TickCount - this.oldReceiveSpeed) / (double)1000;
+                long bytesReceived = this.ReceivedBytes - this.lastReceivedBytes;
+                this.lastReceivedBytes = this.ReceivedBytes;
+                double timeE = (Environment.TickCount - this.lastReceivingSpeedCalculationTime) / (double)1000;
                 if (timeE > 0)
                 {
-                    this.oldReceiveSpeed = Environment.TickCount;
+                    this.lastReceivingSpeedCalculationTime = Environment.TickCount;
                     return (long)(bytesReceived / timeE);
                 }
 
@@ -297,49 +181,49 @@ namespace PeaRoxy.ClientLibrary
         }
 
         /// <summary>
-        ///     Gets the average sending speed.
+        ///     Gets the average sending speed in bytes/second
         /// </summary>
         public long AverageSendingSpeed
         {
             get
             {
-                long bytesSent = this.SentBytes - this.oldSentBytes;
-                this.oldSentBytes = this.SentBytes;
-                double timeE = (Environment.TickCount - this.oldSendSpeed) / (double)1000;
+                long bytesSent = this.SentBytes - this.lastSentBytes;
+                this.lastSentBytes = this.SentBytes;
+                double timeE = (Environment.TickCount - this.lastSendingSpeedCalculationTime) / (double)1000;
                 if (!(timeE > 0))
                 {
                     return 0;
                 }
 
-                this.oldSendSpeed = Environment.TickCount;
+                this.lastSendingSpeedCalculationTime = Environment.TickCount;
                 return (long)(bytesSent / timeE);
             }
         }
 
         /// <summary>
-        ///     Gets the bytes received.
+        ///     Gets the number bytes received till now
         /// </summary>
         public long ReceivedBytes { get; internal set; }
 
         /// <summary>
-        ///     Gets the bytes sent.
+        ///     Gets the number bytes sent till now
         /// </summary>
         public long SentBytes { get; internal set; }
 
         /// <summary>
-        ///     Gets the DNS resolver.
+        ///     Gets the DNS resolver object
         /// </summary>
         public DnsResolver DnsResolver { get; private set; }
 
         /// <summary>
-        ///     Gets the error renderer.
+        ///     Gets the error renderer object
         /// </summary>
         public ErrorRenderer ErrorRenderer { get; private set; }
 
         /// <summary>
-        ///     Gets or sets the fail attempts.
+        ///     Gets or sets number of fail attempts till now.
         /// </summary>
-        public int FailAttempts
+        internal int FailAttempts
         {
             get
             {
@@ -353,46 +237,46 @@ namespace PeaRoxy.ClientLibrary
                 {
                     this.FailAttempts = 0;
                     this.Stop();
-                    if (this.FailDisconnected != null)
+                    if (this.AutoDisconnectedDueToFailureNotify != null)
                     {
-                        this.FailDisconnected(new EventArgs());
+                        this.AutoDisconnectedDueToFailureNotify(new EventArgs());
                     }
                 }
             }
         }
 
         /// <summary>
-        ///     Gets or sets the IP.
+        ///     Gets or sets the IP address to listen on.
         /// </summary>
         public IPAddress Ip { get; set; }
 
         /// <summary>
-        ///     Gets or sets a value indicating whether is auto config enable.
+        ///     Gets or sets a value indicating whether we have auto configuring script enabled
         /// </summary>
         public bool IsAutoConfigEnable { get; set; }
 
         /// <summary>
-        ///     Gets or sets a value indicating whether is http s_ supported.
+        ///     Gets or sets a value indicating whether we are listening for HTTPS requests
         /// </summary>
         public bool IsHttpsSupported { get; set; }
 
         /// <summary>
-        ///     Gets or sets a value indicating whether is http supported.
+        ///     Gets or sets a value indicating whether we are listening for HTTP requests
         /// </summary>
         public bool IsHttpSupported { get; set; }
 
         /// <summary>
-        ///     Gets or sets a value indicating whether is sock s_ supported.
+        ///     Gets or sets a value indicating whether we are listening for SOCKS requests
         /// </summary>
         public bool IsSocksSupported { get; set; }
 
         /// <summary>
-        ///     Gets the last connected client.
+        ///     Gets the last connected client time stamp.
         /// </summary>
         public int LastConnectedClient { get; private set; }
 
         /// <summary>
-        ///     Gets or sets the port.
+        ///     Gets or sets the port to bind to.
         /// </summary>
         public ushort Port { get; set; }
 
@@ -402,7 +286,7 @@ namespace PeaRoxy.ClientLibrary
         public int ReceivePacketSize { get; set; }
 
         /// <summary>
-        ///     Gets the routing connections.
+        ///     Gets the number of connections in routing state
         /// </summary>
         public int RoutingConnections
         {
@@ -413,7 +297,7 @@ namespace PeaRoxy.ClientLibrary
         }
 
         /// <summary>
-        ///     Gets the routing cycle.
+        ///     Gets the routing cycles in each second.
         /// </summary>
         public int RoutingClock
         {
@@ -437,17 +321,17 @@ namespace PeaRoxy.ClientLibrary
         public int SendPacketSize { get; set; }
 
         /// <summary>
-        ///     Gets the smart pear.
+        ///     Gets the SmartPear object
         /// </summary>
         public SmartPear SmartPear { get; private set; }
 
         /// <summary>
-        ///     Gets the status.
+        ///     Gets the status of the controller
         /// </summary>
         public ControllerStatus Status { get; private set; }
 
         /// <summary>
-        ///     Gets the accepting connections.
+        ///     Gets the number of connections in accepting state
         /// </summary>
         public int AcceptingConnections
         {
@@ -457,27 +341,6 @@ namespace PeaRoxy.ClientLibrary
             }
         }
 
-        #endregion
-
-        #region Public Methods and Operators
-
-        /// <summary>
-        /// The add to scheduled tasks.
-        /// </summary>
-        /// <param name="threadStart">
-        /// The thread.
-        /// </param>
-        /// <param name="id">
-        /// The id.
-        /// </param>
-        public void AddToScheduledTasks(ThreadStart threadStart, int id)
-        {
-            lock (this.scheduledTasks) this.scheduledTasks.Add(threadStart, id);
-        }
-
-        /// <summary>
-        ///     The dispose.
-        /// </summary>
         public void Dispose()
         {
             this.acceptingWorker.Dispose();
@@ -486,13 +349,34 @@ namespace PeaRoxy.ClientLibrary
         }
 
         /// <summary>
-        ///     The get connected clients.
+        ///     Notify you when new entry added to the log
+        /// </summary>
+        public static event NewLogNotifyDelegate LogNotify;
+
+        /// <summary>
+        ///     Notify you when controller automatically disconnect doe to failure in restoring the connection to the server
+        /// </summary>
+        public event AutoDisconnectedDueToFailureNotifyDelegate AutoDisconnectedDueToFailureNotify;
+
+        /// <summary>
+        ///     The add a task to the scheduled tasks queue
+        /// </summary>
+        /// <param name="threadStart">
+        ///     The action method.
+        /// </param>
+        /// <param name="id">
+        ///     The id.
+        /// </param>
+        public void AddTasksToQueue(ThreadStart threadStart, int id)
+        {
+            lock (this.scheduledTasks) this.scheduledTasks.Add(threadStart, id);
+        }
+
+        /// <summary>
+        ///     Get a safe copy of connected clients.
         /// </summary>
         /// <returns>
-        ///     The <see>
-        ///         <cref>List</cref>
-        ///     </see>
-        ///     .
+        ///     A list of connected clients.
         /// </returns>
         public IEnumerable<ProxyClient> GetConnectedClients()
         {
@@ -502,29 +386,29 @@ namespace PeaRoxy.ClientLibrary
         }
 
         /// <summary>
-        /// The remove from scheduled tasks.
+        ///     Remove a task from the scheduled tasks queue
         /// </summary>
         /// <param name="threadStart">
-        /// The thread.
+        ///     The action method.
         /// </param>
-        public void RemoveFromScheduledTasks(ThreadStart threadStart)
+        public void RemoveTaskFromQueue(ThreadStart threadStart)
         {
             lock (this.scheduledTasks) this.scheduledTasks.Remove(threadStart);
         }
 
         /// <summary>
-        ///     The start.
+        ///     Listening for new requests and answering them
         /// </summary>
         /// <returns>
-        ///     The <see cref="bool" />.
+        ///     The <see cref="bool" /> value indicating success of the process
         /// </returns>
         /// <exception cref="Exception">
-        /// No supported proxy protocol selected
+        ///     No supported proxy protocol selected
         /// </exception>
         public bool Start()
         {
-            this.oldSendSpeed = this.oldReceiveSpeed = Environment.TickCount;
-            this.oldSentBytes = this.oldReceivedBytes = this.ReceivedBytes = this.SentBytes = 0;
+            this.lastSendingSpeedCalculationTime = this.lastReceivingSpeedCalculationTime = Environment.TickCount;
+            this.lastSentBytes = this.lastReceivedBytes = this.ReceivedBytes = this.SentBytes = 0;
             if (!this.IsHttpSupported && !this.IsHttpsSupported && !this.IsSocksSupported)
             {
                 throw new Exception(
@@ -537,7 +421,8 @@ namespace PeaRoxy.ClientLibrary
                 this.SmartPear.ForwarderHttpsEnable = false;
             }
 
-            if (this.IsAutoConfigEnable && this.Status.HasFlag(ControllerStatus.AutoConfig) && !this.Status.HasFlag(ControllerStatus.Proxy))
+            if (this.IsAutoConfigEnable && this.Status.HasFlag(ControllerStatus.AutoConfig)
+                && !this.Status.HasFlag(ControllerStatus.Proxy))
             {
                 this.Status |= ControllerStatus.Proxy;
                 return true;
@@ -562,7 +447,9 @@ namespace PeaRoxy.ClientLibrary
                 }
                 this.Status = ControllerStatus.Proxy;
                 if (this.IsAutoConfigEnable)
+                {
                     this.Status |= ControllerStatus.AutoConfig;
+                }
                 return true;
             }
 
@@ -570,7 +457,7 @@ namespace PeaRoxy.ClientLibrary
         }
 
         /// <summary>
-        ///     The stop.
+        ///     Stop listening to the new requests or suspend the answering process
         /// </summary>
         public void Stop()
         {
@@ -592,12 +479,12 @@ namespace PeaRoxy.ClientLibrary
             else if (this.Status != ControllerStatus.None)
             {
                 this.Status = ControllerStatus.AutoConfig;
-                CloseAllClients();
+                this.CloseAllClients();
             }
         }
 
         /// <summary>
-        ///     The test server.
+        ///     Test the currently selected server
         /// </summary>
         public void TestServer()
         {
@@ -605,13 +492,13 @@ namespace PeaRoxy.ClientLibrary
         }
 
         /// <summary>
-        /// The test server.
+        ///     Test the specified server
         /// </summary>
         /// <param name="activeServer">
-        /// The active server.
+        ///     The server
         /// </param>
         /// <exception cref="Exception">
-        /// Failed to connect to the server
+        ///     Failed to connect to the server or server response is invalid
         /// </exception>
         public void TestServer(ServerType activeServer)
         {
@@ -619,9 +506,9 @@ namespace PeaRoxy.ClientLibrary
             {
                 activeServer = activeServer.Clone();
                 activeServer.Establish(
-                    "google.com", 
-                    80, 
-                    new ProxyClient(null, this), 
+                    "google.com",
+                    80,
+                    new ProxyClient(null, this),
                     Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\n\r\n"));
                 int timeout = 25000;
                 while (timeout != 0)
@@ -658,26 +545,26 @@ namespace PeaRoxy.ClientLibrary
         }
 
         /// <summary>
-        /// The test server asynchronous.
+        ///     Test the currently selected server asynchronously
         /// </summary>
         /// <param name="callback">
-        /// The callback.
+        ///     The callback method.
         /// </param>
-        public void TestServerAsyc(OperationWithErrorMessageFinished callback)
+        public void TestServerAsyc(OperationWithErrorMessageFinishedDelegate callback)
         {
             this.TestServerAsyc(this.ActiveServer, callback);
         }
 
         /// <summary>
-        /// The test server asynchronous.
+        ///     Test the specified server asynchronously
         /// </summary>
         /// <param name="activeServer">
-        /// The active server.
+        ///     The server
         /// </param>
         /// <param name="callback">
-        /// The callback.
+        ///     The callback method.
         /// </param>
-        public void TestServerAsyc(ServerType activeServer, OperationWithErrorMessageFinished callback)
+        public void TestServerAsyc(ServerType activeServer, OperationWithErrorMessageFinishedDelegate callback)
         {
             new Thread(
                 delegate()
@@ -696,30 +583,18 @@ namespace PeaRoxy.ClientLibrary
                         {
                             callback.Invoke(mes == string.Empty, mes);
                         }
-                    }) {
-                          IsBackground = true 
-                       }.Start();
+                    }) { IsBackground = true }.Start();
         }
 
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// The log it.
-        /// </summary>
-        /// <param name="message">
-        /// The message.
-        /// </param>
         [DebuggerStepThrough]
         internal static void LogIt(string message)
         {
-            if (NewLog == null)
+            if (LogNotify == null)
             {
                 return;
             }
 
-            foreach (Delegate del in NewLog.GetInvocationList())
+            foreach (Delegate del in LogNotify.GetInvocationList())
             {
                 if (del.Target == null || ((ISynchronizeInvoke)del.Target).InvokeRequired == false)
                 {
@@ -732,13 +607,7 @@ namespace PeaRoxy.ClientLibrary
             }
         }
 
-        /// <summary>
-        /// The i disconnected.
-        /// </summary>
-        /// <param name="client">
-        /// The client.
-        /// </param>
-        internal void Disconnected(ProxyClient client)
+        internal void ClientDisconnected(ProxyClient client)
         {
             lock (this.routingClients)
                 for (int i = 0; i < this.routingClients.Count; i++)
@@ -758,26 +627,11 @@ namespace PeaRoxy.ClientLibrary
                 }
         }
 
-        /// <summary>
-        /// Moves the server to the routing list
-        /// </summary>
-        /// <param name="server">
-        /// The server object
-        /// </param>
-        internal void MoveToRouting(ServerType server)
+        internal void ClientMoveToRouting(ServerType clientServer)
         {
-            lock (this.routingClients) this.routingClients.Add(server);
+            lock (this.routingClients) this.routingClients.Add(clientServer);
         }
 
-        /// <summary>
-        /// The accepting worker code
-        /// </summary>
-        /// <param name="sender">
-        /// The sender.
-        /// </param>
-        /// <param name="e">
-        /// The e.
-        /// </param>
         private void AcceptingWorkerDoWork(object sender, DoWorkEventArgs e)
         {
             while (!this.acceptingWorker.CancellationPending)
@@ -794,7 +648,7 @@ namespace PeaRoxy.ClientLibrary
                                 new ProxyClient(this.listenerSocket.Accept(), this)
                                     {
                                         ReceivePacketSize =
-                                            this.ReceivePacketSize, 
+                                            this.ReceivePacketSize,
                                         SendPacketSize =
                                             this.SendPacketSize
                                     });
@@ -856,11 +710,10 @@ namespace PeaRoxy.ClientLibrary
             {
                 this.listenerSocket.Close();
                 this.DnsResolver.Stop();
-                CloseAllClients();
+                this.CloseAllClients();
             }
             catch (Exception)
             {
-                
             }
         }
 
@@ -888,15 +741,6 @@ namespace PeaRoxy.ClientLibrary
             }
         }
 
-        /// <summary>
-        /// The routing worker code
-        /// </summary>
-        /// <param name="sender">
-        /// The sender.
-        /// </param>
-        /// <param name="e">
-        /// The e.
-        /// </param>
         private void RoutingWorkerDoWork(object sender, DoWorkEventArgs e)
         {
             while (!this.routingWorker.CancellationPending)
@@ -913,7 +757,7 @@ namespace PeaRoxy.ClientLibrary
                         {
                             if (server != null && !server.IsClosed)
                             {
-                                server.DoRoute();
+                                server.Route();
                             }
                             else if (server != null)
                             {
@@ -928,9 +772,7 @@ namespace PeaRoxy.ClientLibrary
                 }
             }
 
-            CloseAllClients();
+            this.CloseAllClients();
         }
-
-        #endregion
     }
 }

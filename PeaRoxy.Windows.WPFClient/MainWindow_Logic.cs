@@ -603,7 +603,7 @@ namespace PeaRoxy.Windows.WPFClient
                 {
                     this.listener = new ProxyController(null, null, 0);
                     this.listener.SmartPear.ForwarderListUpdated += this.SmartListUpdated;
-                    this.listener.FailDisconnected += this.FailDisconnected;
+                    this.listener.AutoDisconnectedDueToFailureNotify += this.FailDisconnected;
                 }
 
                 this.listener.Ip = (Settings.Default.Proxy_Address == "*")
@@ -620,9 +620,9 @@ namespace PeaRoxy.Windows.WPFClient
                 this.listener.ReceivePacketSize = (int)Settings.Default.Connection_RecPacketSize;
                 this.listener.AutoDisconnect = Settings.Default.Connection_StopOnInterrupt;
 
-                this.listener.ErrorRenderer.Enable = Settings.Default.ErrorRenderer_EnableHTTP;
-                this.listener.ErrorRenderer.OnPort80Direct = Settings.Default.ErrorRenderer_Enable80;
-                this.listener.ErrorRenderer.OnPort443Direct = Settings.Default.ErrorRenderer_Enable443;
+                this.listener.ErrorRenderer.EnableOnHttp = Settings.Default.ErrorRenderer_EnableHTTP;
+                this.listener.ErrorRenderer.EnableOnPort80 = Settings.Default.ErrorRenderer_Enable80;
+                this.listener.ErrorRenderer.EnableOnPort443 = Settings.Default.ErrorRenderer_Enable443;
 
                 this.listener.DnsResolver.DnsResolverSupported =
                     this.listener.DnsResolver.DnsResolverUdpSupported = Settings.Default.DNS_Enable;
@@ -663,7 +663,7 @@ namespace PeaRoxy.Windows.WPFClient
                         switch (Settings.Default.ProxyServer_Type)
                         {
                             case 0:
-                                ser = new Https(
+                                ser = new Http(
                                     Settings.Default.ProxyServer_Address,
                                     Settings.Default.ProxyServer_Port,
                                     (authType == 2) ? Settings.Default.UserAndPassword_User : string.Empty,
@@ -973,16 +973,16 @@ namespace PeaRoxy.Windows.WPFClient
         {
             if (this.listener != null)
             {
-                this.listener.SmartPear.DetectorDirectPort80AsHttp = Settings.Default.Smart_Direct_AutoRoutePort80AsHTTP;
+                this.listener.SmartPear.DetectorTreatPort80AsHttp = Settings.Default.Smart_Direct_AutoRoutePort80AsHTTP;
                 this.listener.SmartPear.ForwarderHttpEnable = Settings.Default.Smart_HTTP_Enable;
-                this.listener.SmartPear.DetectorHttpEnable = Settings.Default.Smart_HTTP_AutoRoute_Enable;
+                this.listener.SmartPear.DetectorHttpCheckEnable = Settings.Default.Smart_HTTP_AutoRoute_Enable;
                 this.listener.SmartPear.DetectorHttpPattern = Settings.Default.Smart_HTTP_AutoRoute_Pattern;
-                this.listener.SmartPear.DetectorDnsGrabberPattern = Settings.Default.Smart_AntiDNSPattern;
-                this.listener.SmartPear.DetectorDnsGrabberEnable = Settings.Default.Smart_AntiDNS_Enable;
+                this.listener.SmartPear.DetectorDnsPoisoningPattern = Settings.Default.Smart_AntiDNSPattern;
+                this.listener.SmartPear.DetectorDnsPoisoningEnable = Settings.Default.Smart_AntiDNS_Enable;
                 this.listener.SmartPear.ForwarderHttpsEnable = Settings.Default.Smart_HTTPS_Enable;
                 this.listener.SmartPear.DetectorTimeoutEnable = Settings.Default.Smart_Timeout_Enable;
                 this.listener.SmartPear.DetectorTimeout = Settings.Default.Smart_Timeout_Value;
-                this.listener.SmartPear.ForwarderDirectPort80AsHttp = Settings.Default.Smart_Direct_Port80Router;
+                this.listener.SmartPear.ForwarderTreatPort80AsHttp = Settings.Default.Smart_Direct_Port80Router;
                 this.listener.SmartPear.ForwarderSocksEnable = Settings.Default.Smart_SOCKS_Enable;
                 this.listener.SmartPear.ForwarderHttpList.Clear();
                 this.listener.SmartPear.ForwarderDirectList.Clear();

@@ -3,15 +3,10 @@
 //   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
 //   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
 // </copyright>
-// <summary>
-//   The smart pear.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.ClientLibrary
 {
-    #region
-
     using System;
     using System.Collections.Generic;
     using System.IO;
@@ -20,14 +15,24 @@ namespace PeaRoxy.ClientLibrary
 
     using PeaRoxy.CommonLibrary;
 
-    #endregion
-
     /// <summary>
-    ///     The smart pear.
+    ///     An object to control the SmartPear functionality and settings
     /// </summary>
     public class SmartPear
     {
-        #region Constructors and Destructors
+        /// <summary>
+        ///     The forwarder list updated delegate.
+        /// </summary>
+        /// <param name="rule">
+        ///     The new rule.
+        /// </param>
+        /// <param name="isDirect">
+        ///     A boolean indicating whether this rule is a direct rule
+        /// </param>
+        /// <param name="e">
+        ///     The event arguments
+        /// </param>
+        public delegate void ForwarderListUpdatedDelegate(string rule, bool isDirect, EventArgs e);
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="SmartPear" /> class.
@@ -37,152 +42,109 @@ namespace PeaRoxy.ClientLibrary
             this.ForwarderHttpList = new List<string>();
             this.ForwarderDirectList = new List<string>();
             this.DetectorHttpPattern = "^HTTP/1.1 403 Forbidden(\r\nConnection:close)*";
-            this.DetectorDnsGrabberPattern = "^(10.10.*.*)$";
+            this.DetectorDnsPoisoningPattern = "^(10.10.*.*)$";
             this.DetectorTimeout = 10;
             this.DetectorHttpResponseBufferTimeout = 10;
             this.DetectorTimeoutEnable = false;
-            this.DetectorHttpEnable = true;
-            this.ForwarderDirectPort80AsHttp = false;
+            this.DetectorHttpCheckEnable = true;
+            this.ForwarderTreatPort80AsHttp = false;
             this.DetectorHttpMaxBuffering = 50;
             this.ForwarderHttpEnable = true;
             this.ForwarderHttpsEnable = false;
             this.ForwarderSocksEnable = false;
-            this.DetectorDirectPort80AsHttp = true;
+            this.DetectorTreatPort80AsHttp = true;
         }
 
-        #endregion
-
-        #region Delegates
+        /// <summary>
+        ///     Gets or sets a value indicating whether detector should treat direct connections to the port 80 as HTTP
+        ///     connections.
+        /// </summary>
+        public bool DetectorTreatPort80AsHttp { get; set; }
 
         /// <summary>
-        ///     The forwarder list updated delegate.
+        ///     Gets or sets a value indicating whether detector should detect the DNS poisoning.
         /// </summary>
-        /// <param name="rule">
-        ///     The rule.
-        /// </param>
-        /// <param name="https">
-        ///     The https.
-        /// </param>
-        /// <param name="e">
-        ///     The e.
-        /// </param>
-        public delegate void ForwarderListUpdatedDelegate(string rule, bool https, EventArgs e);
-
-        #endregion
-
-        #region Public Events
+        public bool DetectorDnsPoisoningEnable { get; set; }
 
         /// <summary>
-        ///     The forwarder_ list updated.
+        ///     Sets the detector DNS poisoning pattern.
         /// </summary>
-        public event ForwarderListUpdatedDelegate ForwarderListUpdated;
-
-        #endregion
-
-        #region Public Properties
-
-        /// <summary>
-        ///     Gets or sets a value indicating whether detector direct port 80 as http.
-        /// </summary>
-        public bool DetectorDirectPort80AsHttp { get; set; }
-
-        /// <summary>
-        ///     Gets or sets a value indicating whether detector DNS grabber enable.
-        /// </summary>
-        public bool DetectorDnsGrabberEnable { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the detector DNS grabber_ pattern.
-        /// </summary>
-        public string DetectorDnsGrabberPattern
+        public string DetectorDnsPoisoningPattern
         {
-            get
-            {
-                return Common.FromRegEx(this.DetectorDnsGrabberRegExPattern);
-            }
-
             set
             {
-                this.DetectorDnsGrabberRegExPattern = Common.ToRegEx(value);
-                this.DetectorDnsGrabberRegEx = new Regex(
-                    this.DetectorDnsGrabberRegExPattern, 
+                this.DetectorDnsPoisoningRegExPattern = Common.ToRegEx(value);
+                this.DetectorDnsPoisoningRegEx = new Regex(
+                    this.DetectorDnsPoisoningRegExPattern,
                     RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline);
             }
         }
 
         /// <summary>
-        ///     Gets the detector DNS grabber detector.
+        ///     Gets the detector DNS poisoning regex.
         /// </summary>
-        public Regex DetectorDnsGrabberRegEx { get; private set; }
+        public Regex DetectorDnsPoisoningRegEx { get; private set; }
 
         /// <summary>
-        ///     Gets or sets a value indicating whether detector http enable.
+        ///     Gets or sets a value indicating whether detector should scan HTTP responses for blockage response
         /// </summary>
-        public bool DetectorHttpEnable { get; set; }
+        public bool DetectorHttpCheckEnable { get; set; }
 
         /// <summary>
-        ///     Gets or sets the detector http max buffering.
+        ///     Gets or sets the detector's HTTP check max buffering size.
         /// </summary>
         public int DetectorHttpMaxBuffering { get; set; }
 
         /// <summary>
-        ///     Gets or sets the detector http pattern.
+        ///     Sets the detector's HTTP check pattern.
         /// </summary>
         public string DetectorHttpPattern
         {
-            get
-            {
-                return Common.FromRegEx(this.DetectorHttpRegExPattern);
-            }
-
             set
             {
                 this.DetectorHttpRegExPattern = Common.ToRegEx(value);
                 this.DetectorHttpRegEx = new Regex(
-                    this.DetectorHttpRegExPattern, 
+                    this.DetectorHttpRegExPattern,
                     RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline);
             }
         }
 
         /// <summary>
-        ///     Gets the http detector.
+        ///     Gets the detector's HTTP check regex.
         /// </summary>
         public Regex DetectorHttpRegEx { get; private set; }
 
-        /// <summary>
-        ///     Gets the http detector pattern.
-        /// </summary>
-        public string DetectorHttpRegExPattern { get; private set; }
+        private string DetectorHttpRegExPattern { get; set; }
 
         /// <summary>
-        ///     Gets or sets the detector http response buffer timeout.
+        ///     Gets or sets the detector's HTTP check buffer timeout in seconds.
         /// </summary>
         public int DetectorHttpResponseBufferTimeout { get; set; }
 
         /// <summary>
-        ///     Gets a value indicating whether detector status DNS grabber.
+        ///     Gets a value indicating whether DNS poisoning settings are valid and active
         /// </summary>
-        public bool DetectorStatusDnsGrabber
+        public bool DetectorStatusDnsPoisoning
         {
             get
             {
-                return this.DetectorDnsGrabberEnable && this.DetectorDnsGrabberRegExPattern.Trim() != string.Empty;
+                return this.DetectorDnsPoisoningEnable && this.DetectorDnsPoisoningRegExPattern.Trim() != string.Empty;
             }
         }
 
         /// <summary>
-        ///     Gets a value indicating whether detector status_ http.
+        ///     Gets a value indicating whether HTTP check settings are valid and active
         /// </summary>
         public bool DetectorStatusHttp
         {
             get
             {
-                return this.DetectorHttpEnable && this.DetectorHttpRegExPattern.Trim() != string.Empty;
+                return this.DetectorHttpCheckEnable && this.DetectorHttpRegExPattern.Trim() != string.Empty;
             }
         }
 
         /// <summary>
-        ///     Gets a value indicating whether detector status_ timeout.
+        ///     Gets a value indicating whether timeout detection settings are valid and active
         /// </summary>
         public bool DetectorStatusTimeout
         {
@@ -193,70 +155,64 @@ namespace PeaRoxy.ClientLibrary
         }
 
         /// <summary>
-        ///     Gets or sets the detector_ timeout.
+        ///     Gets or sets the timeout detection value in seconds.
         /// </summary>
         public int DetectorTimeout { get; set; }
 
         /// <summary>
-        ///     Gets or sets a value indicating whether detector timeout enable.
+        ///     Gets or sets a value indicating whether detector should treat timeouts as a blockage sign
         /// </summary>
         public bool DetectorTimeoutEnable { get; set; }
 
         /// <summary>
-        ///     Gets or sets the forwarder direct list.
+        ///     Gets or sets the list of rules for forwarding direct connections
         /// </summary>
         public List<string> ForwarderDirectList { get; set; }
 
         /// <summary>
-        ///     Gets or sets a value indicating whether forwarder direct port 80 as http.
+        ///     Gets or sets a value indicating whether forwarder should treat port 80 as HTTP.
         /// </summary>
-        public bool ForwarderDirectPort80AsHttp { get; set; }
+        public bool ForwarderTreatPort80AsHttp { get; set; }
 
         /// <summary>
-        ///     Gets or sets a value indicating whether forwarder http enable.
+        ///     Gets or sets a value indicating whether forwarder is enable for HTTP requests
         /// </summary>
         public bool ForwarderHttpEnable { get; set; }
 
         /// <summary>
-        ///     Gets or sets the forwarder http list.
+        ///     Gets or sets the list of rules for forwarding HTTP connections
         /// </summary>
         public List<string> ForwarderHttpList { get; set; }
 
         /// <summary>
-        ///     Gets or sets a value indicating whether forwarder https enable.
+        ///     Gets or sets a value indicating whether forwarder is enable for direct HTTPS requests
         /// </summary>
         public bool ForwarderHttpsEnable { get; set; }
 
         /// <summary>
-        ///     Gets or sets a value indicating whether forwarder socks enable.
+        ///     Gets or sets a value indicating whether forwarder is enable for direct SOCKS requests
         /// </summary>
         public bool ForwarderSocksEnable { get; set; }
 
-        #endregion
-
-        #region Properties
+        private string DetectorDnsPoisoningRegExPattern { get; set; }
 
         /// <summary>
-        ///     Gets or sets the detector DNS grabber pattern.
+        ///     The forwarder list updated event.
         /// </summary>
-        private string DetectorDnsGrabberRegExPattern { get; set; }
-
-        #endregion
-
-        #region Public Methods and Operators
+        public event ForwarderListUpdatedDelegate ForwarderListUpdated;
 
         /// <summary>
-        /// The analyze direct_ list.
+        ///     A method to analyze and optimize the rules for direct connections
         /// </summary>
         /// <param name="list">
-        /// The list.
+        ///     The list of rules
         /// </param>
         /// <returns>
-        /// The
+        ///     The analyzed and optimized
         ///     <see>
         ///         <cref>List</cref>
         ///     </see>
-        ///     .
+        ///     of rules.
         /// </returns>
         public static IEnumerable<string> AnalyzeDirectList(List<string> list)
         {
@@ -292,11 +248,11 @@ namespace PeaRoxy.ClientLibrary
                 }
             }
 
-            // Adding uper level domain rule
+            // Adding upper level domain rule
             string[] secondUnAcceptableDomainNames =
                 {
-                    "aero", "asia", "biz", "cat", "com", "coop", "info", "int", 
-                    "jobs", "mobi", "museum", "name", "net", "org", "pro", "tel", 
+                    "aero", "asia", "biz", "cat", "com", "coop", "info", "int",
+                    "jobs", "mobi", "museum", "name", "net", "org", "pro", "tel",
                     "travel", "xxx"
                 };
             for (int i0 = 0; i0 < list.Count; i0++)
@@ -359,25 +315,25 @@ namespace PeaRoxy.ClientLibrary
         }
 
         /// <summary>
-        /// The analyze http list.
+        ///     A method to analyze and optimize the rules for HTTP connections
         /// </summary>
         /// <param name="list">
-        /// The list.
+        ///     The list of rules
         /// </param>
         /// <returns>
-        /// The
+        ///     The analyzed and optimized
         ///     <see>
         ///         <cref>List</cref>
         ///     </see>
-        ///     .
+        ///     of rules.
         /// </returns>
         public static IEnumerable<string> AnalyzeHttpList(List<string> list)
         {
             list = RemoveDuplicatesFromList(list);
             string[] secondUnAcceptableDomainNames =
                 {
-                    "aero", "asia", "biz", "cat", "com", "coop", "info", "int", 
-                    "jobs", "mobi", "museum", "name", "net", "org", "pro", "tel", 
+                    "aero", "asia", "biz", "cat", "com", "coop", "info", "int",
+                    "jobs", "mobi", "museum", "name", "net", "org", "pro", "tel",
                     "travel", "xxx"
                 };
             for (int i0 = 0; i0 < list.Count; i0++)
@@ -390,7 +346,9 @@ namespace PeaRoxy.ClientLibrary
                                   ? rule.Length
                                   : rule.LastIndexOf(
                                       ".",
-                                      (rule.IndexOf("/", StringComparison.Ordinal) == -1) ? rule.Length - 1 : rule.IndexOf("/", StringComparison.Ordinal),
+                                      (rule.IndexOf("/", StringComparison.Ordinal) == -1)
+                                          ? rule.Length - 1
+                                          : rule.IndexOf("/", StringComparison.Ordinal),
                                       StringComparison.Ordinal) + 1;
                 string rulepTopDomainPart = rule.Substring(startOf, lastSlash - startOf);
                 rulepTopDomainPart = rulepTopDomainPart.Trim(new[] { '*' });
@@ -445,10 +403,10 @@ namespace PeaRoxy.ClientLibrary
         }
 
         /// <summary>
-        /// The add rule to direct forwarder.
+        ///     The method to add a rule to the list of active forwarder rules of direct connections
         /// </summary>
         /// <param name="rule">
-        /// The rule.
+        ///     The rule to add.
         /// </param>
         public void AddRuleToDirectForwarder(string rule)
         {
@@ -459,7 +417,7 @@ namespace PeaRoxy.ClientLibrary
                     return;
                 }
 
-                if (this.ForwarderDirectPort80AsHttp && rule.IndexOf(":", StringComparison.Ordinal) != -1
+                if (this.ForwarderTreatPort80AsHttp && rule.IndexOf(":", StringComparison.Ordinal) != -1
                     && rule.Substring(rule.IndexOf(":", StringComparison.Ordinal) + 1) == "80")
                 {
                     string rule2 = rule.Substring(0, rule.IndexOf(":", StringComparison.Ordinal));
@@ -478,10 +436,10 @@ namespace PeaRoxy.ClientLibrary
         }
 
         /// <summary>
-        /// The add rule to http forwarder.
+        ///     The method to add a rule to the list of active forwarder rules of HTTP connections
         /// </summary>
         /// <param name="rule">
-        /// The rule.
+        ///     The rule to add.
         /// </param>
         public void AddRuleToHttpForwarder(string rule)
         {
@@ -502,37 +460,11 @@ namespace PeaRoxy.ClientLibrary
             }
         }
 
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// The make wild card test string
-        /// </summary>
-        /// <param name="str">
-        /// The wild card string
-        /// </param>
-        /// <returns>
-        /// The <see cref="string"/>.
-        /// </returns>
         private static string MakeWildCardable(string str)
         {
             return str.Replace("*", Path.GetRandomFileName().Replace(".", string.Empty));
         }
 
-        /// <summary>
-        /// The remove duplicates from list.
-        /// </summary>
-        /// <param name="list">
-        /// The list.
-        /// </param>
-        /// <returns>
-        /// The
-        ///     <see>
-        ///         <cref>List</cref>
-        ///     </see>
-        ///     .
-        /// </returns>
         private static List<string> RemoveDuplicatesFromList(List<string> list)
         {
             foreach (string rule in list)
@@ -556,7 +488,5 @@ namespace PeaRoxy.ClientLibrary
 
             return list;
         }
-
-        #endregion
     }
 }

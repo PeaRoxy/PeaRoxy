@@ -3,17 +3,11 @@
 //   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
 //   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
 // </copyright>
-// <summary>
-//   The server_ pea roxy web.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.ClientLibrary.ServerModules
 {
-    #region
-
     using System;
-    using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.IO;
     using System.Net;
@@ -25,153 +19,79 @@ namespace PeaRoxy.ClientLibrary.ServerModules
     using System.Threading;
 
     using global::PeaRoxy.ClientLibrary.ProxyModules;
-
     using global::PeaRoxy.CommonLibrary;
-
     using global::PeaRoxy.CoreProtocol.Cryptors;
 
-    #endregion
-
     /// <summary>
-    ///     The PeaRoxyWeb server module
+    ///     The PeaRoxyWeb Server Module
     /// </summary>
     public sealed class PeaRoxyWeb : ServerType, IDisposable
     {
-        #region Static Fields
-
-        /// <summary>
-        ///     The random byte generator
-        /// </summary>
         private static readonly RNGCryptoServiceProvider Random = new RNGCryptoServiceProvider();
 
-        #endregion
-
-        #region Fields
-
-        /// <summary>
-        ///     The encryption salt bytes.
-        /// </summary>
         private readonly byte[] encryptionSaltBytes = new byte[4];
 
-        /// <summary>
-        ///     The encryption type.
-        /// </summary>
         private readonly Common.EncryptionType encryptionType = Common.EncryptionType.None;
 
-        /// <summary>
-        ///     The chunked is first.
-        /// </summary>
         private bool chunkedIsFirst = true;
 
-        /// <summary>
-        ///     The chunked needed.
-        /// </summary>
         private int chunkedNeeded;
 
-        /// <summary>
-        ///     The client secure stream.
-        /// </summary>
         private SslStream clientSslStream;
 
-        /// <summary>
-        ///     The content bytes.
-        /// </summary>
         private int contentBytes = -1;
 
-        /// <summary>
-        ///     The encryptor class.
-        /// </summary>
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", 
-            Justification = "Reviewed. Suppression is OK here.")]
         private Cryptor cryptor = new Cryptor();
 
-        /// <summary>
-        ///     The current timeout.
-        /// </summary>
         private int currentTimeout;
 
-        /// <summary>
-        ///     The address.
-        /// </summary>
-        private string destinationAddress = string.Empty;
-
-        /// <summary>
-        ///     The port.
-        /// </summary>
-        private ushort destinationPort;
-
-        /// <summary>
-        ///     The encryption key.
-        /// </summary>
         private byte[] encryptionKey;
 
-        /// <summary>
-        ///     The is chunked.
-        /// </summary>
         private bool isChunked;
 
-        /// <summary>
-        ///     The is done for routing.
-        /// </summary>
         private bool isDoneForRouting;
 
-        /// <summary>
-        ///     The is https.
-        /// </summary>
         private bool isHttps;
 
-        /// <summary>
-        ///     The peer encryptor class.
-        /// </summary>
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", 
-            Justification = "Reviewed. Suppression is OK here.")]
         private Cryptor peerCryptor = new Cryptor();
 
-        /// <summary>
-        ///     The read bytes.
-        /// </summary>
-        private int readedBytes;
+        private int readBytes;
 
-        /// <summary>
-        ///     The server encryption type.
-        /// </summary>
+        private string requestedAddress = string.Empty;
+
+        private ushort requestedPort;
+
         private Common.EncryptionType serverEncryptionType = Common.EncryptionType.None;
 
-        /// <summary>
-        ///     The write buffer.
-        /// </summary>
         private byte[] writeBuffer = new byte[0];
 
-        #endregion
-
-        #region Constructors and Destructors
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="PeaRoxyWeb"/> class.
+        ///     Initializes a new instance of the <see cref="PeaRoxyWeb" /> class.
         /// </summary>
         /// <param name="address">
-        /// The address.
+        ///     The address of the server script.
         /// </param>
         /// <param name="username">
-        /// The username.
+        ///     The user name to authenticate, leave empty for no authentication.
         /// </param>
         /// <param name="password">
-        /// The password.
+        ///     The password to authenticate, leave empty for no authentication.
         /// </param>
         /// <param name="encType">
-        /// The encryption type.
+        ///     The client encryption type.
         /// </param>
         /// <param name="addressChecked">
-        /// The address checked.
+        ///     The address checked boolean shows if we already sure about the script address or if we need to try and get the
+        ///     correct address our-self.
         /// </param>
         /// <exception cref="ArgumentException">
-        /// Invalid address or encryption type
+        ///     Invalid server address or encryption type
         /// </exception>
         public PeaRoxyWeb(
-            string address, 
-            string username = "", 
-            string password = "", 
-            Common.EncryptionType encType = Common.EncryptionType.None, 
+            string address,
+            string username = "",
+            string password = "",
+            Common.EncryptionType encType = Common.EncryptionType.None,
             bool addressChecked = false)
         {
             if (string.IsNullOrEmpty(address))
@@ -185,7 +105,6 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             }
 
             this.IsServerValid = false;
-            this.ServerAddress = address;
             this.ServerUri = new Uri(address);
 
             if (!addressChecked)
@@ -199,11 +118,10 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                 wres.Close();
                 if (wres.StatusCode != HttpStatusCode.OK)
                 {
-                    throw new ArgumentException(@"Server responsed with status code " + wres.StatusCode, "address");
+                    throw new ArgumentException(@"Server responded with status code " + wres.StatusCode, "address");
                 }
 
                 this.ServerUri = wres.ResponseUri;
-                this.ServerAddress = this.ServerUri.ToString();
             }
 
             this.Username = username;
@@ -214,12 +132,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             this.IsClosed = false;
         }
 
-        #endregion
-
-        #region Public Properties
-
         /// <summary>
-        ///     Gets a value indicating whether busy write.
+        ///     Gets a value indicating whether we are busy writing to the server.
         /// </summary>
         public bool BusyWrite
         {
@@ -235,27 +149,27 @@ namespace PeaRoxy.ClientLibrary.ServerModules
         }
 
         /// <summary>
-        ///     Gets or sets a value indicating whether is data sent.
+        ///     Gets or sets a value indicating whether we had sent some data to the server
         /// </summary>
         public override bool IsDataSent { get; protected set; }
 
         /// <summary>
-        ///     Gets or sets a value indicating whether is disconnected.
+        ///     Gets or sets a value indicating whether we had a close request on the underlying connection
         /// </summary>
         public override bool IsClosed { get; protected set; }
 
         /// <summary>
-        ///     Gets or sets a value indicating whether is server valid.
+        ///     Gets or sets a value indicating whether server exists and is valid.
         /// </summary>
         public override bool IsServerValid { get; protected set; }
 
         /// <summary>
-        ///     Gets or sets the no data timeout.
+        ///     Gets or sets the number of seconds after last data transmission to close the connection
         /// </summary>
         public override int NoDataTimeout { get; set; }
 
         /// <summary>
-        ///     Gets or sets the parent client.
+        ///     Gets the parent client.
         /// </summary>
         public override ProxyClient ParentClient { get; protected set; }
 
@@ -265,49 +179,20 @@ namespace PeaRoxy.ClientLibrary.ServerModules
         public string Password { get; set; }
 
         /// <summary>
-        ///     Gets or sets the address of the server
-        /// </summary>
-        public string ServerAddress { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the address of the server
+        ///     Gets or sets the address of the script in Uri
         /// </summary>
         public Uri ServerUri { get; set; }
 
         /// <summary>
-        ///     Gets or sets the underlying socket.
+        ///     Gets the underlying socket to the server.
         /// </summary>
         public override Socket UnderlyingSocket { get; protected set; }
 
         /// <summary>
-        ///     Gets or sets the username of the server
+        ///     Gets or sets the user name of the server
         /// </summary>
         public string Username { get; set; }
 
-        #endregion
-
-        #region Public Methods and Operators
-
-        /// <summary>
-        ///     The clone.
-        /// </summary>
-        /// <returns>
-        ///     The <see cref="ServerType" />.
-        /// </returns>
-        public override ServerType Clone()
-        {
-            return new PeaRoxyWeb(this.ServerAddress, this.Username, this.Password, this.encryptionType, true)
-                       {
-                           NoDataTimeout
-                               =
-                               this
-                               .NoDataTimeout
-                       };
-        }
-
-        /// <summary>
-        ///     The dispose.
-        /// </summary>
         public void Dispose()
         {
             this.UnderlyingSocket.Dispose();
@@ -318,9 +203,26 @@ namespace PeaRoxy.ClientLibrary.ServerModules
         }
 
         /// <summary>
-        ///     The do route.
+        ///     The clone method is to make another copy of this class with exactly same settings
         /// </summary>
-        public override void DoRoute()
+        /// <returns>
+        ///     The <see cref="ServerType" />.
+        /// </returns>
+        public override ServerType Clone()
+        {
+            return new PeaRoxyWeb(this.ServerUri.ToString(), this.Username, this.Password, this.encryptionType, true)
+                       {
+                           NoDataTimeout
+                               =
+                               this
+                               .NoDataTimeout
+                       };
+        }
+
+        /// <summary>
+        ///     The method to handle the routing process, should call repeatedly
+        /// </summary>
+        public override void Route()
         {
             try
             {
@@ -330,8 +232,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                 }
 
                 if ((this.ParentClient.BusyWrite || this.BusyWrite
-                     || (Common.IsSocketConnected(this.UnderlyingSocket)
-                         && this.ParentClient.Client != null && Common.IsSocketConnected(this.ParentClient.Client))) && this.currentTimeout > 0)
+                     || (Common.IsSocketConnected(this.UnderlyingSocket) && this.ParentClient.UnderlyingSocket != null
+                         && Common.IsSocketConnected(this.ParentClient.UnderlyingSocket))) && this.currentTimeout > 0)
                 {
                     if (this.ParentClient.IsSmartForwarderEnable && this.ParentClient.SmartResponseBuffer.Length > 0
                         && (this.currentTimeout <= this.NoDataTimeout * 500
@@ -375,7 +277,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                         }
                     }
 
-                    if (!this.BusyWrite && this.ParentClient.Client.Available > 0)
+                    if (!this.BusyWrite && this.ParentClient.UnderlyingSocket.Available > 0)
                     {
                         if (this.isHttps)
                         {
@@ -410,61 +312,56 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                     this.Close(false);
                 }
             }
-            catch (Exception)
+            catch
             {
-                // e)
-                // if (e.TargetSite.Name == "Receive")
-                // Close();
-                // else
-                // Close(e.Message, e.StackTrace);
             }
         }
 
         /// <summary>
-        /// The establish.
+        ///     The establish method is used to connect to the server and try to request access to the specific address.
         /// </summary>
         /// <param name="address">
-        /// The address.
+        ///     The requested address.
         /// </param>
         /// <param name="port">
-        /// The port.
+        ///     The requested port.
         /// </param>
         /// <param name="client">
-        /// The client.
+        ///     The client to connect with.
         /// </param>
         /// <param name="headerData">
-        /// The header data.
+        ///     The data to send after connecting.
         /// </param>
         /// <param name="sendDataDelegate">
-        /// The send callback.
+        ///     The send callback.
         /// </param>
         /// <param name="receiveDataDelegate">
-        /// The receive callback.
+        ///     The receive callback.
         /// </param>
         /// <param name="connectionStatusCallback">
-        /// The connection status callback.
+        ///     The connection status changed callback.
         /// </param>
         public override void Establish(
-            string address, 
-            ushort port, 
-            ProxyClient client, 
-            byte[] headerData = null, 
-            DataCallbackDelegate sendDataDelegate = null, 
-            DataCallbackDelegate receiveDataDelegate = null, 
+            string address,
+            ushort port,
+            ProxyClient client,
+            byte[] headerData = null,
+            DataCallbackDelegate sendDataDelegate = null,
+            DataCallbackDelegate receiveDataDelegate = null,
             ConnectionCallbackDelegate connectionStatusCallback = null)
         {
             try
             {
-                this.destinationAddress = address;
-                this.destinationPort = port;
+                this.requestedAddress = address;
+                this.requestedPort = port;
                 this.ParentClient = client;
                 this.SendDataDelegate = sendDataDelegate;
                 this.ReceiveDataDelegate = receiveDataDelegate;
                 this.ConnectionStatusCallback = connectionStatusCallback;
                 this.UnderlyingSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 this.UnderlyingSocket.BeginConnect(
-                    this.ServerUri.Host, 
-                    this.ServerUri.Port, 
+                    this.ServerUri.Host,
+                    this.ServerUri.Port,
                     delegate(IAsyncResult ar)
                         {
                             try
@@ -488,7 +385,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                                     return;
                                 }
 
-                                this.ParentClient.Controller.MoveToRouting(this);
+                                this.ParentClient.Controller.ClientMoveToRouting(this);
 
                                 if (!this.ReadHeaderOfActualResponse(ref headerData))
                                 {
@@ -504,7 +401,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                                 this.ParentClient.Controller.FailAttempts++;
                                 this.Close(ex.Message, ex.StackTrace);
                             }
-                        }, 
+                        },
                     null);
             }
             catch (Exception e)
@@ -514,56 +411,33 @@ namespace PeaRoxy.ClientLibrary.ServerModules
         }
 
         /// <summary>
-        ///     The get address.
+        ///     Get the latest requested address
         /// </summary>
         /// <returns>
-        ///     The <see cref="string" />.
+        ///     The requested address as <see cref="string" />.
         /// </returns>
-        public override string GetAddress()
+        public override string GetRequestedAddress()
         {
-            return this.destinationAddress;
+            return this.requestedAddress;
         }
 
         /// <summary>
-        ///     The get port.
+        ///     Get the latest requested port number
         /// </summary>
         /// <returns>
-        ///     The <see cref="ushort" />.
+        ///     The requested port number as <see cref="ushort" />.
         /// </returns>
-        public override ushort GetPort()
+        public override ushort GetRequestedPort()
         {
-            return this.destinationPort;
+            return this.requestedPort;
         }
 
-        /// <summary>
-        ///     The to string.
-        /// </summary>
-        /// <returns>
-        ///     The <see cref="string" />.
-        /// </returns>
         public override string ToString()
         {
-            return "PeaRoxyWeb Module " + this.ServerAddress
+            return "PeaRoxyWeb Module " + this.ServerUri
                    + ((this.Username != string.Empty) ? " Using USN/PSW" : " Open");
         }
 
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// The check chunked.
-        /// </summary>
-        /// <param name="bytes">
-        /// The bytes.
-        /// </param>
-        /// <returns>
-        /// The
-        ///     <see>
-        ///         <cref>byte[]</cref>
-        ///     </see>
-        ///     .
-        /// </returns>
         private byte[] CheckChunked(byte[] bytes)
         {
             try
@@ -591,7 +465,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                             if (digitPlace != 0)
                             {
                                 this.chunkedNeeded = int.Parse(
-                                    Encoding.ASCII.GetString(bytes, 0, digitPlace), 
+                                    Encoding.ASCII.GetString(bytes, 0, digitPlace),
                                     NumberStyles.HexNumber);
                             }
 
@@ -631,15 +505,6 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             return bytes;
         }
 
-        /// <summary>
-        /// The check connection type with client.
-        /// </summary>
-        /// <param name="bytes">
-        /// The bytes.
-        /// </param>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
         private bool CheckConnectionTypeWithClient(ref byte[] bytes)
         {
             if (bytes.Length == 0)
@@ -650,10 +515,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                     Uri url;
                     if (!Uri.TryCreate(this.ParentClient.RequestAddress, UriKind.Absolute, out url))
                     {
-                        this.Close(
-                            "Unrecognizable address.", 
-                            null, 
-                            ErrorRenderer.HttpHeaderCode.C417ExpectationFailed);
+                        this.Close("Unrecognizable address.", null, ErrorRenderer.HttpHeaderCode.C417ExpectationFailed);
                         return false;
                     }
 
@@ -664,8 +526,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                         if (string.IsNullOrEmpty(certAddress))
                         {
                             this.Close(
-                                "Domain name is not acceptable for HTTPS connection.", 
-                                url.ToString(), 
+                                "Domain name is not acceptable for HTTPS connection.",
+                                url.ToString(),
                                 ErrorRenderer.HttpHeaderCode.C417ExpectationFailed);
                             return false;
                         }
@@ -679,8 +541,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                     }
 
                     X509Certificate certificate = new X509Certificate2(certAddress, string.Empty);
-                    this.ParentClient.Client.Blocking = true;
-                    Stream stream = new NetworkStream(this.ParentClient.Client);
+                    this.ParentClient.UnderlyingSocket.Blocking = true;
+                    Stream stream = new NetworkStream(this.ParentClient.UnderlyingSocket);
                     this.clientSslStream = new SslStream(stream) { ReadTimeout = 30 * 1000, WriteTimeout = 30 * 1000 };
                     this.clientSslStream.AuthenticateAsServer(certificate);
                     bytes = new byte[16384];
@@ -692,8 +554,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                         if (arraySize >= bytes.Length)
                         {
                             this.Close(
-                                "No header after 16KB of data.", 
-                                null, 
+                                "No header after 16KB of data.",
+                                null,
                                 ErrorRenderer.HttpHeaderCode.C417ExpectationFailed);
                             return false;
                         }
@@ -706,8 +568,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                         else
                         {
                             this.Close(
-                                "Connection closed by client.", 
-                                null, 
+                                "Connection closed by client.",
+                                null,
                                 ErrorRenderer.HttpHeaderCode.C417ExpectationFailed);
                             return false;
                         }
@@ -727,8 +589,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                     else
                     {
                         this.Close(
-                            "Connection header is not HTTP.", 
-                            null, 
+                            "Connection header is not HTTP.",
+                            null,
                             ErrorRenderer.HttpHeaderCode.C417ExpectationFailed);
                         return false;
                     }
@@ -742,8 +604,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             else if (!Http.IsHttp(bytes))
             {
                 this.Close(
-                    "PeaRoxy supports only HTTPS and HTTP connections currently.", 
-                    null, 
+                    "PeaRoxy supports only HTTPS and HTTP connections currently.",
+                    null,
                     ErrorRenderer.HttpHeaderCode.C417ExpectationFailed);
                 return false;
             }
@@ -751,36 +613,15 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             return true;
         }
 
-        /// <summary>
-        /// The close.
-        /// </summary>
-        /// <param name="async">
-        /// The async.
-        /// </param>
         private void Close(bool async)
         {
             this.Close(null, null, ErrorRenderer.HttpHeaderCode.C500ServerError, async);
         }
 
-        /// <summary>
-        /// The close.
-        /// </summary>
-        /// <param name="title">
-        /// The title.
-        /// </param>
-        /// <param name="message">
-        /// The message.
-        /// </param>
-        /// <param name="code">
-        /// The code.
-        /// </param>
-        /// <param name="async">
-        /// The async.
-        /// </param>
         private void Close(
-            string title = null, 
-            string message = null, 
-            ErrorRenderer.HttpHeaderCode code = ErrorRenderer.HttpHeaderCode.C500ServerError, 
+            string title = null,
+            string message = null,
+            ErrorRenderer.HttpHeaderCode code = ErrorRenderer.HttpHeaderCode.C500ServerError,
             bool async = false)
         {
             try
@@ -805,10 +646,10 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                     if (this.UnderlyingSocket != null)
                     {
                         this.UnderlyingSocket.BeginSend(
-                            db, 
-                            0, 
-                            db.Length, 
-                            SocketFlags.None, 
+                            db,
+                            0,
+                            db.Length,
+                            SocketFlags.None,
                             delegate(IAsyncResult ar)
                                 {
                                     try
@@ -819,7 +660,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                                     catch (Exception)
                                     {
                                     }
-                                }, 
+                                },
                             null);
                     }
                 }
@@ -836,16 +677,6 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             }
         }
 
-        /// <summary>
-        ///     The read.
-        /// </summary>
-        /// <returns>
-        ///     The
-        ///     <see>
-        ///         <cref>byte[]</cref>
-        ///     </see>
-        ///     .
-        /// </returns>
         private byte[] Read()
         {
             try
@@ -876,15 +707,6 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             return null;
         }
 
-        /// <summary>
-        /// The read header of actual response method
-        /// </summary>
-        /// <param name="bytes">
-        /// The bytes.
-        /// </param>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
         private bool ReadHeaderOfActualResponse(ref byte[] bytes)
         {
             bytes = this.CheckChunked(bytes);
@@ -905,7 +727,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                     }
                 }
 
-                if ((this.ParentClient.Client != null && !Common.IsSocketConnected(this.ParentClient.Client))
+                if ((this.ParentClient.UnderlyingSocket != null
+                     && !Common.IsSocketConnected(this.ParentClient.UnderlyingSocket))
                     || !Common.IsSocketConnected(this.UnderlyingSocket))
                 {
                     this.Close();
@@ -919,8 +742,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                     if (response == null || response.Length <= 0)
                     {
                         this.Close(
-                            "No response from server, Read Failure.", 
-                            null, 
+                            "No response from server, Read Failure.",
+                            null,
                             ErrorRenderer.HttpHeaderCode.C502BadGateway);
                         return false;
                     }
@@ -938,8 +761,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                     if (this.currentTimeout == 0)
                     {
                         this.Close(
-                            "No response from server, Timeout.", 
-                            null, 
+                            "No response from server, Timeout.",
+                            null,
                             ErrorRenderer.HttpHeaderCode.C504GatewayTimeout);
                         return false;
                     }
@@ -989,15 +812,6 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             return true;
         }
 
-        /// <summary>
-        /// The read server response.
-        /// </summary>
-        /// <param name="bytes">
-        /// The bytes.
-        /// </param>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
         // ReSharper disable once RedundantAssignment
         private bool ReadServerResponse(ref byte[] bytes)
         {
@@ -1006,7 +820,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             bytes = new byte[0];
             while (responseHeader.IndexOf("\r\n\r\n", StringComparison.Ordinal) == -1)
             {
-                if ((this.ParentClient.Client != null && !Common.IsSocketConnected(this.ParentClient.Client))
+                if ((this.ParentClient.UnderlyingSocket != null
+                     && !Common.IsSocketConnected(this.ParentClient.UnderlyingSocket))
                     || !Common.IsSocketConnected(this.UnderlyingSocket))
                 {
                     this.Close();
@@ -1020,8 +835,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                     if (response == null || response.Length <= 0)
                     {
                         this.Close(
-                            "No response from server, Read Failure.", 
-                            null, 
+                            "No response from server, Read Failure.",
+                            null,
                             ErrorRenderer.HttpHeaderCode.C504GatewayTimeout);
                         return false;
                     }
@@ -1038,8 +853,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                         if (this.currentTimeout == 0)
                         {
                             this.Close(
-                                "No response from server, Timeout.", 
-                                null, 
+                                "No response from server, Timeout.",
+                                null,
                                 ErrorRenderer.HttpHeaderCode.C504GatewayTimeout);
                             return false;
                         }
@@ -1055,8 +870,10 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                 && !responseHeader.StartsWith("HTTP/1.0 200", StringComparison.InvariantCultureIgnoreCase))
             {
                 this.Close(
-                    "Bad server response. Is address of server ", 
-                    responseHeader.Substring(0, Math.Min(responseHeader.Length, responseHeader.IndexOf("\r", StringComparison.Ordinal))), 
+                    "Bad server response. Is address of server ",
+                    responseHeader.Substring(
+                        0,
+                        Math.Min(responseHeader.Length, responseHeader.IndexOf("\r", StringComparison.Ordinal))),
                     ErrorRenderer.HttpHeaderCode.C502BadGateway);
                 return false;
             }
@@ -1070,12 +887,12 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             if (indexOfCookies != -1)
             {
                 int startOfCookies = responseHeader.IndexOf(
-                    "=", 
-                    indexOfCookies, 
+                    "=",
+                    indexOfCookies,
                     StringComparison.InvariantCultureIgnoreCase) + 1;
                 int endOfCookies = responseHeader.IndexOf(
-                    ";", 
-                    indexOfCookies, 
+                    ";",
+                    indexOfCookies,
                     StringComparison.InvariantCultureIgnoreCase);
                 this.serverEncryptionType =
                     (Common.EncryptionType)
@@ -1100,8 +917,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                         break;
                     default:
                         this.Close(
-                            "Unsupported encryption method used by server.", 
-                            null, 
+                            "Unsupported encryption method used by server.",
+                            null,
                             ErrorRenderer.HttpHeaderCode.C502BadGateway);
                         return false;
                 }
@@ -1110,15 +927,6 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             return true;
         }
 
-        /// <summary>
-        /// The send request to server.
-        /// </summary>
-        /// <param name="bytes">
-        /// The bytes.
-        /// </param>
-        /// <returns>
-        /// The <see cref="bool"/>.
-        /// </returns>
         private bool SendRequestToServer(ref byte[] bytes)
         {
             int requestContentLength = -1;
@@ -1201,7 +1009,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             this.cryptor.SetSalt(this.encryptionSaltBytes);
             byte[] hostBytes =
                 Encoding.ASCII.GetBytes(
-                    (this.isHttps ? "https://" : "http://") + this.destinationAddress + ":" + this.destinationPort);
+                    (this.isHttps ? "https://" : "http://") + this.requestedAddress + ":" + this.requestedPort);
             hostBytes = this.cryptor.Encrypt(hostBytes);
             byte[] encryptedOutput = new byte[hostBytes.Length + 5];
             Array.Copy(hostBytes, 0, encryptedOutput, 5, hostBytes.Length);
@@ -1231,14 +1039,14 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                 if (this.isHttps)
                 {
                     readCount = this.clientSslStream.Read(
-                        buffer, 
-                        0, 
+                        buffer,
+                        0,
                         Math.Min(buffer.Length, requestContentLength - readed));
                     Array.Resize(ref buffer, readCount);
                 }
                 else
                 {
-                    if (this.ParentClient.Client.Available > 0)
+                    if (this.ParentClient.UnderlyingSocket.Available > 0)
                     {
                         timeout = this.NoDataTimeout * 1000;
                         buffer = this.ParentClient.Read();
@@ -1254,10 +1062,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
 
                 if (readCount == 0)
                 {
-                    this.Close(
-                        "Connection closed by client.", 
-                        null, 
-                        ErrorRenderer.HttpHeaderCode.C417ExpectationFailed);
+                    this.Close("Connection closed by client.", null, ErrorRenderer.HttpHeaderCode.C417ExpectationFailed);
                     return false;
                 }
 
@@ -1276,15 +1081,6 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             return true;
         }
 
-        /// <summary>
-        /// The write.
-        /// </summary>
-        /// <param name="bytes">
-        /// The bytes.
-        /// </param>
-        /// <param name="encryption">
-        /// The encryption.
-        /// </param>
         private void Write(byte[] bytes, bool encryption = true)
         {
             try
@@ -1304,10 +1100,10 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                 {
                     int bytesWritten = this.UnderlyingSocket.Send(this.writeBuffer, SocketFlags.None);
                     Array.Copy(
-                        this.writeBuffer, 
-                        bytesWritten, 
-                        this.writeBuffer, 
-                        0, 
+                        this.writeBuffer,
+                        bytesWritten,
+                        this.writeBuffer,
+                        0,
                         this.writeBuffer.Length - bytesWritten);
                     Array.Resize(ref this.writeBuffer, this.writeBuffer.Length - bytesWritten);
                 }
@@ -1318,12 +1114,6 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             }
         }
 
-        /// <summary>
-        /// The write to client.
-        /// </summary>
-        /// <param name="bytes">
-        /// The bytes.
-        /// </param>
         private void WriteToClient(byte[] bytes)
         {
             if (this.isHttps && this.clientSslStream != null)
@@ -1337,8 +1127,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
 
             if (this.contentBytes != -1)
             {
-                this.readedBytes += bytes.Length;
-                if (this.readedBytes >= this.contentBytes)
+                this.readBytes += bytes.Length;
+                if (this.readBytes >= this.contentBytes)
                 {
                     this.UnderlyingSocket.Close();
                 }
@@ -1350,7 +1140,5 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                 this.UnderlyingSocket.Close();
             }
         }
-
-        #endregion
     }
 }

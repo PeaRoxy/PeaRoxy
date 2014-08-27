@@ -350,7 +350,7 @@ namespace ZARA
                 else
                 {
                     this.listener = new ProxyController(null, null, 0);
-                    this.listener.FailDisconnected += this.FailDisconnected;
+                    this.listener.AutoDisconnectedDueToFailureNotify += this.FailDisconnected;
                 }
 
                 this.Enabled = false;
@@ -365,24 +365,24 @@ namespace ZARA
                 this.listener.ReceivePacketSize = Settings.Default.Connection_RecPacketSize;
                 this.listener.AutoDisconnect = Settings.Default.Connection_StopOnInterrupt;
 
-                this.listener.ErrorRenderer.Enable = false;
-                this.listener.ErrorRenderer.OnPort80Direct = false;
-                this.listener.ErrorRenderer.OnPort443Direct = false;
+                this.listener.ErrorRenderer.EnableOnHttp = false;
+                this.listener.ErrorRenderer.EnableOnPort80 = false;
+                this.listener.ErrorRenderer.EnableOnPort443 = false;
 
                 this.listener.DnsResolver.DnsResolverSupported =
                     this.listener.DnsResolver.DnsResolverUdpSupported = false;
                 this.listener.DnsResolver.DnsResolverServerIp = IPAddress.Parse(Settings.Default.DNS_IPAddress);
 
-                this.listener.SmartPear.DetectorDirectPort80AsHttp = false;
+                this.listener.SmartPear.DetectorTreatPort80AsHttp = false;
                 this.listener.SmartPear.ForwarderHttpEnable = false;
-                this.listener.SmartPear.DetectorHttpEnable = false;
+                this.listener.SmartPear.DetectorHttpCheckEnable = false;
                 this.listener.SmartPear.DetectorHttpPattern = string.Empty;
-                this.listener.SmartPear.DetectorDnsGrabberPattern = string.Empty;
-                this.listener.SmartPear.DetectorDnsGrabberEnable = false;
+                this.listener.SmartPear.DetectorDnsPoisoningPattern = string.Empty;
+                this.listener.SmartPear.DetectorDnsPoisoningEnable = false;
                 this.listener.SmartPear.ForwarderHttpsEnable = false;
                 this.listener.SmartPear.DetectorTimeoutEnable = false;
                 this.listener.SmartPear.DetectorTimeout = 0;
-                this.listener.SmartPear.ForwarderDirectPort80AsHttp = false;
+                this.listener.SmartPear.ForwarderTreatPort80AsHttp = false;
                 this.listener.SmartPear.ForwarderSocksEnable = false;
                 this.listener.SmartPear.ForwarderHttpList.Clear();
                 this.listener.SmartPear.ForwarderDirectList.Clear();

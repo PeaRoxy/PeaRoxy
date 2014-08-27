@@ -3,15 +3,10 @@
 //   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
 //   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
 // </copyright>
-// <summary>
-//   The dns resolver.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.ClientLibrary
 {
-    #region
-
     using System;
     using System.Net;
     using System.Net.Sockets;
@@ -20,44 +15,24 @@ namespace PeaRoxy.ClientLibrary
 
     using PeaRoxy.CommonLibrary;
 
-    #endregion
-
     /// <summary>
-    /// The DNS resolver controller
+    ///     DNS Resolver class is responsible for resolving DNS requests on port 53
     /// </summary>
     public class DnsResolver : IDisposable
     {
-        #region Fields
-
-        /// <summary>
-        /// The parent.
-        /// </summary>
         private readonly ProxyController parent;
 
-        /// <summary>
-        /// The DNS TCP listener socket
-        /// </summary>
         private Socket dnsTcpListenerSocket;
 
-        /// <summary>
-        /// The DNS UDP listener socket
-        /// </summary>
         private Socket dnsUdpListenerSocket;
 
-        /// <summary>
-        /// The local DNS IP.
-        /// </summary>
         private IPEndPoint localDnsIp;
 
-        #endregion
-
-        #region Constructors and Destructors
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="DnsResolver"/> class.
+        ///     Initializes a new instance of the <see cref="DnsResolver" /> class.
         /// </summary>
         /// <param name="parent">
-        /// The parent.
+        ///     The parent proxy controller class to forward DNS requests.
         /// </param>
         public DnsResolver(ProxyController parent)
         {
@@ -67,56 +42,51 @@ namespace PeaRoxy.ClientLibrary
             this.DnsResolverUdpSupported = true;
         }
 
-        #endregion
-
-        #region Public Properties
-
         /// <summary>
-        /// Gets or sets the DNS resolver server IP.
+        ///     Gets or sets the DNS resolver IP to forward the requests.
         /// </summary>
         public IPAddress DnsResolverServerIp { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether TCP DNS resolving supported.
+        ///     Gets or sets a value indicating whether we should response to the TCP requests.
         /// </summary>
         public bool DnsResolverSupported { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether UDP DNS resolving supported.
+        ///     Gets or sets a value indicating whether we should response to the UDP requests.
         /// </summary>
         public bool DnsResolverUdpSupported { get; set; }
 
-        #endregion
+        public void Dispose()
+        {
+            this.dnsTcpListenerSocket.Dispose();
+            this.dnsUdpListenerSocket.Dispose();
+        }
 
-        #region Public Methods and Operators
-
-        /// <summary>
-        /// The accepting.
-        /// </summary>
-        public void Accepting()
+        internal void Accepting()
         {
             try
             {
                 if (this.DnsResolverSupported && this.dnsTcpListenerSocket.Poll(0, SelectMode.SelectRead))
                 {
-                    ProxyClient c = new ProxyClient(this.dnsTcpListenerSocket.Accept(), this.parent, true)
+                    ProxyClient c = new ProxyClient(this.dnsTcpListenerSocket.Accept(), this.parent)
                                         {
                                             ReceivePacketSize
                                                 =
-                                                this
-                                                .parent
+                                                this.parent
                                                 .ReceivePacketSize,
                                             SendPacketSize
                                                 =
-                                                this
-                                                .parent
+                                                this.parent
                                                 .SendPacketSize,
-                                            NoDataTimeOut
-                                                = 10,
-                                            Type =
+                                            NoDataTimeOut =
+                                                10,
+                                            RequestType =
                                                 ProxyClient
-                                                .ClientType
-                                                .Dns
+                                                .RequestTypes
+                                                .Dns,
+                                            IsSendingStarted
+                                                = true,
                                         };
                     lock (this.parent.ConnectedClients) this.parent.ConnectedClients.Add(c);
                     this.parent.ActiveServer.Clone().Establish(this.DnsResolverServerIp.ToString(), 53, c);
@@ -126,10 +96,10 @@ namespace PeaRoxy.ClientLibrary
                 {
                     if (this.dnsUdpListenerSocket == null)
                     {
-                        this.dnsUdpListenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp)
-                                                        {
-                                                            EnableBroadcast = true
-                                                        };
+                        this.dnsUdpListenerSocket = new Socket(
+                            AddressFamily.InterNetwork,
+                            SocketType.Dgram,
+                            ProtocolType.Udp) { EnableBroadcast = true };
                         this.dnsUdpListenerSocket.Bind(this.localDnsIp);
                     }
 
@@ -216,23 +186,13 @@ namespace PeaRoxy.ClientLibrary
                     }
                 }
             }
-            catch (Exception)
+            catch
             {
-                // Stat.LogIt("DNS Resolver Error: " + e.Message);
             }
         }
 
         /// <summary>
-        /// The dispose.
-        /// </summary>
-        public void Dispose()
-        {
-            this.dnsTcpListenerSocket.Dispose();
-            this.dnsUdpListenerSocket.Dispose();
-        }
-
-        /// <summary>
-        /// The start.
+        ///     Starting the resolving/forwarding process and listening for the requests.
         /// </summary>
         public void Start()
         {
@@ -246,7 +206,7 @@ namespace PeaRoxy.ClientLibrary
         }
 
         /// <summary>
-        /// The stop.
+        ///     Stopping the resolving/forwarding process.
         /// </summary>
         public void Stop()
         {
@@ -266,7 +226,5 @@ namespace PeaRoxy.ClientLibrary
             {
             }
         }
-
-        #endregion
     }
 }
