@@ -285,6 +285,14 @@ namespace PeaRoxy.Server
                     switch (this.CurrentStage)
                     {
                         case ClientStage.Connected:
+                            string clientAddress = this.UnderlyingSocket.RemoteEndPoint.ToString();
+                            if (
+                                ConfigReader.GetBlackList()
+                                    .Any(blacklist => Common.DoesMatchWildCard(clientAddress, blacklist)))
+                            {
+                                this.Close("Blacklisted Client: " + clientAddress);
+                                return;
+                            }
                             this.currentTimeout = this.NoDataTimeout * 1000;
                             this.forger = new HttpForger(this.UnderlyingSocket, this.Controller.Domain, true);
                             this.CurrentStage = ClientStage.WaitingForForger;
@@ -470,11 +478,19 @@ namespace PeaRoxy.Server
                                     }
 
                                     if (clientRequestedAddress != null)
-                                        if (ConfigReader.GetBlackList().Any(blacklist => blacklist.ToLower() == clientRequestedAddress.ToLower().Trim()))
+                                    {
+                                        string clientRequestedConnectionString = clientRequestedAddress.ToLower().Trim() + ":" + clientRequestedPort;
+
+                                        if (
+                                            ConfigReader.GetBlackList()
+                                                .Any(
+                                                    blacklist =>
+                                                    Common.DoesMatchWildCard(clientRequestedConnectionString, blacklist)))
                                         {
-                                            this.Close(" Blacklisted: " + clientRequestedAddress);
+                                            this.Close("Blacklisted Request: " + clientRequestedAddress);
                                             return;
                                         }
+                                    }
                                 }
 
                                 // Init server response to this request

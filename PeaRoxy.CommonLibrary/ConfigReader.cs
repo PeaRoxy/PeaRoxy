@@ -67,7 +67,7 @@ namespace PeaRoxy.CommonLibrary
                             line = line.Substring(0, line.IndexOf(';'));
                         }
 
-                        blackList.Add(line.Trim());
+                        blackList.Add(line.Trim().ToLower());
                     }
                     catch (Exception)
                     {
