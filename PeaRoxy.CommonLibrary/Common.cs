@@ -371,8 +371,8 @@ namespace PeaRoxy.CommonLibrary
         [DebuggerStepThrough]
         public static string ToRegEx(string wildcard)
         {
-            wildcard = wildcard.Replace("\\r", "\r");
-            wildcard = wildcard.Replace("\\n", "\n");
+            wildcard = wildcard.Replace(@"\r", "\r");
+            wildcard = wildcard.Replace(@"\n", "\n");
             return wildcard.Replace("*", "(.*)").Replace("?", "(.?)").Replace(" ", @"\s");
         }
     }
