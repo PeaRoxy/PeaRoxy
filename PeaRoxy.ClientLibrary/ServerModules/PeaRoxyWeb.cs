@@ -446,7 +446,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                 {
                     if (this.chunkedIsFirst)
                     {
-                        int bodyLocation = Common.GetFirstBytePatternIndex(bytes, Encoding.ASCII.GetBytes("\r\n"));
+                        int bodyLocation = Common.IndexOfPatternInArray(bytes, Encoding.ASCII.GetBytes("\r\n"));
                         this.isChunked = bodyLocation < 5 && bodyLocation > 0;
                         this.chunkedIsFirst = false;
                     }
@@ -455,7 +455,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                     {
                         while (this.chunkedNeeded == 0 && bytes.Length >= 2)
                         {
-                            int digitPlace = Common.GetFirstBytePatternIndex(bytes, Encoding.ASCII.GetBytes("\r\n"));
+                            int digitPlace = Common.IndexOfPatternInArray(bytes, Encoding.ASCII.GetBytes("\r\n"));
                             if (digitPlace == -1)
                             {
                                 this.isChunked = false;
@@ -1070,7 +1070,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                 this.Write(buffer);
 
                 if (!needContentLength && buffer.Length >= 5
-                    && Common.GetFirstBytePatternIndex(buffer, Encoding.ASCII.GetBytes("0\r\n\r\n"), buffer.Length - 5)
+                    && Common.IndexOfPatternInArray(buffer, Encoding.ASCII.GetBytes("0\r\n\r\n"), buffer.Length - 5)
                     != -1)
                 {
                     break;
@@ -1134,7 +1134,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                 }
             }
             else if (bytes.Length >= 5
-                     && Common.GetFirstBytePatternIndex(bytes, Encoding.ASCII.GetBytes("0\r\n\r\n"), bytes.Length - 5)
+                     && Common.IndexOfPatternInArray(bytes, Encoding.ASCII.GetBytes("0\r\n\r\n"), bytes.Length - 5)
                      != -1)
             {
                 this.UnderlyingSocket.Close();

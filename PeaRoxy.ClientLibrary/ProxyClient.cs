@@ -314,7 +314,7 @@ namespace PeaRoxy.ClientLibrary
                 {
                     Uri parsedUrl = new Uri(p);
                     p = name + parsedUrl.Host;
-                    if (smart.ForwarderHttpList.Any(t => Common.IsMatchWildCard(p, t)))
+                    if (smart.ForwarderHttpList.Any(t => Common.DoesMatchWildCard(p, t)))
                     {
                         return true;
                     }
@@ -323,7 +323,7 @@ namespace PeaRoxy.ClientLibrary
                          || p.IndexOf("HTTP://", StringComparison.OrdinalIgnoreCase) == 0)
                 {
                     p = name + p.Substring(p.IndexOf("://", StringComparison.Ordinal) + 3);
-                    if (smart.ForwarderDirectList.Any(t => Common.IsMatchWildCard(p, t)))
+                    if (smart.ForwarderDirectList.Any(t => Common.DoesMatchWildCard(p, t)))
                     {
                         return true;
                     }
@@ -332,7 +332,7 @@ namespace PeaRoxy.ClientLibrary
                         && p.Substring(p.IndexOf(":", StringComparison.Ordinal) + 1) == "80")
                     {
                         p = p.Substring(0, p.IndexOf(":", StringComparison.Ordinal));
-                        if (smart.ForwarderHttpList.Any(t => Common.IsMatchWildCard(p, t)))
+                        if (smart.ForwarderHttpList.Any(t => Common.DoesMatchWildCard(p, t)))
                         {
                             return true;
                         }

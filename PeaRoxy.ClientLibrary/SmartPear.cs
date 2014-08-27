@@ -225,7 +225,7 @@ namespace PeaRoxy.ClientLibrary
                 if (rule.IndexOf(":", StringComparison.Ordinal) > -1)
                 {
                     rule = rule.Substring(0, rule.IndexOf(":", StringComparison.Ordinal)) + "*";
-                    int pl = list.Count(t => Common.IsMatchWildCard(MakeWildCardable(t), rule));
+                    int pl = list.Count(t => Common.DoesMatchWildCard(MakeWildCardable(t), rule));
 
                     if (pl < 3)
                     {
@@ -234,7 +234,7 @@ namespace PeaRoxy.ClientLibrary
 
                     for (int i = 0; i < list.Count; i++)
                     {
-                        if (!Common.IsMatchWildCard(MakeWildCardable(list[i]), rule))
+                        if (!Common.DoesMatchWildCard(MakeWildCardable(list[i]), rule))
                         {
                             continue;
                         }
@@ -290,7 +290,7 @@ namespace PeaRoxy.ClientLibrary
 
                     rule = "*" + rule;
                     string ruleP = ruleApp + " | " + rule;
-                    int pl = list.Count(t => Common.IsMatchWildCard(MakeWildCardable(t), ruleP));
+                    int pl = list.Count(t => Common.DoesMatchWildCard(MakeWildCardable(t), ruleP));
 
                     if (pl < 3)
                     {
@@ -299,7 +299,7 @@ namespace PeaRoxy.ClientLibrary
 
                     for (int i = 0; i < list.Count; i++)
                     {
-                        if (Common.IsMatchWildCard(MakeWildCardable(list[i]), ruleP))
+                        if (Common.DoesMatchWildCard(MakeWildCardable(list[i]), ruleP))
                         {
                             list.RemoveAt(i);
                             i--;
@@ -378,7 +378,7 @@ namespace PeaRoxy.ClientLibrary
 
                     rule = "*" + rule;
                     string ruleP = ruleApp + " | " + rule;
-                    int pl = list.Count(t => Common.IsMatchWildCard(MakeWildCardable(t), ruleP));
+                    int pl = list.Count(t => Common.DoesMatchWildCard(MakeWildCardable(t), ruleP));
 
                     if (pl < 3)
                     {
@@ -387,7 +387,7 @@ namespace PeaRoxy.ClientLibrary
 
                     for (int i = 0; i < list.Count; i++)
                     {
-                        if (Common.IsMatchWildCard(MakeWildCardable(list[i]), ruleP))
+                        if (Common.DoesMatchWildCard(MakeWildCardable(list[i]), ruleP))
                         {
                             list.RemoveAt(i);
                             i--;
@@ -412,7 +412,7 @@ namespace PeaRoxy.ClientLibrary
         {
             if (rule.IndexOf(".", StringComparison.Ordinal) != -1)
             {
-                if (this.ForwarderDirectList.Any(t => Common.IsMatchWildCard(rule, t)))
+                if (this.ForwarderDirectList.Any(t => Common.DoesMatchWildCard(rule, t)))
                 {
                     return;
                 }
@@ -421,7 +421,7 @@ namespace PeaRoxy.ClientLibrary
                     && rule.Substring(rule.IndexOf(":", StringComparison.Ordinal) + 1) == "80")
                 {
                     string rule2 = rule.Substring(0, rule.IndexOf(":", StringComparison.Ordinal));
-                    if (this.ForwarderHttpList.Any(t => Common.IsMatchWildCard(rule2, t)))
+                    if (this.ForwarderHttpList.Any(t => Common.DoesMatchWildCard(rule2, t)))
                     {
                         return;
                     }
@@ -448,7 +448,7 @@ namespace PeaRoxy.ClientLibrary
                 return;
             }
 
-            if (this.ForwarderHttpList.Any(t => Common.IsMatchWildCard(rule, t)))
+            if (this.ForwarderHttpList.Any(t => Common.DoesMatchWildCard(rule, t)))
             {
                 return;
             }
@@ -469,14 +469,14 @@ namespace PeaRoxy.ClientLibrary
         {
             foreach (string rule in list)
             {
-                if (list.Any(item => Common.IsMatchWildCard(MakeWildCardable(rule), item)))
+                if (list.Any(item => Common.DoesMatchWildCard(MakeWildCardable(rule), item)))
                 {
                     continue;
                 }
 
                 for (int i = 0; i < list.Count; i++)
                 {
-                    if (!Common.IsMatchWildCard(MakeWildCardable(list[i]), rule))
+                    if (!Common.DoesMatchWildCard(MakeWildCardable(list[i]), rule))
                     {
                         continue;
                     }

@@ -3,15 +3,10 @@
 //   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
 //   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
 // </copyright>
-// <summary>
-//   The common.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.CommonLibrary
 {
-    #region
-
     using System;
     using System.Diagnostics;
     using System.Globalization;
@@ -21,79 +16,47 @@ namespace PeaRoxy.CommonLibrary
     using System.Text;
     using System.Text.RegularExpressions;
 
-    #endregion
-
     /// <summary>
-    /// The common.
+    ///     The Common class contains the common and independent methods
     /// </summary>
     public static class Common
     {
-        #region Enums
-
         /// <summary>
-        /// The compression type.
+        ///     The Compression Types
         /// </summary>
         public enum CompressionType
         {
-            /// <summary>
-            /// The none.
-            /// </summary>
-            None = 0, 
+            None = 0,
 
-            /// <summary>
-            /// The GZip.
-            /// </summary>
-            GZip = 1, 
+            GZip = 1,
 
-            /// <summary>
-            /// The deflate.
-            /// </summary>
-            Deflate = 2, 
+            Deflate = 2,
 
-            /// <summary>
-            /// The anything.
-            /// </summary>
-            Anything = -1, 
+            Anything = -1,
         }
 
         /// <summary>
-        /// The encryption type.
+        ///     The Encryption Types
         /// </summary>
         public enum EncryptionType
         {
-            /// <summary>
-            /// The none.
-            /// </summary>
-            None = 0, 
+            None = 0,
 
-            /// <summary>
-            /// The triple DES.
-            /// </summary>
-            TripleDes = 1, 
+            TripleDes = 1,
 
-            /// <summary>
-            /// The simple XOR.
-            /// </summary>
-            SimpleXor = 2, 
+            SimpleXor = 2,
 
-            /// <summary>
-            /// The anything.
-            /// </summary>
-            Anything = -1, 
+            Anything = -1,
         }
 
-        #endregion
-
-        #region Public Methods and Operators
-
         /// <summary>
-        /// The convert to html entities.
+        ///     Convert string to HTML entities.
         /// </summary>
         /// <param name="plainText">
-        /// The plain text.
+        ///     The plain text.
         /// </param>
         /// <returns>
-        /// The <see cref="string"/>.
+        ///     The <see cref="string" />.
         /// </returns>
         [DebuggerStepThrough]
         public static string ConvertToHtmlEntities(string plainText)
@@ -127,67 +90,50 @@ namespace PeaRoxy.CommonLibrary
         }
 
         /// <summary>
-        /// The format file size as string.
+        ///     Format the file size as string.
         /// </summary>
-        /// <param name="len">
-        /// The len.
+        /// <param name="fileSize">
+        ///     The file size.
         /// </param>
         /// <returns>
-        /// The <see cref="string"/>.
+        ///     The formated file size as <see cref="string" />.
         /// </returns>
         [DebuggerStepThrough]
-        public static string FormatFileSizeAsString(long len)
+        public static string FormatFileSizeAsString(long fileSize)
         {
-            if (len < 750 && len > 0)
+            if (fileSize < 750 && fileSize > 0)
             {
                 return "0.0 B ~";
             }
 
             string[] suffix = { "B", "KB", "MB", "GB", "TB" };
             int i;
-            double dblSByte = len;
-            for (i = 0; (int)(len / 1024) > 0; i++, len /= 1024)
+            double dblSByte = fileSize;
+            for (i = 0; (int)(fileSize / 1024) > 0; i++, fileSize /= 1024)
             {
-                dblSByte = len / 1024.0;
+                dblSByte = fileSize / 1024.0;
             }
 
             return string.Format("{0:0.0} {1}", dblSByte, suffix[i]);
         }
 
         /// <summary>
-        /// The String from REGEX
-        /// </summary>
-        /// <param name="c">
-        /// The c.
-        /// </param>
-        /// <returns>
-        /// The <see cref="string"/>.
-        /// </returns>
-        [DebuggerStepThrough]
-        public static string FromRegEx(string c)
-        {
-            c = c.Replace("\r", "\\r");
-            c = c.Replace("\n", "\\n");
-            return c.Replace("(.*)", "*").Replace("(.?)", "?").Replace(@"\s", " ");
-        }
-
-        /// <summary>
-        /// The get first byte pattern index.
+        ///     Searches for specified pattern in the byte array
         /// </summary>
         /// <param name="bytes">
-        /// The bytes.
+        ///     The bytes to check.
         /// </param>
         /// <param name="pattern">
-        /// The pattern.
+        ///     The pattern to search for.
         /// </param>
         /// <param name="start">
-        /// The start.
+        ///     The starting index.
         /// </param>
         /// <returns>
-        /// The <see cref="int"/>.
+        ///     The index of the first byte of the pattern in the array as <see cref="int" />. -1 if not found.
         /// </returns>
         [DebuggerStepThrough]
-        public static int GetFirstBytePatternIndex(byte[] bytes, byte[] pattern, int start = 0)
+        public static int IndexOfPatternInArray(byte[] bytes, byte[] pattern, int start = 0)
         {
             for (int i = start; i < bytes.Length; i++)
             {
@@ -213,74 +159,36 @@ namespace PeaRoxy.CommonLibrary
         }
 
         /// <summary>
-        /// The get next level domain.
-        /// </summary>
-        /// <param name="hostname">
-        /// The hostname.
-        /// </param>
-        /// <returns>
-        /// The <see cref="string"/>.
-        /// </returns>
-        [DebuggerStepThrough]
-        public static string GetNextLevelDomain(string hostname)
-        {
-            try
-            {
-                return hostname;
-
-                // string[] SecondUnAcceptableDomainNames = new string[] { "aero", "asia", "biz", "cat", "com", "coop", "info", "int", "jobs", "mobi", "museum", "name", "net", "org", "pro", "tel", "travel", "xxx" };
-                // int pl = hostname.IndexOf(".");
-                // if (pl < 0)
-                // return hostname;
-                // if (SecondUnAcceptableDomainNames.Contains(hostname.Substring(pl + 1)))
-                // return hostname;
-                // return hostname.Substring(pl + 1);
-                // pl = hostname.LastIndexOf(".", pl - 1);
-                // if (pl < 0)
-                // return hostname;
-                // if (SecondUnAcceptableDomainNames.Contains(hostname.Substring(pl + 1, hostname.LastIndexOf(".") - (pl + 1))))
-                // pl = hostname.LastIndexOf(".", pl - 1);
-                // if (pl < 0)
-                // return hostname;
-                // return hostname.Substring(pl + 1);
-            }
-            catch (Exception)
-            {
-                return string.Empty;
-            }
-        }
-
-        /// <summary>
-        /// The is IP address.
+        ///     Check if the provided string is an IP address
         /// </summary>
         /// <param name="ip">
-        /// The IP.
+        ///     The string.
         /// </param>
         /// <returns>
-        /// The <see cref="bool"/>.
+        ///     A <see cref="bool" /> value indicating if the provided string could be an IP address.
         /// </returns>
         [DebuggerStepThrough]
         public static bool IsIpAddress(string ip)
         {
             return Regex.IsMatch(
-                ip, 
+                ip,
                 @"\b((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$\b");
         }
 
         /// <summary>
-        /// The is match wild card.
+        ///     Check if the provided string match the specified wild card
         /// </summary>
         /// <param name="subject">
-        /// The subject.
+        ///     The string to check.
         /// </param>
         /// <param name="wildcard">
-        /// The wildcard.
+        ///     The wild card to check against.
         /// </param>
         /// <returns>
-        /// The <see cref="bool"/>.
+        ///     The result as a <see cref="bool" /> value.
         /// </returns>
         [DebuggerStepThrough]
-        public static bool IsMatchWildCard(string subject, string wildcard)
+        public static bool DoesMatchWildCard(string subject, string wildcard)
         {
             if (wildcard == string.Empty)
             {
@@ -317,20 +225,20 @@ namespace PeaRoxy.CommonLibrary
         }
 
         /// <summary>
-        /// The is socket connected.
+        ///     Check if the specific Net.Sockets.Socket object is still connected and valid
         /// </summary>
         /// <param name="client">
-        /// The client.
+        ///     The Net.Sockets.Socket object.
         /// </param>
         /// <returns>
-        /// The <see cref="bool"/>.
+        ///     The connection state as a <see cref="bool" /> value.
         /// </returns>
         [DebuggerStepThrough]
         public static bool IsSocketConnected(Socket client)
         {
             try
             {
-                if (!client.Connected)
+                if (client == null || !client.Connected)
                 {
                     return false;
                 }
@@ -353,13 +261,13 @@ namespace PeaRoxy.CommonLibrary
         }
 
         /// <summary>
-        /// The is valid IP subnet.
+        ///     Check whether the specified IPSubnet is valid
         /// </summary>
         /// <param name="subnetIp">
-        /// The IP subnet.
+        ///     The IP subnet.
         /// </param>
         /// <returns>
-        /// The <see cref="bool"/>.
+        ///     The result as a <see cref="bool" /> value.
         /// </returns>
         [DebuggerStepThrough]
         public static bool IsValidIpSubnet(IPAddress subnetIp)
@@ -384,13 +292,13 @@ namespace PeaRoxy.CommonLibrary
         }
 
         /// <summary>
-        /// The MD5 hasher.
+        ///     MD5 hashing of the string
         /// </summary>
         /// <param name="str">
-        /// The string.
+        ///     The string.
         /// </param>
         /// <returns>
-        /// The <see cref="string"/>.
+        ///     The hash as a <see cref="string" /> value.
         /// </returns>
         [DebuggerStepThrough]
         public static string Md5(string str)
@@ -407,19 +315,19 @@ namespace PeaRoxy.CommonLibrary
         }
 
         /// <summary>
-        /// The merge IP into IP subnet.
+        ///     Merge an IP address into the specified IP subnet based on another IP address
         /// </summary>
         /// <param name="ip">
-        /// The IP address.
+        ///     The IP address.
         /// </param>
         /// <param name="subnetIp">
-        /// The IP subnet.
+        ///     The IP subnet.
         /// </param>
         /// <param name="newIp">
-        /// The new IP address.
+        ///     The new IP address.
         /// </param>
         /// <returns>
-        /// The <see cref="IPAddress"/>.
+        ///     The resulting <see cref="IPAddress" />.
         /// </returns>
         [DebuggerStepThrough]
         public static IPAddress MergeIpIntoIpSubnet(IPAddress ip, IPAddress subnetIp, IPAddress newIp)
@@ -452,13 +360,13 @@ namespace PeaRoxy.CommonLibrary
         }
 
         /// <summary>
-        /// The convert wild card to REGEX
+        ///     Convert the wild card string to a RegEx pattern
         /// </summary>
         /// <param name="wildcard">
-        /// The wild card.
+        ///     The wild card string.
         /// </param>
         /// <returns>
-        /// The <see cref="string"/>.
+        ///     The RegEx pattern as a <see cref="string" /> value.
         /// </returns>
         [DebuggerStepThrough]
         public static string ToRegEx(string wildcard)
@@ -467,7 +375,5 @@ namespace PeaRoxy.CommonLibrary
             wildcard = wildcard.Replace("\\n", "\n");
             return wildcard.Replace("*", "(.*)").Replace("?", "(.?)").Replace(" ", @"\s");
         }
-
-        #endregion
     }
 }

@@ -3,60 +3,39 @@
 //   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
 //   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
 // </copyright>
-// <summary>
-//   The config reader.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.CommonLibrary
 {
-    #region
-
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.IO;
     using System.Linq;
 
-    #endregion
-
     /// <summary>
-    /// The config reader.
+    ///     The helper class to read the configuration file, user accounts file and blacklist file
     /// </summary>
     public static class ConfigReader
     {
-        #region Static Fields
-
-        /// <summary>
-        /// The _black list.
-        /// </summary>
         private static List<string> blackList;
 
-        /// <summary>
-        /// The _settings.
-        /// </summary>
         private static Dictionary<string, string> settings;
 
-        /// <summary>
-        /// The _users.
-        /// </summary>
         private static Collection<ConfigUser> users;
 
-        #endregion
-
-        #region Public Methods and Operators
-
         /// <summary>
-        /// The get black list.
+        ///     The get list of blacklisted addresses
         /// </summary>
         /// <param name="fileAddress">
-        /// The file address.
+        ///     The file address to read the list from
         /// </param>
         /// <returns>
-        /// The <see>
+        ///     The
+        ///     <see>
         ///         <cref>Collection</cref>
         ///     </see>
-        ///     .
+        ///     of black listed addresses.
         /// </returns>
         public static IEnumerable<string> GetBlackList(string fileAddress = "blacklist.ini")
         {
@@ -75,7 +54,9 @@ namespace PeaRoxy.CommonLibrary
                     {
                         string line = st.ReadLine();
                         if (line == null)
+                        {
                             continue;
+                        }
                         if (line.IndexOf('#') > -1)
                         {
                             line = line.Substring(0, line.IndexOf('#'));
@@ -103,16 +84,17 @@ namespace PeaRoxy.CommonLibrary
         }
 
         /// <summary>
-        /// The get settings.
+        ///     Get list of settings
         /// </summary>
         /// <param name="fileAddress">
-        /// The file address.
+        ///     The address for settings file.
         /// </param>
         /// <returns>
-        /// The <see>
+        ///     The
+        ///     <see>
         ///         <cref>Dictionary</cref>
         ///     </see>
-        ///     .
+        ///     of key/value for each setting.
         /// </returns>
         public static Dictionary<string, string> GetSettings(string fileAddress = "settings.ini")
         {
@@ -132,7 +114,9 @@ namespace PeaRoxy.CommonLibrary
                     {
                         string line = st.ReadLine();
                         if (line == null)
+                        {
                             continue;
+                        }
                         if (line.IndexOf('#') > -1)
                         {
                             line = line.Substring(0, line.IndexOf('#'));
@@ -144,13 +128,17 @@ namespace PeaRoxy.CommonLibrary
                         }
 
                         if (line.IndexOf('=') <= 0 || line.Trim().Length <= 3)
+                        {
                             continue;
+                        }
 
                         string option = line.Substring(0, line.IndexOf('=')).Trim().ToLower();
                         string value = line.Substring(line.IndexOf('=') + 1);
                         foreach (string arg in args.Where(arg => arg.ToLower().Trim().StartsWith(option)))
                         {
-                            value = arg.Substring(arg.ToLower().IndexOf(option, StringComparison.Ordinal) + option.Length).Trim();
+                            value =
+                                arg.Substring(arg.ToLower().IndexOf(option, StringComparison.Ordinal) + option.Length)
+                                    .Trim();
                         }
 
                         if (option.Trim().Length > 0 && value.Length > 0)
@@ -173,16 +161,17 @@ namespace PeaRoxy.CommonLibrary
         }
 
         /// <summary>
-        /// The get users.
+        ///     Get list of acceptable users
         /// </summary>
         /// <param name="fileAddress">
-        /// The file address.
+        ///     The address of users file.
         /// </param>
         /// <returns>
-        /// The <see>
+        ///     The
+        ///     <see>
         ///         <cref>Collection</cref>
         ///     </see>
-        ///     .
+        ///     of users.
         /// </returns>
         public static Collection<ConfigUser> GetUsers(string fileAddress = "users.ini")
         {
@@ -201,7 +190,9 @@ namespace PeaRoxy.CommonLibrary
                     {
                         string line = st.ReadLine();
                         if (line == null)
+                        {
                             continue;
+                        }
                         if (line.IndexOf('#') > -1)
                         {
                             line = line.Substring(0, line.IndexOf('#'));
@@ -235,7 +226,5 @@ namespace PeaRoxy.CommonLibrary
 
             return users;
         }
-
-        #endregion
     }
 }
