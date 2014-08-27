@@ -24,6 +24,18 @@ namespace PeaRoxy.CommonLibrary
 
         private static Collection<ConfigUser> users;
 
+        private static DateTime blackListLastWrite;
+
+        private static DateTime settingListLastWrite;
+
+        private static DateTime userListLastWrite;
+
+        private static DateTime blackListLastReadTime;
+
+        private static DateTime settingListLastReadTime;
+
+        private static DateTime userListLastReadTime;
+
         /// <summary>
         ///     The get list of blacklisted addresses
         /// </summary>
@@ -39,8 +51,14 @@ namespace PeaRoxy.CommonLibrary
         /// </returns>
         public static IEnumerable<string> GetBlackList(string fileAddress = "blacklist.ini")
         {
-            if (blackList != null)
+            if (blackList != null
+                && ((DateTime.Now - blackListLastReadTime) < new TimeSpan(0, 1, 0)
+                    || blackListLastWrite.Equals(File.GetLastWriteTime(fileAddress))))
             {
+                if ((DateTime.Now - blackListLastReadTime) >= new TimeSpan(0, 1, 0))
+                {
+                    blackListLastReadTime = DateTime.Now;
+                }
                 return blackList;
             }
 
@@ -48,6 +66,8 @@ namespace PeaRoxy.CommonLibrary
             try
             {
                 StreamReader st = new StreamReader(fileAddress);
+                blackListLastWrite = File.GetLastWriteTime(fileAddress);
+                blackListLastReadTime = DateTime.Now;
                 while (!st.EndOfStream)
                 {
                     try
@@ -98,8 +118,14 @@ namespace PeaRoxy.CommonLibrary
         /// </returns>
         public static Dictionary<string, string> GetSettings(string fileAddress = "settings.ini")
         {
-            if (settings != null)
+            if (settings != null
+                && ((DateTime.Now - settingListLastReadTime) < new TimeSpan(0, 1, 0)
+                    || settingListLastWrite.Equals(File.GetLastWriteTime(fileAddress))))
             {
+                if ((DateTime.Now - settingListLastReadTime) >= new TimeSpan(0, 1, 0))
+                {
+                    settingListLastReadTime = DateTime.Now;
+                }
                 return settings;
             }
 
@@ -108,6 +134,8 @@ namespace PeaRoxy.CommonLibrary
             try
             {
                 StreamReader st = new StreamReader(fileAddress);
+                settingListLastWrite = File.GetLastWriteTime(fileAddress);
+                settingListLastReadTime = DateTime.Now;
                 while (!st.EndOfStream)
                 {
                     try
@@ -175,8 +203,14 @@ namespace PeaRoxy.CommonLibrary
         /// </returns>
         public static Collection<ConfigUser> GetUsers(string fileAddress = "users.ini")
         {
-            if (users != null)
+            if (users != null
+                && ((DateTime.Now - userListLastReadTime) < new TimeSpan(0, 1, 0)
+                    || userListLastWrite.Equals(File.GetLastWriteTime(fileAddress))))
             {
+                if ((DateTime.Now - userListLastReadTime) >= new TimeSpan(0, 1, 0))
+                {
+                    userListLastReadTime = DateTime.Now;
+                }
                 return users;
             }
 
@@ -184,6 +218,8 @@ namespace PeaRoxy.CommonLibrary
             try
             {
                 StreamReader st = new StreamReader(fileAddress);
+                userListLastWrite = File.GetLastWriteTime(fileAddress);
+                userListLastReadTime = DateTime.Now;
                 while (!st.EndOfStream)
                 {
                     try
