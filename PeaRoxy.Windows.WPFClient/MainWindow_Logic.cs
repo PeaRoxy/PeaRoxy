@@ -663,7 +663,7 @@ namespace PeaRoxy.Windows.WPFClient
                         switch (Settings.Default.ProxyServer_Type)
                         {
                             case 0:
-                                ser = new Http(
+                                ser = new Https(
                                     Settings.Default.ProxyServer_Address,
                                     Settings.Default.ProxyServer_Port,
                                     (authType == 2) ? Settings.Default.UserAndPassword_User : string.Empty,
