@@ -22,7 +22,7 @@ namespace PeaRoxy.ClientLibrary
     using PeaRoxy.Platform;
 
     using Https = PeaRoxy.ClientLibrary.ProxyModules.Https;
-    using Socks5 = PeaRoxy.ClientLibrary.ProxyModules.Socks5;
+    using Socks = PeaRoxy.ClientLibrary.ProxyModules.Socks;
 
     /// <summary>
     ///     The proxy client object is representation of an incoming connection
@@ -355,7 +355,7 @@ namespace PeaRoxy.ClientLibrary
                         this.IsSmartForwarderEnable = false;
                         if (isSocks)
                         {
-                            Socks5.DirectHandle(
+                            Socks.DirectHandle(
                                 this,
                                 currentActiveServer.GetRequestedAddress(),
                                 currentActiveServer.GetRequestedPort(),
@@ -385,7 +385,7 @@ namespace PeaRoxy.ClientLibrary
                             this.IsSmartForwarderEnable = false;
                             if (isSocks)
                             {
-                                Socks5.DirectHandle(
+                                Socks.DirectHandle(
                                     this,
                                     currentActiveServer.GetRequestedAddress(),
                                     currentActiveServer.GetRequestedPort(),
@@ -744,10 +744,10 @@ namespace PeaRoxy.ClientLibrary
                         {
                             Https.Handle(this.reqBuffer, this);
                         }
-                        else if (Socks5.IsSocks(this.reqBuffer)
+                        else if (Socks.IsSocks(this.reqBuffer)
                                  && this.Controller.Status.HasFlag(ProxyController.ControllerStatus.Proxy))
                         {
-                            Socks5.Handle(this.reqBuffer, this);
+                            Socks.Handle(this.reqBuffer, this);
                         }
                         else
                         {
