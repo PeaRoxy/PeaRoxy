@@ -104,7 +104,7 @@ namespace PeaRoxy.Server
             Common.CompressionTypes comTypes = Common.CompressionTypes.None,
             int receivePacketSize = 8192,
             int sendPacketSize = 1024,
-            int selectedAuthMode = 255,
+            Common.AuthenticationMethods selectedAuthMode = Common.AuthenticationMethods.Invalid,
             int noDataTimeout = 6000,
             Common.EncryptionTypes clientSupportedEncryptionType = Common.EncryptionTypes.AllDefaults,
             Common.CompressionTypes clientSupportedCompressionType = Common.CompressionTypes.AllDefaults)
@@ -172,7 +172,7 @@ namespace PeaRoxy.Server
 
         private int NoDataTimeout { get; set; }
 
-        private int SelectedAuthMode { get; set; }
+        private Common.AuthenticationMethods SelectedAuthMode { get; set; }
 
         public void Dispose()
         {
@@ -270,7 +270,7 @@ namespace PeaRoxy.Server
                                 ConfigUser acceptedUser = null;
 
                                 // Select Authentication Type
-                                if (this.SelectedAuthMode != clientRequest[0])
+                                if ((byte)this.SelectedAuthMode != clientRequest[0])
                                 {
                                     serverErrorCode = 99;
                                 }
@@ -278,10 +278,10 @@ namespace PeaRoxy.Server
                                 {
                                     switch (this.SelectedAuthMode)
                                     {
-                                        case 0:
+                                        case Common.AuthenticationMethods.None:
                                             Array.Copy(clientRequest, 1, clientRequest, 0, clientRequest.Length - 1);
                                             break;
-                                        case 1:
+                                        case Common.AuthenticationMethods.UserPass:
                                             {
                                                 // Authentication using user name and password hash
                                                 string username = Encoding.ASCII.GetString(

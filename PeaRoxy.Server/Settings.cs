@@ -149,27 +149,27 @@ namespace PeaRoxy.Server
             HelpText =
                 "Active Method for clients to authenticate, will use users.ini when user & pass mode selected. 0: No Authenticate (Open) / 1: User & Pass / Default: 1",
             MetaValue = "TYPE")]
-        public int AuthMethod
+        public Common.AuthenticationMethods AuthMethod
         {
             get
             {
                 if (this.authMethod != -1)
                 {
-                    return this.authMethod;
+                    return (Common.AuthenticationMethods)this.authMethod;
                 }
                 if (this.Config.ContainsKey("AuthMethod") && !string.IsNullOrEmpty(this.Config["AuthMethod"]))
                 {
                     byte i;
                     if (byte.TryParse(this.Config["AuthMethod"], out i))
                     {
-                        return i;
+                        return (Common.AuthenticationMethods)i;
                     }
                 }
-                return 1;
+                return (Common.AuthenticationMethods)1;
             }
             set
             {
-                this.authMethod = value;
+                this.authMethod = (int)value;
             }
         }
 

@@ -22,6 +22,18 @@ namespace PeaRoxy.CommonLibrary
     public static class Common
     {
         /// <summary>
+        ///     The Authentication Methods
+        /// </summary>
+        public enum AuthenticationMethods : byte
+        {
+            None = 0,
+
+            UserPass = 1,
+
+            Invalid = 255,
+        }
+
+        /// <summary>
         ///     The Compression Types
         /// </summary>
         [Flags]
@@ -50,7 +62,7 @@ namespace PeaRoxy.CommonLibrary
 
             AllDefaults = None | TripleDes | SimpleXor,
         }
-        
+
         /// <summary>
         ///     Convert string to HTML entities.
         /// </summary>

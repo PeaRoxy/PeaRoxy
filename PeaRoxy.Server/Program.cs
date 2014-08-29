@@ -8,9 +8,12 @@
 namespace PeaRoxy.Server
 {
     using System;
+    using System.Linq;
     using System.Net;
     using System.Reflection;
     using System.Threading;
+
+    using CommandLine;
 
     internal static class Program
     {
@@ -40,6 +43,17 @@ namespace PeaRoxy.Server
                 sController.Port,
                 Assembly.GetExecutingAssembly().GetName().Version);
             Console.WriteLine("Press X to Exit");
+            Console.WriteLine("");
+            foreach (PropertyInfo propertyInfo in Settings.Default.GetType().GetProperties())
+            {
+                if (propertyInfo.CanRead && propertyInfo.GetCustomAttributes(typeof(OptionAttribute), false).Any())
+                {
+                    Console.WriteLine(
+                        "{0}: {1}",
+                        propertyInfo.Name,
+                        propertyInfo.GetValue(Settings.Default, new object[] { }));
+                }
+            }
             Thread.Sleep(2000);
             do
             {
