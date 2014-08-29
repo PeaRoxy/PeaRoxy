@@ -31,7 +31,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
 
         private readonly byte[] encryptionSaltBytes = new byte[4];
 
-        private readonly Common.EncryptionType encryptionType = Common.EncryptionType.None;
+        private readonly Common.EncryptionTypes encryptionType = Common.EncryptionTypes.None;
 
         private bool chunkedIsFirst = true;
 
@@ -61,7 +61,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
 
         private ushort requestedPort;
 
-        private Common.EncryptionType serverEncryptionType = Common.EncryptionType.None;
+        private Common.EncryptionTypes serverEncryptionType = Common.EncryptionTypes.None;
 
         private byte[] writeBuffer = new byte[0];
 
@@ -91,7 +91,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             string address,
             string username = "",
             string password = "",
-            Common.EncryptionType encType = Common.EncryptionType.None,
+            Common.EncryptionTypes encType = Common.EncryptionTypes.None,
             bool addressChecked = false)
         {
             if (string.IsNullOrEmpty(address))
@@ -99,7 +99,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                 throw new ArgumentException(@"Invalid value.", "address");
             }
 
-            if (encType != Common.EncryptionType.SimpleXor && encType != Common.EncryptionType.None)
+            if (encType != Common.EncryptionTypes.SimpleXor && encType != Common.EncryptionTypes.None)
             {
                 throw new ArgumentException(@"Invalid value.", "encType");
             }
@@ -894,7 +894,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                     indexOfCookies,
                     StringComparison.InvariantCultureIgnoreCase);
                 this.serverEncryptionType =
-                    (Common.EncryptionType)
+                    (Common.EncryptionTypes)
                     int.Parse(responseHeader.Substring(startOfCookies, endOfCookies - startOfCookies));
             }
 
@@ -906,11 +906,11 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             {
                 switch (this.serverEncryptionType)
                 {
-                    case Common.EncryptionType.None:
+                    case Common.EncryptionTypes.None:
 
                         // Do Nothing. It is OK
                         break;
-                    case Common.EncryptionType.SimpleXor:
+                    case Common.EncryptionTypes.SimpleXor:
                         this.peerCryptor = new SimpleXorCryptor(this.encryptionKey, false);
                         this.peerCryptor.SetSalt(this.encryptionSaltBytes);
                         break;
@@ -1000,7 +1000,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
 
             switch (this.encryptionType)
             {
-                case Common.EncryptionType.SimpleXor:
+                case Common.EncryptionTypes.SimpleXor:
                     this.cryptor = new SimpleXorCryptor(this.encryptionKey, false);
                     break;
             }

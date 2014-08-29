@@ -21,8 +21,6 @@ namespace PeaRoxy.Server
     using System.Text;
     using System.Threading;
 
-    using PeaRoxy.CommonLibrary;
-
     #endregion
 
     /// <summary>
@@ -96,102 +94,25 @@ namespace PeaRoxy.Server
         /// </summary>
         public Controller()
         {
-            this.Domain = !ConfigReader.GetSettings().ContainsKey("PeaRoxyDomain".ToLower()) ? string.Empty : ConfigReader.GetSettings()["PeaRoxyDomain".ToLower()];
+            this.Domain = Settings.Default.PeaRoxyDomain;
 
-            IPAddress ipz;
-            if (!ConfigReader.GetSettings().ContainsKey("HTTPForwardingIP".ToLower())
-                || !IPAddress.TryParse(ConfigReader.GetSettings()["HTTPForwardingIP".ToLower()], out ipz))
-            {
-                this.HttpForwardingIp = IPAddress.Any;
-            }
-            else
-            {
-                this.HttpForwardingIp = ipz;
-            }
+            this.HttpForwardingIp = Settings.Default.HttpForwardingIp;
 
-            ushort fp;
-            if (!ConfigReader.GetSettings().ContainsKey("HTTPForwardingPort".ToLower())
-                || !ushort.TryParse(ConfigReader.GetSettings()["HTTPForwardingPort".ToLower()], out fp))
-            {
-                this.HttpForwardingPort = 0;
-            }
-            else
-            {
-                this.HttpForwardingPort = fp;
-            }
+            this.HttpForwardingPort = (ushort)Settings.Default.HttpForwardingPort;
 
-            ushort p;
-            if (!ConfigReader.GetSettings().ContainsKey("ServerPort".ToLower())
-                || !ushort.TryParse(ConfigReader.GetSettings()["ServerPort".ToLower()], out p))
-            {
-                // Read Listening port from config
-                this.Port = 1080;
-            }
-            else
-            {
-                this.Port = p;
-            }
+            this.Port = (ushort)Settings.Default.ServerPort;
 
-            IPAddress ip;
-            if (!ConfigReader.GetSettings().ContainsKey("ServerIP".ToLower())
-                || !IPAddress.TryParse(ConfigReader.GetSettings()["ServerIP".ToLower()], out ip))
-            {
-                // Read Listening IP from config
-                this.Ip = IPAddress.Any;
-            }
-            else
-            {
-                this.Ip = ip;
-            }
+            this.Ip = IPAddress.Parse(Settings.Default.ServerIp);
 
-            int errorLog;
-            if (!ConfigReader.GetSettings().ContainsKey("LogErrors".ToLower())
-                || !int.TryParse(ConfigReader.GetSettings()["LogErrors".ToLower()], out errorLog))
-            {
-                errorLog = 0;
-            }
+            this.acceptingWait = Math.Min(Math.Max(1000 / Settings.Default.MaxAcceptingClock, 1), 1000);
+            this.routingWait = Math.Min(Math.Max(1000 / Settings.Default.MaxRoutingClock, 1), 1000);
 
-            int usageLog;
-            if (!ConfigReader.GetSettings().ContainsKey("LogUsersUsage".ToLower())
-                || !int.TryParse(ConfigReader.GetSettings()["LogUsersUsage".ToLower()], out usageLog))
-            {
-                usageLog = 0;
-            }
 
-            if (!ConfigReader.GetSettings().ContainsKey("MaxAcceptingClock".ToLower())
-                || !int.TryParse(ConfigReader.GetSettings()["MaxAcceptingClock".ToLower()], out this.acceptingWait))
-            {
-                this.acceptingWait = 10;
-            }
-            else
-            {
-                this.acceptingWait = Math.Min(Math.Max(1000 / this.acceptingWait, 0), 1000);
-            }
-
-            if (!ConfigReader.GetSettings().ContainsKey("MaxRoutingClock".ToLower())
-                || !int.TryParse(ConfigReader.GetSettings()["MaxRoutingClock".ToLower()], out this.routingWait))
-            {
-                this.routingWait = 1;
-            }
-            else
-            {
-                this.routingWait = Math.Min(Math.Max(1000 / this.routingWait, 0), 1000);
-            }
-
-            string usageLogAddress = !ConfigReader.GetSettings().ContainsKey("LogUsersUsageAddress".ToLower()) ? "." : ConfigReader.GetSettings()["LogUsersUsageAddress".ToLower()];
-
-            Screen.StartScreen(errorLog == 1, usageLog == 1, usageLogAddress);
-
-            bool pingMasterServer;
-            if (!ConfigReader.GetSettings().ContainsKey("PingMasterServer".ToLower())
-                || !bool.TryParse(ConfigReader.GetSettings()["PingMasterServer".ToLower()], out pingMasterServer))
-            {
-                pingMasterServer = false;
-            }
+            Screen.StartScreen((Settings.Default.LogErrors ?? (bool?)true).Value, !string.IsNullOrEmpty(Settings.Default.UsersUsageLogAddress), Settings.Default.UsersUsageLogAddress);
 
             try
             {
-                if (pingMasterServer)
+                if ((Settings.Default.PingMasterServer ?? (bool?)true).Value)
                 {
                     TcpClient pingTcp = new TcpClient();
                     pingTcp.Connect("pearoxy.com", 80);
@@ -204,21 +125,14 @@ namespace PeaRoxy.Server
                                 {
                                     pingTcp.EndConnect(ar);
                                     NetworkStream pingStream = pingTcp.GetStream();
-                                    byte configSelectedAuth;
-                                    if (!ConfigReader.GetSettings().ContainsKey("AuthMethod".ToLower())
-                                        || !byte.TryParse(
-                                            ConfigReader.GetSettings()["AuthMethod".ToLower()], 
-                                            out configSelectedAuth))
-                                    {
-                                        // Read config about how to auth user 
-                                        configSelectedAuth = 255;
-                                    }
 
-                                    string rn = "\r\n";
-                                    string pingRequest = "GET /ping.php?do=register&address=" + this.Ip
-                                                         + "&port=" + this.Port + "&authmode="
-                                                         + configSelectedAuth + " HTTP/1.1" + rn
-                                                         + "Host: reporting.pearoxy.com" + rn + rn;
+                                    const string Rn = "\r\n";
+                                    string pingRequest =
+                                        string.Format(
+                                            "GET /ping.php?do=register&address={0}&port={1}&authmode={2} HTTP/1.1",
+                                            this.Ip,
+                                            this.Port,
+                                            Settings.Default.AuthMethod) + Rn + "Host: reporting.pearoxy.com" + Rn + Rn;
                                     byte[] pingRequestBytes = Encoding.ASCII.GetBytes(pingRequest);
                                     pingStream.BeginWrite(
                                         pingRequestBytes, 
@@ -296,7 +210,7 @@ namespace PeaRoxy.Server
         /// <summary>
         /// Gets the http forwarding ip.
         /// </summary>
-        public IPAddress HttpForwardingIp { get; private set; }
+        public string HttpForwardingIp { get; private set; }
 
         /// <summary>
         /// Gets the http forwarding port.
@@ -477,79 +391,6 @@ namespace PeaRoxy.Server
         /// </exception>
         private void AcceptingWorkerDoWork(object sender, DoWorkEventArgs e)
         {
-            int ti; // Temporary variable
-            if (
-                !(ConfigReader.GetSettings().ContainsKey("NoDataConnectionTimeOut".ToLower())
-                  && int.TryParse(ConfigReader.GetSettings()["NoDataConnectionTimeOut".ToLower()], out ti)))
-            {
-                // Read settings about timeout
-                ti = 600;
-            }
-
-            int sp; // Temporary variable
-            if (
-                !(ConfigReader.GetSettings().ContainsKey("SendPacketSize".ToLower())
-                  && int.TryParse(ConfigReader.GetSettings()["SendPacketSize".ToLower()], out sp)))
-            {
-                // Read Settings about buffer size of connections
-                sp = 10 * 1024;
-            }
-
-            int rp; // Temporary variable
-            if (
-                !(ConfigReader.GetSettings().ContainsKey("ReceivePacketSize".ToLower())
-                  && int.TryParse(ConfigReader.GetSettings()["ReceivePacketSize".ToLower()], out rp)))
-            {
-                // Read Settings about buffer size of connections
-                rp = 10 * 1024;
-            }
-
-            byte enc; // Temporary variable
-            if (
-                !(ConfigReader.GetSettings().ContainsKey("EncryptionType".ToLower())
-                  && byte.TryParse(ConfigReader.GetSettings()["EncryptionType".ToLower()], out enc)))
-            {
-                // Try to set selected encryption type in settings
-                enc = (byte)Common.EncryptionType.None;
-            }
-
-            int clientSupportedEncryptionType;
-            if (!ConfigReader.GetSettings().ContainsKey("SupportedEncryptionTypes".ToLower())
-                || !int.TryParse(
-                    ConfigReader.GetSettings()["SupportedEncryptionTypes".ToLower()], 
-                    out clientSupportedEncryptionType))
-            {
-                // If we don't have any setting about supported types of encryption set it to def, -1 mean any type
-                clientSupportedEncryptionType = -1;
-            }
-
-            byte com; // Temporary variable
-            if (
-                !(ConfigReader.GetSettings().ContainsKey("CompressionType".ToLower())
-                  && byte.TryParse(ConfigReader.GetSettings()["CompressionType".ToLower()], out com)))
-            {
-                // Try to set selected compression type in settings
-                com = (byte)Common.CompressionType.None;
-            }
-
-            int clientSupportedCompressionType;
-            if (!ConfigReader.GetSettings().ContainsKey("SupportedCompressionTypes".ToLower())
-                || !int.TryParse(
-                    ConfigReader.GetSettings()["SupportedCompressionTypes".ToLower()], 
-                    out clientSupportedCompressionType))
-            {
-                // If we don't have any setting about supported types of compression set it to def, -1 mean any type
-                clientSupportedCompressionType = -1;
-            }
-
-            byte configSelectedAuth;
-            if (!ConfigReader.GetSettings().ContainsKey("AuthMethod".ToLower())
-                || !byte.TryParse(ConfigReader.GetSettings()["AuthMethod".ToLower()], out configSelectedAuth))
-            {
-                // Read config about how to auth user 
-                throw new Exception("Bad AuthMethod in config file.");
-            }
-
             while (!this.acceptingWorker.CancellationPending)
             {
                 try
@@ -560,18 +401,18 @@ namespace PeaRoxy.Server
                         lock (this.connectedClients)
                             this.connectedClients.Add(
                                 new PeaRoxyClient(
-                                    this.listeningServer.Accept(), 
-                                    this, 
-                                    (Common.EncryptionType)enc, 
-                                    (Common.CompressionType)com, 
-                                    rp, 
-                                    sp, 
-                                    configSelectedAuth, 
-                                    ti, 
-                                    clientSupportedEncryptionType, 
-                                    clientSupportedCompressionType));
-                                
-                                // Create a client and send TCPClient to it, Let add this client to list too, So we can close it when needed
+                                    this.listeningServer.Accept(),
+                                    this,
+                                    Settings.Default.EncryptionType,
+                                    Settings.Default.CompressionType,
+                                    Settings.Default.ReceivePacketSize,
+                                    Settings.Default.SendPacketSize,
+                                    Settings.Default.AuthMethod,
+                                    Settings.Default.NoDataConnectionTimeOut,
+                                    Settings.Default.SupportedEncryptionTypes,
+                                    Settings.Default.SupportedCompressionTypes));
+
+                        // Create a client and send TCPClient to it, Let add this client to list too, So we can close it when needed
                     }
 
                     if (this.connectedClients.Count > 0)

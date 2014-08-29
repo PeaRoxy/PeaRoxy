@@ -47,12 +47,12 @@ namespace PeaRoxy.CoreProtocol
         /// <summary>
         /// The compression type.
         /// </summary>
-        private readonly Common.CompressionType compressionType = Common.CompressionType.None;
+        private readonly Common.CompressionTypes compressionType = Common.CompressionTypes.None;
 
         /// <summary>
         /// The encryption type.
         /// </summary>
-        private readonly Common.EncryptionType encryptionType = Common.EncryptionType.None;
+        private readonly Common.EncryptionTypes encryptionType = Common.EncryptionTypes.None;
 
         /// <summary>
         /// The pear encryption salt.
@@ -82,7 +82,7 @@ namespace PeaRoxy.CoreProtocol
         /// <summary>
         /// The peer compression type.
         /// </summary>
-        private Common.CompressionType peerCompressionType = Common.CompressionType.None;
+        private Common.CompressionTypes peerCompressionType = Common.CompressionTypes.None;
 
         /// <summary>
         /// The peer compressor.
@@ -97,7 +97,7 @@ namespace PeaRoxy.CoreProtocol
         /// <summary>
         /// The peer encryption type.
         /// </summary>
-        private Common.EncryptionType peerEncryptionType = Common.EncryptionType.None;
+        private Common.EncryptionTypes peerEncryptionType = Common.EncryptionTypes.None;
 
         /// <summary>
         /// The waiting buffer.
@@ -132,17 +132,17 @@ namespace PeaRoxy.CoreProtocol
         /// </param>
         public PeaRoxyProtocol(
             Socket client, 
-            Common.EncryptionType encType = Common.EncryptionType.None, 
-            Common.CompressionType comType = Common.CompressionType.None)
+            Common.EncryptionTypes encType = Common.EncryptionTypes.None,
+            Common.CompressionTypes comType = Common.CompressionTypes.None)
         {
             this.encryptionType = encType;
             this.compressionType = comType;
             switch (this.compressionType)
             {
-                case Common.CompressionType.GZip:
+                case Common.CompressionTypes.GZip:
                     this.compressor = new GZipCompressor();
                     break;
-                case Common.CompressionType.Deflate:
+                case Common.CompressionTypes.Deflate:
                     this.compressor = new DeflateCompressor();
                     break;
             }
@@ -151,8 +151,8 @@ namespace PeaRoxy.CoreProtocol
             this.SendPacketSize = 8192;
             this.PocketSent = 0;
             this.PocketReceived = 0;
-            this.ClientSupportedEncryptionType = Common.EncryptionType.Anything;
-            this.ClientSupportedCompressionType = Common.CompressionType.Anything;
+            this.ClientSupportedEncryptionType = Common.EncryptionTypes.AllDefaults;
+            this.ClientSupportedCompressionType = Common.CompressionTypes.AllDefaults;
             this.UnderlyingSocket = client;
             this.UnderlyingSocket.Blocking = false;
         }
@@ -195,12 +195,12 @@ namespace PeaRoxy.CoreProtocol
         /// <summary>
         /// Gets or sets the client supported compression type.
         /// </summary>
-        public Common.CompressionType ClientSupportedCompressionType { get; set; }
+        public Common.CompressionTypes ClientSupportedCompressionType { get; set; }
 
         /// <summary>
         /// Gets or sets the client supported encryption type.
         /// </summary>
-        public Common.EncryptionType ClientSupportedEncryptionType { get; set; }
+        public Common.EncryptionTypes ClientSupportedEncryptionType { get; set; }
 
         /// <summary>
         /// Gets or sets the close callback.
@@ -227,10 +227,10 @@ namespace PeaRoxy.CoreProtocol
                 this.encryptionKey = value;
                 switch (this.encryptionType)
                 {
-                    case Common.EncryptionType.TripleDes:
+                    case Common.EncryptionTypes.TripleDes:
                         this.cryptor = new TripleDesCryptor(this.encryptionKey);
                         break;
-                    case Common.EncryptionType.SimpleXor:
+                    case Common.EncryptionTypes.SimpleXor:
                         this.cryptor = new SimpleXorCryptor(this.encryptionKey);
                         break;
                 }
@@ -240,10 +240,10 @@ namespace PeaRoxy.CoreProtocol
                 // else
                 switch (this.peerEncryptionType)
                 {
-                    case Common.EncryptionType.TripleDes:
+                    case Common.EncryptionTypes.TripleDes:
                         this.peerCryptor = new TripleDesCryptor(this.encryptionKey);
                         break;
-                    case Common.EncryptionType.SimpleXor:
+                    case Common.EncryptionTypes.SimpleXor:
                         this.peerCryptor = new SimpleXorCryptor(this.encryptionKey);
                         break;
                 }
@@ -396,7 +396,7 @@ namespace PeaRoxy.CoreProtocol
                         framingHeader[1] = (byte)this.compressionType;
                         framingBody = this.compressor.Compress(framingBody);
 
-                        if (enc && this.encryptionType != Common.EncryptionType.None)
+                        if (enc && this.encryptionType != Common.EncryptionTypes.None)
                         {
                             // If encryption is enable
                             byte[] encryptionSalt = new byte[4];
@@ -513,22 +513,20 @@ namespace PeaRoxy.CoreProtocol
                                 {
                                     if (this.workingBuffer.Length > 0)
                                     {
-                                        if (this.ClientSupportedEncryptionType != Common.EncryptionType.Anything
-                                            && this.ClientSupportedEncryptionType != this.peerEncryptionType)
+                                        if (!this.ClientSupportedEncryptionType.HasFlag(this.peerEncryptionType))
                                         {
                                             // Check if we support this type of encryption
                                             this.Close("Protocol 1. Unsupported encryption type.");
                                             return false;
                                         }
 
-                                        if (this.peerEncryptionType != Common.EncryptionType.None)
+                                        if (this.peerEncryptionType != Common.EncryptionTypes.None)
                                         {
                                             this.peerCryptor.SetSalt(this.pearEncryptionSalt);
                                             this.workingBuffer = this.peerCryptor.Decrypt(this.workingBuffer);
                                         }
 
-                                        if (this.ClientSupportedCompressionType != Common.CompressionType.Anything
-                                            && this.ClientSupportedCompressionType != this.peerCompressionType)
+                                        if (!this.ClientSupportedCompressionType.HasFlag(this.peerCompressionType))
                                         {
                                             // Check if we support this type of compression
                                             this.Close("Protocol 2. Unsupported compression type.");
@@ -556,15 +554,15 @@ namespace PeaRoxy.CoreProtocol
                                             this.PocketReceived = 0;
                                         }
 
-                                        if ((Common.CompressionType)buffer[1] != this.peerCompressionType)
+                                        if ((Common.CompressionTypes)buffer[1] != this.peerCompressionType)
                                         {
-                                            this.peerCompressionType = (Common.CompressionType)buffer[1];
+                                            this.peerCompressionType = (Common.CompressionTypes)buffer[1];
                                             switch (this.peerCompressionType)
                                             {
-                                                case Common.CompressionType.GZip:
+                                                case Common.CompressionTypes.GZip:
                                                     this.peerCompressor = new GZipCompressor();
                                                     break;
-                                                case Common.CompressionType.Deflate:
+                                                case Common.CompressionTypes.Deflate:
                                                     this.peerCompressor = new DeflateCompressor();
                                                     break;
                                             }
@@ -573,9 +571,9 @@ namespace PeaRoxy.CoreProtocol
                                         int receiveCounter = (buffer[2] * 256) + buffer[3];
                                         this.neededBytes = (buffer[4] * 256) + buffer[5];
                                         Array.Copy(buffer, 6, this.pearEncryptionSalt, 0, 4);
-                                        if ((Common.EncryptionType)buffer[0] != this.peerEncryptionType)
+                                        if ((Common.EncryptionTypes)buffer[0] != this.peerEncryptionType)
                                         {
-                                            this.peerEncryptionType = (Common.EncryptionType)buffer[0];
+                                            this.peerEncryptionType = (Common.EncryptionTypes)buffer[0];
 
                                             // if (encryptionType == peerEncryptionType)
                                             // peerCryptor = Cryptor;
@@ -587,10 +585,10 @@ namespace PeaRoxy.CoreProtocol
 
                                             switch (this.peerEncryptionType)
                                             {
-                                                case Common.EncryptionType.TripleDes:
+                                                case Common.EncryptionTypes.TripleDes:
                                                     this.peerCryptor = new TripleDesCryptor(this.encryptionKey);
                                                     break;
-                                                case Common.EncryptionType.SimpleXor:
+                                                case Common.EncryptionTypes.SimpleXor:
                                                     this.peerCryptor = new SimpleXorCryptor(this.encryptionKey);
                                                     break;
                                             }

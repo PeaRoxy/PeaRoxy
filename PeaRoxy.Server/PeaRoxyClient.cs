@@ -48,12 +48,12 @@ namespace PeaRoxy.Server
         /// <summary>
         /// The underlying client compression type.
         /// </summary>
-        private readonly Common.CompressionType underlyingClientCompression;
+        private readonly Common.CompressionTypes underlyingClientCompression;
 
         /// <summary>
         /// The underlying client encryption type.
         /// </summary>
-        private readonly Common.EncryptionType underlyingClientEncryptione;
+        private readonly Common.EncryptionTypes underlyingClientEncryption;
 
         /// <summary>
         /// The underlying client receive packet size.
@@ -111,7 +111,7 @@ namespace PeaRoxy.Server
         /// <param name="encType">
         /// The enc type.
         /// </param>
-        /// <param name="comType">
+        /// <param name="comTypes">
         /// The com type.
         /// </param>
         /// <param name="receivePacketSize">
@@ -135,14 +135,14 @@ namespace PeaRoxy.Server
         public PeaRoxyClient(
             Socket client, 
             Controller parent, 
-            Common.EncryptionType encType = Common.EncryptionType.None, 
-            Common.CompressionType comType = Common.CompressionType.None, 
+            Common.EncryptionTypes encType = Common.EncryptionTypes.None, 
+            Common.CompressionTypes comTypes = Common.CompressionTypes.None, 
             int receivePacketSize = 8192, 
             int sendPacketSize = 1024, 
             int selectedAuthMode = 255, 
             int noDataTimeout = 6000, 
-            int clientSupportedEncryptionType = -1, 
-            int clientSupportedCompressionType = -1)
+            Common.EncryptionTypes clientSupportedEncryptionType = Common.EncryptionTypes.AllDefaults,
+            Common.CompressionTypes clientSupportedCompressionType = Common.CompressionTypes.AllDefaults)
         {
             this.UserId = "Anonymous"; // Use Anonymous as temporary user name until client introduce it-self
             this.CurrentStage = ClientStage.Connected;
@@ -151,8 +151,8 @@ namespace PeaRoxy.Server
             this.Controller = parent;
             this.UnderlyingSocket = client;
             this.UnderlyingSocket.Blocking = false;
-            this.underlyingClientEncryptione = encType;
-            this.underlyingClientCompression = comType;
+            this.underlyingClientEncryption = encType;
+            this.underlyingClientCompression = comTypes;
             this.ClientSupportedEncryptionType = clientSupportedEncryptionType;
             this.ClientSupportedCompressionType = clientSupportedCompressionType;
             this.underlyingClientReceivePacketSize = receivePacketSize;
@@ -252,12 +252,12 @@ namespace PeaRoxy.Server
         /// <summary>
         /// Gets or sets the client supported compression type.
         /// </summary>
-        private int ClientSupportedCompressionType { get; set; }
+        private Common.CompressionTypes ClientSupportedCompressionType { get; set; }
 
         /// <summary>
         /// Gets or sets the client supported encryption type.
         /// </summary>
-        private int ClientSupportedEncryptionType { get; set; }
+        private Common.EncryptionTypes ClientSupportedEncryptionType { get; set; }
 
         /// <summary>
         /// Gets or sets the no data timeout.
@@ -322,7 +322,7 @@ namespace PeaRoxy.Server
                                 this.forger.SendResponse();
                                 this.Protocol = new PeaRoxyProtocol(
                                     this.UnderlyingSocket, 
-                                    this.underlyingClientEncryptione, 
+                                    this.underlyingClientEncryption, 
                                     this.underlyingClientCompression)
                                                     {
                                                         ReceivePacketSize =
@@ -331,10 +331,8 @@ namespace PeaRoxy.Server
                                                             this.underlyingClientSendPacketSize, 
                                                         CloseCallback = this.CloseCal, 
                                                         ClientSupportedCompressionType =
-                                                            (Common.CompressionType)
                                                             this.ClientSupportedCompressionType, 
                                                         ClientSupportedEncryptionType =
-                                                            (Common.EncryptionType)
                                                             this.ClientSupportedEncryptionType
                                                     };
                                 this.Id = Screen.ClientConnected(
@@ -552,7 +550,7 @@ namespace PeaRoxy.Server
                             Screen.SetRequestIpAddress(
                                 this.UserId, 
                                 this.Id,
-                                this.Controller.HttpForwardingIp.ToString() + this.Controller.HttpForwardingPort);
+                                this.Controller.HttpForwardingIp + this.Controller.HttpForwardingPort);
                                 
                                 // Inform that we have a request for an address
                             this.destinationSocket = new Socket(

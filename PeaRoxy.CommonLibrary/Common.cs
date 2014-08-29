@@ -24,31 +24,33 @@ namespace PeaRoxy.CommonLibrary
         /// <summary>
         ///     The Compression Types
         /// </summary>
-        public enum CompressionType
+        [Flags]
+        public enum CompressionTypes : byte
         {
-            None = 0,
+            None = 1,
 
-            GZip = 1,
+            GZip = 2,
 
-            Deflate = 2,
+            Deflate = 4,
 
-            Anything = -1,
+            AllDefaults = None | GZip | Deflate,
         }
 
         /// <summary>
         ///     The Encryption Types
         /// </summary>
-        public enum EncryptionType
+        [Flags]
+        public enum EncryptionTypes : byte
         {
-            None = 0,
+            None = 1,
 
-            TripleDes = 1,
+            TripleDes = 2,
 
-            SimpleXor = 2,
+            SimpleXor = 4,
 
-            Anything = -1,
+            AllDefaults = None | TripleDes | SimpleXor,
         }
-
+        
         /// <summary>
         ///     Convert string to HTML entities.
         /// </summary>

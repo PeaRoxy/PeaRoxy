@@ -395,7 +395,7 @@ namespace ZARA
                     string.Empty,
                     Settings.Default.UserAndPassword_User,
                     Settings.Default.UserAndPassword_Pass,
-                    Common.EncryptionType.SimpleXor);
+                    Common.EncryptionTypes.SimpleXor);
 
                 ser.NoDataTimeout = Settings.Default.Connection_NoDataTimeout;
                 this.listener.ActiveServer = ser;

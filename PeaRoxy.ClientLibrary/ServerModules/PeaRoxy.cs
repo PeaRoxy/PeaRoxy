@@ -23,9 +23,9 @@ namespace PeaRoxy.ClientLibrary.ServerModules
     {
         private const byte ProtocolVersion = 1;
 
-        private readonly Common.CompressionType compressionType = Common.CompressionType.None;
+        private readonly Common.CompressionTypes compressionTypes = Common.CompressionTypes.None;
 
-        private readonly Common.EncryptionType encryptionType = Common.EncryptionType.None;
+        private readonly Common.EncryptionTypes encryptionType = Common.EncryptionTypes.None;
 
         private int currentTimeout;
 
@@ -54,7 +54,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
         /// <param name="encType">
         ///     The client encryption type.
         /// </param>
-        /// <param name="comType">
+        /// <param name="comTypes">
         ///     The client compression type.
         /// </param>
         /// <exception cref="ArgumentException">
@@ -66,8 +66,8 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             string domain,
             string username = "",
             string password = "",
-            Common.EncryptionType encType = Common.EncryptionType.None,
-            Common.CompressionType comType = Common.CompressionType.None)
+            Common.EncryptionTypes encType = Common.EncryptionTypes.None,
+            Common.CompressionTypes comTypes = Common.CompressionTypes.None)
         {
             if (string.IsNullOrEmpty(address))
             {
@@ -103,7 +103,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             this.Username = username;
             this.Password = password;
             this.encryptionType = encType;
-            this.compressionType = comType;
+            this.compressionTypes = comTypes;
             this.NoDataTimeout = 60;
             this.IsDataSent = false;
             this.IsClosed = false;
@@ -189,7 +189,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                 this.Username,
                 this.Password,
                 this.encryptionType,
-                this.compressionType) { NoDataTimeout = this.NoDataTimeout };
+                this.compressionTypes) { NoDataTimeout = this.NoDataTimeout };
         }
 
         /// <summary>
@@ -350,7 +350,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                                 this.Protocol = new PeaRoxyProtocol(
                                     this.UnderlyingSocket,
                                     this.encryptionType,
-                                    this.compressionType)
+                                    this.compressionTypes)
                                                     {
                                                         ReceivePacketSize = this.ParentClient.ReceivePacketSize,
                                                         SendPacketSize = this.ParentClient.SendPacketSize,

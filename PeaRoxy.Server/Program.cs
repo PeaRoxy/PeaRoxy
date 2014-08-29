@@ -3,53 +3,47 @@
 //   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
 //   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
 // </copyright>
-// <summary>
-//   The program.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.Server
 {
-    #region
-
     using System;
     using System.Threading;
 
-    #endregion
+    using CommandLine;
 
-    /// <summary>
-    /// The program.
-    /// </summary>
     internal static class Program
     {
-        #region Methods
-
-        /// <summary>
-        /// The main.
-        /// </summary>
         private static void Main()
         {
+            try
+            {
+                if (Settings.Default.LastParserState != null)
+                {
+                    return;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                if (e.InnerException != null)
+                {
+                    Console.WriteLine(e.InnerException.Message);
+                }
+                return;
+            }
             Controller sController = new Controller();
             sController.Start();
-            bool doReDraw = Environment.CommandLine.ToLower().IndexOf("silent", StringComparison.Ordinal) == -1;
-
             Console.WriteLine("PeaRoxy Server Started at " + sController.Ip + ":" + sController.Port);
-            while (true)
+            do
             {
-                if (doReDraw)
+                while (!Console.KeyAvailable)
                 {
-                    Screen.ReDraw(sController);
+                    Screen.ReDraw(sController, Settings.Default.ShowConnections);
+                    Thread.Sleep(1000);
                 }
-                else
-                {
-                    Screen.ReDraw(sController, false);
-                }
-
-                Thread.Sleep(1000);
             }
-            // ReSharper disable once FunctionNeverReturns
+            while (Console.ReadKey(true).Key != ConsoleKey.X);
         }
-
-        #endregion
     }
 }

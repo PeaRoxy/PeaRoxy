@@ -85,7 +85,7 @@ namespace PeaRoxy.ASPear
             this.context = webContext;
             Cryptor cryptor = new Cryptor();
             Cryptor peerCryptor;
-            Common.EncryptionType encryptionType;
+            Common.EncryptionTypes encryptionType;
             byte[] encryptionSalt = new byte[4];
             byte[] encryptedHost;
             if (webContext.Request.Cookies.Count < 1)
@@ -112,7 +112,7 @@ namespace PeaRoxy.ASPear
 
                 byte[] requestInfo = Convert.FromBase64String(base64);
                 Array.Copy(requestInfo, encryptionSalt, 4);
-                encryptionType = (Common.EncryptionType)requestInfo[4];
+                encryptionType = (Common.EncryptionTypes)requestInfo[4];
                 encryptedHost = new byte[requestInfo.Length - 5];
                 Array.Copy(requestInfo, 5, encryptedHost, 0, requestInfo.Length - 5);
             }
@@ -124,7 +124,7 @@ namespace PeaRoxy.ASPear
 
             switch (encryptionType)
             {
-                case Common.EncryptionType.None:
+                case Common.EncryptionTypes.None:
                     if (this.config["SupportedEncryptionTypes".ToLower()] != "0"
                         && this.config["SupportedEncryptionTypes".ToLower()] != "-1")
                     {
@@ -133,7 +133,7 @@ namespace PeaRoxy.ASPear
                     }
 
                     break;
-                case Common.EncryptionType.SimpleXor:
+                case Common.EncryptionTypes.SimpleXor:
                     if (this.config["SupportedEncryptionTypes".ToLower()] != "2"
                         && this.config["SupportedEncryptionTypes".ToLower()] != "-1")
                     {
@@ -193,10 +193,10 @@ namespace PeaRoxy.ASPear
 
             switch (encryptionType)
             {
-                case Common.EncryptionType.None:
+                case Common.EncryptionTypes.None:
                     peerCryptor = new Cryptor();
                     break;
-                case Common.EncryptionType.SimpleXor:
+                case Common.EncryptionTypes.SimpleXor:
                     peerCryptor = new SimpleXorCryptor(encryptionKey, false);
                     peerCryptor.SetSalt(encryptionSalt);
                     break;
@@ -210,7 +210,7 @@ namespace PeaRoxy.ASPear
 
             if (this.config["EncryptionType".ToLower()] == "2")
             {
-                if (encryptionType == Common.EncryptionType.SimpleXor)
+                if (encryptionType == Common.EncryptionTypes.SimpleXor)
                 {
                     cryptor = peerCryptor;
                 }

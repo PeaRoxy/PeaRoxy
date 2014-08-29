@@ -646,8 +646,8 @@ namespace PeaRoxy.Windows.WPFClient
                             Settings.Default.PeaRoxySocks_Domain,
                             (authType == 2) ? Settings.Default.UserAndPassword_User : string.Empty,
                             (authType == 2) ? Settings.Default.UserAndPassword_Pass : string.Empty,
-                            (CommonLibrary.Common.EncryptionType)Settings.Default.Connection_Encryption,
-                            (CommonLibrary.Common.CompressionType)Settings.Default.Connection_Compression);
+                            (CommonLibrary.Common.EncryptionTypes)Settings.Default.Connection_Encryption,
+                            (CommonLibrary.Common.CompressionTypes)Settings.Default.Connection_Compression);
                         break;
                     case 2:
                         serverAddress = new Uri(Settings.Default.PeaRoxyWeb_Address).DnsSafeHost;
@@ -655,7 +655,7 @@ namespace PeaRoxy.Windows.WPFClient
                             Settings.Default.PeaRoxyWeb_Address,
                             (authType == 2) ? Settings.Default.UserAndPassword_User : string.Empty,
                             (authType == 2) ? Settings.Default.UserAndPassword_Pass : string.Empty,
-                            (CommonLibrary.Common.EncryptionType)Settings.Default.Connection_Encryption);
+                            (CommonLibrary.Common.EncryptionTypes)Settings.Default.Connection_Encryption);
                         this.listener.SmartPear.ForwarderHttpsEnable = false;
                         break;
                     case 3:
