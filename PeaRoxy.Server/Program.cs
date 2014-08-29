@@ -8,6 +8,7 @@
 namespace PeaRoxy.Server
 {
     using System;
+    using System.Reflection;
     using System.Threading;
 
     using CommandLine;
@@ -34,7 +35,8 @@ namespace PeaRoxy.Server
             }
             Controller sController = new Controller();
             sController.Start();
-            Console.WriteLine("PeaRoxy Server Started at " + sController.Ip + ":" + sController.Port);
+            Console.WriteLine("PeaRoxy Server v{2} Started and now listening to {0}:{1}", sController.Ip, sController.Port, Assembly.GetExecutingAssembly().GetName().Version);
+            Console.WriteLine("Press X to Exit");
             do
             {
                 while (!Console.KeyAvailable)
