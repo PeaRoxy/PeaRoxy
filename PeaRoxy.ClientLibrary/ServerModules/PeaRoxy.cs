@@ -373,7 +373,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                                     }
 
                                     clientRequest = new byte[3 + username.Length + password.Length];
-                                    clientRequest[0] = 1; // Password Authentication type
+                                    clientRequest[0] = (byte)Common.AuthenticationMethods.UserPass;
                                     clientRequest[1] = (byte)username.Length;
                                     clientRequest[username.Length + 2] = (byte)password.Length;
 
@@ -383,7 +383,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                                 else
                                 {
                                     clientRequest = new byte[1];
-                                    clientRequest[0] = 0; // No Authentication
+                                    clientRequest[0] = (byte)Common.AuthenticationMethods.None;
                                 }
 
                                 byte clientAddressType;
