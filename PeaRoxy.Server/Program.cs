@@ -8,10 +8,9 @@
 namespace PeaRoxy.Server
 {
     using System;
+    using System.Net;
     using System.Reflection;
     using System.Threading;
-
-    using CommandLine;
 
     internal static class Program
     {
@@ -35,8 +34,13 @@ namespace PeaRoxy.Server
             }
             Controller sController = new Controller();
             sController.Start();
-            Console.WriteLine("PeaRoxy Server v{2} Started and now listening to {0}:{1}", sController.Ip, sController.Port, Assembly.GetExecutingAssembly().GetName().Version);
+            Console.WriteLine(
+                "PeaRoxy Server v{2} Started and now listening to {0}:{1}",
+                (sController.Ip.Equals(IPAddress.Any)) ? "All Interfaces" : sController.Ip.ToString(),
+                sController.Port,
+                Assembly.GetExecutingAssembly().GetName().Version);
             Console.WriteLine("Press X to Exit");
+            Thread.Sleep(2000);
             do
             {
                 while (!Console.KeyAvailable)

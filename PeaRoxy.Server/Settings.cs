@@ -54,11 +54,11 @@
         {
         }
 
-        private static Dictionary<string, string> Config
+        private Dictionary<string, string> Config
         {
             get
             {
-                return ConfigReader.GetSettings();
+                return ConfigReader.GetSettings(this.ConfigFileAddress);
             }
         }
 
@@ -79,12 +79,14 @@
                     }
                     return IPAddress.TryParse(this.serverIp, out ip) ? this.serverIp : IPAddress.Any.ToString();
                 }
-                if (!Config.ContainsKey("ServerIp") || string.IsNullOrEmpty(Config["ServerIp"])
-                    || Config["ServerIp"] == "*")
+                if (!this.Config.ContainsKey("ServerIp") || string.IsNullOrEmpty(this.Config["ServerIp"])
+                    || this.Config["ServerIp"] == "*")
                 {
                     return IPAddress.Any.ToString();
                 }
-                return IPAddress.TryParse(Config["ServerIp"], out ip) ? Config["ServerIp"] : IPAddress.Any.ToString();
+                return IPAddress.TryParse(this.Config["ServerIp"], out ip)
+                           ? this.Config["ServerIp"]
+                           : IPAddress.Any.ToString();
             }
             set
             {
@@ -104,10 +106,10 @@
                 {
                     return this.serverPort;
                 }
-                if (Config.ContainsKey("ServerPort") && !string.IsNullOrEmpty(Config["ServerPort"]))
+                if (this.Config.ContainsKey("ServerPort") && !string.IsNullOrEmpty(this.Config["ServerPort"]))
                 {
                     int i;
-                    if (int.TryParse(Config["ServerPort"], out i))
+                    if (int.TryParse(this.Config["ServerPort"], out i))
                     {
                         return i;
                     }
@@ -132,10 +134,10 @@
                 {
                     return this.authMethod;
                 }
-                if (Config.ContainsKey("AuthMethod") && !string.IsNullOrEmpty(Config["AuthMethod"]))
+                if (this.Config.ContainsKey("AuthMethod") && !string.IsNullOrEmpty(this.Config["AuthMethod"]))
                 {
                     byte i;
-                    if (byte.TryParse(Config["AuthMethod"], out i))
+                    if (byte.TryParse(this.Config["AuthMethod"], out i))
                     {
                         return i;
                     }
@@ -160,10 +162,10 @@
                 {
                     return (Common.EncryptionTypes)this.encryptionType;
                 }
-                if (Config.ContainsKey("EncryptionType") && !string.IsNullOrEmpty(Config["EncryptionType"]))
+                if (this.Config.ContainsKey("EncryptionType") && !string.IsNullOrEmpty(this.Config["EncryptionType"]))
                 {
                     byte i;
-                    if (byte.TryParse(Config["EncryptionType"], out i))
+                    if (byte.TryParse(this.Config["EncryptionType"], out i))
                     {
                         Common.EncryptionTypes etype = (Common.EncryptionTypes)i;
                         if ((etype & (etype - 1)) == 0)
@@ -197,10 +199,10 @@
                 {
                     return (Common.CompressionTypes)this.compressionType;
                 }
-                if (Config.ContainsKey("CompressionType") && !string.IsNullOrEmpty(Config["CompressionType"]))
+                if (this.Config.ContainsKey("CompressionType") && !string.IsNullOrEmpty(this.Config["CompressionType"]))
                 {
                     byte i;
-                    if (byte.TryParse(Config["CompressionType"], out i))
+                    if (byte.TryParse(this.Config["CompressionType"], out i))
                     {
                         Common.CompressionTypes ctype = (Common.CompressionTypes)i;
                         if ((ctype & (ctype - 1)) == 0)
@@ -234,11 +236,11 @@
                 {
                     return (Common.EncryptionTypes)this.supportedEncryptionTypes;
                 }
-                if (Config.ContainsKey("SupportedEncryptionTypes")
-                    && !string.IsNullOrEmpty(Config["SupportedEncryptionTypes"]))
+                if (this.Config.ContainsKey("SupportedEncryptionTypes")
+                    && !string.IsNullOrEmpty(this.Config["SupportedEncryptionTypes"]))
                 {
                     int i;
-                    if (int.TryParse(Config["SupportedEncryptionTypes"], out i))
+                    if (int.TryParse(this.Config["SupportedEncryptionTypes"], out i))
                     {
                         return (Common.EncryptionTypes)i;
                     }
@@ -263,11 +265,11 @@
                 {
                     return (Common.CompressionTypes)this.supportedCompressionTypes;
                 }
-                if (Config.ContainsKey("SupportedCompressionTypes")
-                    && !string.IsNullOrEmpty(Config["SupportedCompressionTypes"]))
+                if (this.Config.ContainsKey("SupportedCompressionTypes")
+                    && !string.IsNullOrEmpty(this.Config["SupportedCompressionTypes"]))
                 {
                     int i;
-                    if (int.TryParse(Config["SupportedCompressionTypes"], out i))
+                    if (int.TryParse(this.Config["SupportedCompressionTypes"], out i))
                     {
                         return Common.CompressionTypes.AllDefaults;
                     }
@@ -291,10 +293,10 @@
                 {
                     return this.sendPacketSize;
                 }
-                if (Config.ContainsKey("SendPacketSize") && !string.IsNullOrEmpty(Config["SendPacketSize"]))
+                if (this.Config.ContainsKey("SendPacketSize") && !string.IsNullOrEmpty(this.Config["SendPacketSize"]))
                 {
                     int i;
-                    if (int.TryParse(Config["SendPacketSize"], out i))
+                    if (int.TryParse(this.Config["SendPacketSize"], out i))
                     {
                         return i;
                     }
@@ -318,10 +320,11 @@
                 {
                     return this.receivePacketSize;
                 }
-                if (Config.ContainsKey("ReceivePacketSize") && !string.IsNullOrEmpty(Config["ReceivePacketSize"]))
+                if (this.Config.ContainsKey("ReceivePacketSize")
+                    && !string.IsNullOrEmpty(this.Config["ReceivePacketSize"]))
                 {
                     int i;
-                    if (int.TryParse(Config["ReceivePacketSize"], out i))
+                    if (int.TryParse(this.Config["ReceivePacketSize"], out i))
                     {
                         return i;
                     }
@@ -346,11 +349,11 @@
                 {
                     return this.noDataConnectionTimeOut;
                 }
-                if (Config.ContainsKey("NoDataConnectionTimeOut")
-                    && !string.IsNullOrEmpty(Config["NoDataConnectionTimeOut"]))
+                if (this.Config.ContainsKey("NoDataConnectionTimeOut")
+                    && !string.IsNullOrEmpty(this.Config["NoDataConnectionTimeOut"]))
                 {
                     int i;
-                    if (int.TryParse(Config["NoDataConnectionTimeOut"], out i))
+                    if (int.TryParse(this.Config["NoDataConnectionTimeOut"], out i))
                     {
                         return i;
                     }
@@ -375,9 +378,10 @@
                 {
                     return this.httpForwardingIp;
                 }
-                if (Config.ContainsKey("HttpForwardingIp") && !string.IsNullOrEmpty(Config["HttpForwardingIp"]))
+                if (this.Config.ContainsKey("HttpForwardingIp")
+                    && !string.IsNullOrEmpty(this.Config["HttpForwardingIp"]))
                 {
-                    return Config["HttpForwardingIp"];
+                    return this.Config["HttpForwardingIp"];
                 }
                 return IPAddress.Loopback.ToString();
             }
@@ -399,10 +403,11 @@
                 {
                     return this.httpForwardingPort;
                 }
-                if (Config.ContainsKey("HttpForwardingPort") && !string.IsNullOrEmpty(Config["HttpForwardingPort"]))
+                if (this.Config.ContainsKey("HttpForwardingPort")
+                    && !string.IsNullOrEmpty(this.Config["HttpForwardingPort"]))
                 {
                     int i;
-                    if (int.TryParse(Config["HttpForwardingPort"], out i))
+                    if (int.TryParse(this.Config["HttpForwardingPort"], out i))
                     {
                         return i;
                     }
@@ -427,9 +432,9 @@
                 {
                     return this.peaRoxyDomain;
                 }
-                if (Config.ContainsKey("PeaRoxyDomain"))
+                if (this.Config.ContainsKey("PeaRoxyDomain"))
                 {
-                    return Config["PeaRoxyDomain"];
+                    return this.Config["PeaRoxyDomain"];
                 }
                 return string.Empty;
             }
@@ -448,10 +453,10 @@
                 {
                     return this.logErrors;
                 }
-                if (Config.ContainsKey("LogErrors") && !string.IsNullOrEmpty(Config["LogErrors"]))
+                if (this.Config.ContainsKey("LogErrors") && !string.IsNullOrEmpty(this.Config["LogErrors"]))
                 {
                     bool b;
-                    if (bool.TryParse(Config["LogErrors"], out b))
+                    if (bool.TryParse(this.Config["LogErrors"], out b))
                     {
                         return b;
                     }
@@ -474,10 +479,11 @@
                 {
                     return this.pingMasterServer;
                 }
-                if (Config.ContainsKey("PingMasterServer") && !string.IsNullOrEmpty(Config["PingMasterServer"]))
+                if (this.Config.ContainsKey("PingMasterServer")
+                    && !string.IsNullOrEmpty(this.Config["PingMasterServer"]))
                 {
                     bool b;
-                    if (bool.TryParse(Config["PingMasterServer"], out b))
+                    if (bool.TryParse(this.Config["PingMasterServer"], out b))
                     {
                         return b;
                     }
@@ -500,10 +506,10 @@
                 {
                     return this.maxRoutingClock;
                 }
-                if (Config.ContainsKey("MaxRoutingClock") && !string.IsNullOrEmpty(Config["MaxRoutingClock"]))
+                if (this.Config.ContainsKey("MaxRoutingClock") && !string.IsNullOrEmpty(this.Config["MaxRoutingClock"]))
                 {
                     int i;
-                    if (int.TryParse(Config["MaxRoutingClock"], out i))
+                    if (int.TryParse(this.Config["MaxRoutingClock"], out i))
                     {
                         return i;
                     }
@@ -526,10 +532,11 @@
                 {
                     return this.maxAcceptingClock;
                 }
-                if (Config.ContainsKey("MaxAcceptingClock") && !string.IsNullOrEmpty(Config["MaxAcceptingClock"]))
+                if (this.Config.ContainsKey("MaxAcceptingClock")
+                    && !string.IsNullOrEmpty(this.Config["MaxAcceptingClock"]))
                 {
                     int i;
-                    if (int.TryParse(Config["MaxAcceptingClock"], out i))
+                    if (int.TryParse(this.Config["MaxAcceptingClock"], out i))
                     {
                         return i;
                     }
@@ -554,9 +561,9 @@
                 {
                     return this.logUsersUsageAddress;
                 }
-                if (Config.ContainsKey("UsersUsageLogAddress"))
+                if (this.Config.ContainsKey("UsersUsageLogAddress"))
                 {
-                    return Config["UsersUsageLogAddress"];
+                    return this.Config["UsersUsageLogAddress"];
                 }
                 return ".";
             }
@@ -566,10 +573,20 @@
             }
         }
 
-        [Option('l', DefaultValue = false, HelpText = "Print a list of all active connections", MetaValue = "TRUE/FALSE"
-            )]
+        [Option('l', DefaultValue = false, HelpText = "Print a list of all active connections.",
+            MetaValue = "TRUE/FALSE")]
         public bool ShowConnections { get; set; }
 
+        [Option('c', DefaultValue = "settings.ini", HelpText = "Specify a configuration file to read the settings from it.",
+            MetaValue = "FILENAME")]
+        public string ConfigFileAddress { get; set; }
+
+        [Option('u', DefaultValue = "users.ini", HelpText = "Specify a file to read the user names and passwords for authorized users from it.",
+            MetaValue = "FILENAME")]
+        public string UsersFileAddress { get; set; }
+                [Option('b', DefaultValue = "blacklist.ini", HelpText = "Specify a file to read the IP addresses or domains that we should reject connections from and to them.",
+            MetaValue = "FILENAME")]
+        public string BlackListFileAddress { get; set; }
         public static Settings Default
         {
             get

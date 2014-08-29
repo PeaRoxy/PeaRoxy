@@ -287,7 +287,7 @@ namespace PeaRoxy.Server
                         case ClientStage.Connected:
                             string clientAddress = this.UnderlyingSocket.RemoteEndPoint.ToString();
                             if (
-                                ConfigReader.GetBlackList()
+                                ConfigReader.GetBlackList(Settings.Default.BlackListFileAddress)
                                     .Any(blacklist => Common.DoesMatchWildCard(clientAddress, blacklist)))
                             {
                                 this.Close("Blacklisted Client: " + clientAddress);
@@ -386,7 +386,7 @@ namespace PeaRoxy.Server
                                         passwordHash.Length); // Read Password Hash
 
                                     // Search out users to find out if we have this user in users.ini
-                                    foreach (ConfigUser user in ConfigReader.GetUsers())
+                                    foreach (ConfigUser user in ConfigReader.GetUsers(Settings.Default.UsersFileAddress))
                                     {
                                         if (user.Username.ToLower() == username.ToLower()
                                             && user.Hash.SequenceEqual(passwordHash))
@@ -480,7 +480,7 @@ namespace PeaRoxy.Server
                                         string clientRequestedConnectionString = clientRequestedAddress.ToLower().Trim() + ":" + clientRequestedPort;
 
                                         if (
-                                            ConfigReader.GetBlackList()
+                                            ConfigReader.GetBlackList(Settings.Default.BlackListFileAddress)
                                                 .Any(
                                                     blacklist =>
                                                     Common.DoesMatchWildCard(clientRequestedConnectionString, blacklist)))

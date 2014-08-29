@@ -49,7 +49,7 @@ namespace PeaRoxy.CommonLibrary
         ///     </see>
         ///     of black listed addresses.
         /// </returns>
-        public static IEnumerable<string> GetBlackList(string fileAddress = "blacklist.ini")
+        public static IEnumerable<string> GetBlackList(string fileAddress)
         {
             if (blackList != null
                 && ((DateTime.Now - blackListLastReadTime) < new TimeSpan(0, 1, 0)
@@ -116,7 +116,7 @@ namespace PeaRoxy.CommonLibrary
         ///     </see>
         ///     of key/value for each setting.
         /// </returns>
-        public static Dictionary<string, string> GetSettings(string fileAddress = "settings.ini")
+        public static Dictionary<string, string> GetSettings(string fileAddress)
         {
             if (settings != null
                 && ((DateTime.Now - settingListLastReadTime) < new TimeSpan(0, 1, 0)
@@ -201,7 +201,7 @@ namespace PeaRoxy.CommonLibrary
         ///     </see>
         ///     of users.
         /// </returns>
-        public static Collection<ConfigUser> GetUsers(string fileAddress = "users.ini")
+        public static Collection<ConfigUser> GetUsers(string fileAddress)
         {
             if (users != null
                 && ((DateTime.Now - userListLastReadTime) < new TimeSpan(0, 1, 0)
