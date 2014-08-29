@@ -32,7 +32,7 @@ namespace PeaRoxy.ClientLibrary
         public delegate void OperationWithErrorMessageFinishedDelegate(bool success, string error);
 
         /// <summary>
-        ///     The supported mime types fro auto config.
+        ///     The supported mime types for auto configuration.
         /// </summary>
         public enum AutoConfigMimeType
         {
@@ -122,7 +122,7 @@ namespace PeaRoxy.ClientLibrary
         }
 
         /// <summary>
-        ///     Gets the accepting cycles in each second.
+        /// Gets the accepting clock or in other word the number of times we had ran the accepting process per second.
         /// </summary>
         public int AcceptingClock
         {
@@ -146,12 +146,12 @@ namespace PeaRoxy.ClientLibrary
         public ServerType ActiveServer { get; set; }
 
         /// <summary>
-        ///     Gets or sets the auto config's mime type.
+        ///     Gets or sets the auto configuration's mime type.
         /// </summary>
         public AutoConfigMimeType AutoConfigMime { get; set; }
 
         /// <summary>
-        ///     Gets or sets the auto config's script path.
+        ///     Gets or sets the auto configuration's script path.
         /// </summary>
         public string AutoConfigPath { get; set; }
 

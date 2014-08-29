@@ -69,11 +69,11 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HttpForwarder.cs" />
+    <Compile Include="Forwarder.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PeaRoxyClient.cs" />
-    <Compile Include="Controller.cs" />
+    <Compile Include="PeaRoxyController.cs" />
     <Compile Include="Screen.cs" />
     <Compile Include="Settings.cs" />
   </ItemGroup>

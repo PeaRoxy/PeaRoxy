@@ -3,15 +3,10 @@
 //   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
 //   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
 // </copyright>
-// <summary>
-//   The pea roxy client.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.Server
 {
-    #region
-
     using System;
     using System.Linq;
     using System.Net;
@@ -22,130 +17,100 @@ namespace PeaRoxy.Server
     using PeaRoxy.CommonLibrary;
     using PeaRoxy.CoreProtocol;
 
-    #endregion
-
     /// <summary>
-    /// The pea roxy client.
+    ///     The PeaRoxy client object is representation of an incoming connection
     /// </summary>
     public class PeaRoxyClient : IDisposable
     {
-        #region Constants
-
         /// <summary>
-        /// The server pea roxy version.
+        ///     The stages of request
         /// </summary>
+        public enum RequestStages
+        {
+            JustConnected,
+
+            WaitingForForger,
+
+            WaitingForWelcomeMessage,
+
+            ConnectingToTheServer,
+
+            Routing,
+
+            ResolvingLocalServer
+        }
+
         private const int ServerPeaRoxyVersion = 1;
 
-        #endregion
-
-        #region Fields
-
-        /// <summary>
-        /// The protocol.
-        /// </summary>
-        internal PeaRoxyProtocol Protocol;
-
-        /// <summary>
-        /// The underlying client compression type.
-        /// </summary>
         private readonly Common.CompressionTypes underlyingClientCompression;
 
-        /// <summary>
-        /// The underlying client encryption type.
-        /// </summary>
         private readonly Common.EncryptionTypes underlyingClientEncryption;
 
-        /// <summary>
-        /// The underlying client receive packet size.
-        /// </summary>
         private readonly int underlyingClientReceivePacketSize;
 
-        /// <summary>
-        /// The underlying client send packet size.
-        /// </summary>
         private readonly int underlyingClientSendPacketSize;
 
-        /// <summary>
-        /// The current timeout.
-        /// </summary>
+        internal PeaRoxyProtocol Protocol;
+
         private int currentTimeout;
 
-        /// <summary>
-        /// The forger.
-        /// </summary>
-        private HttpForger forger;
-
-        /// <summary>
-        /// The forwarded.
-        /// </summary>
-        private bool isForwarded;
-
-        /// <summary>
-        /// The forwarder.
-        /// </summary>
-        private HttpForwarder forwarder;
-
-        /// <summary>
-        /// The destination socket.
-        /// </summary>
         private Socket destinationSocket;
 
-        /// <summary>
-        /// The write buffer.
-        /// </summary>
+        private HttpForger forger;
+
+        private Forwarder forwarder;
+
+        private bool isForwarded;
+
         private byte[] writeBuffer = new byte[0];
 
-        #endregion
-
-        #region Constructors and Destructors
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="PeaRoxyClient"/> class.
+        ///     Initializes a new instance of the <see cref="PeaRoxyClient" /> class.
         /// </summary>
         /// <param name="client">
-        /// The client.
+        ///     The client's socket.
         /// </param>
         /// <param name="parent">
-        /// The parent.
+        ///     The parent controller object.
         /// </param>
         /// <param name="encType">
-        /// The enc type.
+        ///     The sending encryption type.
         /// </param>
         /// <param name="comTypes">
-        /// The com type.
+        ///     The sending compression type.
         /// </param>
         /// <param name="receivePacketSize">
-        /// The receive packet size.
+        ///     The receiving packet size.
         /// </param>
         /// <param name="sendPacketSize">
-        /// The send packet size.
+        ///     The sending packet size.
         /// </param>
         /// <param name="selectedAuthMode">
-        /// The selected auth mode.
+        ///     The selected authentication mode.
         /// </param>
         /// <param name="noDataTimeout">
-        /// The no data timeout.
+        ///     The no data timeout value.
         /// </param>
         /// <param name="clientSupportedEncryptionType">
-        /// The client supported encryption type.
+        ///     The supported client encryption types.
         /// </param>
         /// <param name="clientSupportedCompressionType">
-        /// The client supported compression type.
+        ///     The supported client compression types.
         /// </param>
         public PeaRoxyClient(
-            Socket client, 
-            Controller parent, 
-            Common.EncryptionTypes encType = Common.EncryptionTypes.None, 
-            Common.CompressionTypes comTypes = Common.CompressionTypes.None, 
-            int receivePacketSize = 8192, 
-            int sendPacketSize = 1024, 
-            int selectedAuthMode = 255, 
-            int noDataTimeout = 6000, 
+            Socket client,
+            PeaRoxyController parent,
+            Common.EncryptionTypes encType = Common.EncryptionTypes.None,
+            Common.CompressionTypes comTypes = Common.CompressionTypes.None,
+            int receivePacketSize = 8192,
+            int sendPacketSize = 1024,
+            int selectedAuthMode = 255,
+            int noDataTimeout = 6000,
             Common.EncryptionTypes clientSupportedEncryptionType = Common.EncryptionTypes.AllDefaults,
             Common.CompressionTypes clientSupportedCompressionType = Common.CompressionTypes.AllDefaults)
         {
-            this.UserId = "Anonymous"; // Use Anonymous as temporary user name until client introduce it-self
-            this.CurrentStage = ClientStage.Connected;
+            this.Username = "Anonymous"; // Use Anonymous as temporary user name until client introduce it-self
+            this.CurrentStage = RequestStages.JustConnected;
             this.SelectedAuthMode = selectedAuthMode;
             this.NoDataTimeout = noDataTimeout;
             this.Controller = parent;
@@ -160,52 +125,8 @@ namespace PeaRoxy.Server
             this.currentTimeout = this.NoDataTimeout * 1000;
         }
 
-        #endregion
-
-        #region Enums
-
         /// <summary>
-        /// The client_ stage.
-        /// </summary>
-        public enum ClientStage
-        {
-            /// <summary>
-            /// The connected.
-            /// </summary>
-            Connected, 
-
-            /// <summary>
-            /// The waiting for forger.
-            /// </summary>
-            WaitingForForger, 
-
-            /// <summary>
-            /// The waiting for welcome message.
-            /// </summary>
-            WaitingForWelcomeMessage, 
-
-            /// <summary>
-            /// The connecting to server.
-            /// </summary>
-            ConnectingToServer, 
-
-            /// <summary>
-            /// The routing.
-            /// </summary>
-            Routing, 
-
-            /// <summary>
-            /// The resolving local server.
-            /// </summary>
-            ResolvingLocalServer
-        }
-
-        #endregion
-
-        #region Public Properties
-
-        /// <summary>
-        /// Gets a value indicating whether busy write.
+        ///     Gets a value indicating whether we are busy writing.
         /// </summary>
         public bool BusyWrite
         {
@@ -221,60 +142,48 @@ namespace PeaRoxy.Server
         }
 
         /// <summary>
-        /// Gets the controller.
+        ///     Gets the active Proxy Controller object.
         /// </summary>
-        public Controller Controller { get; private set; }
+        public PeaRoxyController Controller { get; private set; }
 
         /// <summary>
-        /// Gets the current stage.
+        ///     Gets the current stage.
         /// </summary>
-        public ClientStage CurrentStage { get; private set; }
+        public RequestStages CurrentStage { get; private set; }
 
         /// <summary>
-        /// Gets the id.
+        ///     Gets the Id number of this connection.
         /// </summary>
         public int Id { get; private set; }
 
         /// <summary>
-        /// Gets the underlying socket.
+        ///     Gets the underlying socket to the client.
         /// </summary>
         public Socket UnderlyingSocket { get; private set; }
 
         /// <summary>
-        /// Gets the user id.
+        ///     Gets the username used to establish this connection
         /// </summary>
-        public string UserId { get; private set; }
+        public string Username { get; private set; }
 
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// Gets or sets the client supported compression type.
-        /// </summary>
         private Common.CompressionTypes ClientSupportedCompressionType { get; set; }
 
-        /// <summary>
-        /// Gets or sets the client supported encryption type.
-        /// </summary>
         private Common.EncryptionTypes ClientSupportedEncryptionType { get; set; }
 
-        /// <summary>
-        /// Gets or sets the no data timeout.
-        /// </summary>
         private int NoDataTimeout { get; set; }
 
-        /// <summary>
-        /// Gets or sets the selected auth mode.
-        /// </summary>
         private int SelectedAuthMode { get; set; }
 
-        #endregion
-
-        #region Public Methods and Operators
+        public void Dispose()
+        {
+            if (this.UnderlyingSocket != null)
+            {
+                this.UnderlyingSocket.Dispose();
+            }
+        }
 
         /// <summary>
-        /// The accepting.
+        ///     The method to handle the accepting process, should call repeatedly
         /// </summary>
         public void Accepting()
         {
@@ -284,68 +193,69 @@ namespace PeaRoxy.Server
                 {
                     switch (this.CurrentStage)
                     {
-                        case ClientStage.Connected:
+                        case RequestStages.JustConnected:
                             string clientAddress = this.UnderlyingSocket.RemoteEndPoint.ToString();
                             if (
-                                ConfigReader.GetBlackList(Settings.Default.BlackListFileAddress)
-                                    .Any(blacklist => Common.DoesMatchWildCard(clientAddress, blacklist)))
+                                this.Controller.Settings.BlackListedAddresses.Any(
+                                    blacklist => Common.DoesMatchWildCard(clientAddress, blacklist)))
                             {
                                 this.Close("Blacklisted Client: " + clientAddress);
                                 return;
                             }
                             this.currentTimeout = this.NoDataTimeout * 1000;
-                            this.forger = new HttpForger(this.UnderlyingSocket, this.Controller.Domain, true);
-                            this.CurrentStage = ClientStage.WaitingForForger;
+                            this.forger = new HttpForger(
+                                this.UnderlyingSocket,
+                                this.Controller.Settings.PeaRoxyDomain,
+                                true);
+                            this.CurrentStage = RequestStages.WaitingForForger;
                             break;
-                        case ClientStage.WaitingForForger:
+                        case RequestStages.WaitingForForger:
                             bool notRelated;
                             bool result = this.forger.ReceiveRequest(out notRelated);
                             if (notRelated)
                             {
-                                if (this.Controller.HttpForwardingPort == 0)
+                                if (this.Controller.Settings.HttpForwardingPort == 0)
                                 {
                                     this.Close();
                                 }
                                 else
                                 {
                                     this.isForwarded = true;
-                                    this.CurrentStage = ClientStage.ResolvingLocalServer;
+                                    this.CurrentStage = RequestStages.ResolvingLocalServer;
                                     this.Id = Screen.ClientConnected(
-                                        this.UserId, 
+                                        this.Username,
                                         "F." + this.UnderlyingSocket.RemoteEndPoint);
-                                        
-                                        // Report that a new client connected
                                 }
                             }
                             else if (result)
                             {
                                 this.forger.SendResponse();
                                 this.Protocol = new PeaRoxyProtocol(
-                                    this.UnderlyingSocket, 
-                                    this.underlyingClientEncryption, 
+                                    this.UnderlyingSocket,
+                                    this.underlyingClientEncryption,
                                     this.underlyingClientCompression)
                                                     {
                                                         ReceivePacketSize =
-                                                            this.underlyingClientReceivePacketSize, 
+                                                            this.underlyingClientReceivePacketSize,
                                                         SendPacketSize =
-                                                            this.underlyingClientSendPacketSize, 
-                                                        CloseCallback = this.CloseCal, 
+                                                            this.underlyingClientSendPacketSize,
+                                                        CloseCallback = this.Close,
                                                         ClientSupportedCompressionType =
-                                                            this.ClientSupportedCompressionType, 
+                                                            this.ClientSupportedCompressionType,
                                                         ClientSupportedEncryptionType =
                                                             this.ClientSupportedEncryptionType
                                                     };
                                 this.Id = Screen.ClientConnected(
-                                    this.UserId, 
+                                    this.Username,
                                     "C." + this.Protocol.UnderlyingSocket.RemoteEndPoint);
-                                    
-                                    // Report that a new client connected
+
+                                // Report that a new client connected
                                 this.currentTimeout = this.NoDataTimeout * 1000;
-                                this.CurrentStage = ClientStage.WaitingForWelcomeMessage;
+                                this.CurrentStage = RequestStages.WaitingForWelcomeMessage;
                             }
 
                             break;
-                        case ClientStage.WaitingForWelcomeMessage:
+                        case RequestStages.WaitingForWelcomeMessage:
                             if (this.Protocol.IsDataAvailable())
                             {
                                 byte serverErrorCode = 0;
@@ -359,63 +269,68 @@ namespace PeaRoxy.Server
 
                                 ConfigUser acceptedUser = null;
 
-                                // Select Auth Type
-                                if (clientRequest[0] != this.SelectedAuthMode)
+                                // Select Authentication Type
+                                if (this.SelectedAuthMode != clientRequest[0])
                                 {
                                     serverErrorCode = 99;
                                 }
-                                else if (this.SelectedAuthMode == 0)
+                                else
                                 {
-                                    // Nothing to auth. Just accept user
-                                    Array.Copy(clientRequest, 1, clientRequest, 0, clientRequest.Length - 1);
-                                }
-                                else if (this.SelectedAuthMode == 1)
-                                {
-                                    // Auth using user name and password hash
-                                    string username = Encoding.ASCII.GetString(clientRequest, 2, clientRequest[1]);
-                                        
-                                        // Read UserName
-                                    byte[] passwordHash = new byte[clientRequest[clientRequest[1] + 2]];
-                                        
-                                        // Init Password Hash Byte Array
-                                    Array.Copy(
-                                        clientRequest, 
-                                        clientRequest[1] + 3, 
-                                        passwordHash, 
-                                        0, 
-                                        passwordHash.Length); // Read Password Hash
-
-                                    // Search out users to find out if we have this user in users.ini
-                                    foreach (ConfigUser user in ConfigReader.GetUsers(Settings.Default.UsersFileAddress))
+                                    switch (this.SelectedAuthMode)
                                     {
-                                        if (user.Username.ToLower() == username.ToLower()
-                                            && user.Hash.SequenceEqual(passwordHash))
-                                        {
-                                            // Check each user name and password hash
-                                            acceptedUser = user;
+                                        case 0:
+                                            Array.Copy(clientRequest, 1, clientRequest, 0, clientRequest.Length - 1);
                                             break;
-                                        }
-                                    }
+                                        case 1:
+                                            {
+                                                // Authentication using user name and password hash
+                                                string username = Encoding.ASCII.GetString(
+                                                    clientRequest,
+                                                    2,
+                                                    clientRequest[1]);
 
-                                    if (acceptedUser == null)
-                                    {
-                                        // Let check if we have a fail result with auth, If so, Close Connection
-                                        serverErrorCode = 99;
-                                    }
-                                    else
-                                    {
-                                        Screen.ChangeUser(this.UserId, acceptedUser.Username, this.Id);
-                                            
-                                            // Let inform that user is changed, We are not "Anonymous" anymore
-                                        this.UserId = acceptedUser.Username;
-                                            
-                                            // Save user name in userId field for later access to screen
-                                        Array.Copy(
-                                            clientRequest, 
-                                            clientRequest[1] + passwordHash.Length + 3, 
-                                            clientRequest, 
-                                            0, 
-                                            clientRequest.Length - (clientRequest[1] + passwordHash.Length + 3));
+                                                // Read UserName
+                                                byte[] passwordHash = new byte[clientRequest[clientRequest[1] + 2]];
+
+                                                // Initialize Password Hash Byte Array
+                                                Array.Copy(
+                                                    clientRequest,
+                                                    clientRequest[1] + 3,
+                                                    passwordHash,
+                                                    0,
+                                                    passwordHash.Length); // Read Password Hash
+
+                                                acceptedUser =
+                                                    this.Controller.Settings.AthorizedUsers.FirstOrDefault(
+                                                        user =>
+                                                        user.Username.Equals(
+                                                            username,
+                                                            StringComparison.OrdinalIgnoreCase)
+                                                        && user.Hash.SequenceEqual(passwordHash));
+
+                                                if (acceptedUser == null)
+                                                {
+                                                    // Let check if we have a fail result with authentication, If so, Close Connection
+                                                    serverErrorCode = 99;
+                                                }
+                                                else
+                                                {
+                                                    Screen.ChangeUser(this.Username, acceptedUser.Username, this.Id);
+
+                                                    // Let inform that user is changed, We are not "Anonymous" anymore
+                                                    this.Username = acceptedUser.Username;
+
+                                                    // Save user name in userId field for later access to screen
+                                                    Array.Copy(
+                                                        clientRequest,
+                                                        clientRequest[1] + passwordHash.Length + 3,
+                                                        clientRequest,
+                                                        0,
+                                                        clientRequest.Length
+                                                        - (clientRequest[1] + passwordHash.Length + 3));
+                                                }
+                                            }
+                                            break;
                                     }
                                 }
 
@@ -423,8 +338,7 @@ namespace PeaRoxy.Server
                                 ushort clientRequestedPort = 0;
                                 if (serverErrorCode == 0)
                                 {
-                                    // Auth ok
-
+                                    // Authentication OK
                                     if (clientRequest[0] != ServerPeaRoxyVersion)
                                     {
                                         // Check again if client use same version as we are
@@ -433,8 +347,8 @@ namespace PeaRoxy.Server
                                     }
 
                                     byte clientAddressType = clientRequest[3];
-                                        
-                                        // Read address type client want to connect
+
+                                    // Read address type client want to connect
                                     byte[] clientPlainRequestedAddress;
                                     switch (clientAddressType)
                                     {
@@ -450,10 +364,10 @@ namespace PeaRoxy.Server
                                         case 3: // Domain Name
                                             clientPlainRequestedAddress = new byte[clientRequest[4]];
                                             Array.Copy(
-                                                clientRequest, 
-                                                5, 
-                                                clientPlainRequestedAddress, 
-                                                0, 
+                                                clientRequest,
+                                                5,
+                                                clientPlainRequestedAddress,
+                                                0,
                                                 clientRequest[4]);
                                             clientRequestedAddress =
                                                 Encoding.ASCII.GetString(clientPlainRequestedAddress);
@@ -477,13 +391,13 @@ namespace PeaRoxy.Server
 
                                     if (clientRequestedAddress != null)
                                     {
-                                        string clientRequestedConnectionString = clientRequestedAddress.ToLower().Trim() + ":" + clientRequestedPort;
+                                        string clientRequestedConnectionString = clientRequestedAddress.ToLower().Trim()
+                                                                                 + ":" + clientRequestedPort;
 
                                         if (
-                                            ConfigReader.GetBlackList(Settings.Default.BlackListFileAddress)
-                                                .Any(
-                                                    blacklist =>
-                                                    Common.DoesMatchWildCard(clientRequestedConnectionString, blacklist)))
+                                            this.Controller.Settings.BlackListedAddresses.Any(
+                                                blacklist =>
+                                                Common.DoesMatchWildCard(clientRequestedConnectionString, blacklist)))
                                         {
                                             this.Close("Blacklisted Request: " + clientRequestedAddress);
                                             return;
@@ -491,7 +405,7 @@ namespace PeaRoxy.Server
                                     }
                                 }
 
-                                // Init server response to this request
+                                // Initialize server response to this request
                                 byte[] serverResponse = new byte[2];
                                 serverResponse[0] = ServerPeaRoxyVersion;
                                 serverResponse[1] = serverErrorCode;
@@ -500,7 +414,7 @@ namespace PeaRoxy.Server
                                 if (serverErrorCode != 0 || clientRequestedAddress == null)
                                 {
                                     // Check if we have any problem with request
-                                    this.Close("5. " + "response Error, Code: " + serverErrorCode);
+                                    this.Close("5. " + "Response Error, Code: " + serverErrorCode);
                                     return;
                                 }
 
@@ -510,18 +424,18 @@ namespace PeaRoxy.Server
                                 }
 
                                 Screen.SetRequestIpAddress(
-                                    this.UserId, 
-                                    this.Id, 
+                                    this.Username,
+                                    this.Id,
                                     clientRequestedAddress + ":" + clientRequestedPort);
-                                    
-                                    // Inform that we have a request for an address
+
+                                // Inform that we have a request for an address
                                 this.destinationSocket = new Socket(
-                                    AddressFamily.InterNetwork, 
-                                    SocketType.Stream, 
+                                    AddressFamily.InterNetwork,
+                                    SocketType.Stream,
                                     ProtocolType.Tcp);
                                 this.destinationSocket.BeginConnect(
-                                    clientRequestedAddress, 
-                                    clientRequestedPort, 
+                                    clientRequestedAddress,
+                                    clientRequestedPort,
                                     delegate(IAsyncResult ar)
                                         {
                                             try
@@ -529,62 +443,62 @@ namespace PeaRoxy.Server
                                                 this.destinationSocket.EndConnect(ar);
                                                 this.destinationSocket.Blocking = false;
                                                 this.currentTimeout = this.NoDataTimeout * 1000;
-                                                this.Controller.MoveToQ(this);
-                                                this.CurrentStage = ClientStage.Routing;
+                                                this.Controller.ClientMoveToRouting(this);
+                                                this.CurrentStage = RequestStages.Routing;
                                             }
                                             catch (Exception)
                                             {
                                                 this.Close();
                                             }
-                                        }, 
+                                        },
                                     null);
 
                                 this.currentTimeout = this.NoDataTimeout * 1000;
-                                this.CurrentStage = ClientStage.ConnectingToServer;
+                                this.CurrentStage = RequestStages.ConnectingToTheServer;
                             }
 
                             break;
-                        case ClientStage.ResolvingLocalServer:
-                            Screen.ChangeUser(this.UserId, "Forwarder", this.Id);
-                            this.UserId = "Forwarder";
+                        case RequestStages.ResolvingLocalServer:
+                            Screen.ChangeUser(this.Username, "Forwarder", this.Id);
+                            this.Username = "Forwarder";
                             Screen.SetRequestIpAddress(
-                                this.UserId, 
+                                this.Username,
                                 this.Id,
-                                this.Controller.HttpForwardingIp + this.Controller.HttpForwardingPort);
-                                
-                                // Inform that we have a request for an address
+                                this.Controller.Settings.HttpForwardingIp + ":"
+                                + this.Controller.Settings.HttpForwardingPort);
+
+                            // Inform that we have a request for an address
                             this.destinationSocket = new Socket(
-                                AddressFamily.InterNetwork, 
-                                SocketType.Stream, 
+                                AddressFamily.InterNetwork,
+                                SocketType.Stream,
                                 ProtocolType.Tcp);
                             this.destinationSocket.BeginConnect(
-                                this.Controller.HttpForwardingIp, 
-                                this.Controller.HttpForwardingPort, 
+                                this.Controller.Settings.HttpForwardingIp,
+                                this.Controller.Settings.HttpForwardingPort,
                                 delegate(IAsyncResult ar)
                                     {
                                         try
                                         {
                                             this.destinationSocket.EndConnect(ar);
-                                            this.forwarder = new HttpForwarder(
-                                                this.destinationSocket, 
-                                                this.underlyingClientReceivePacketSize, 
-                                                this.underlyingClientSendPacketSize);
+                                            this.forwarder = new Forwarder(
+                                                this.destinationSocket,
+                                                this.underlyingClientReceivePacketSize);
                                             this.forwarder.Write(this.forger.HeaderBytes);
                                             this.currentTimeout = this.NoDataTimeout * 1000;
-                                            this.Controller.MoveToQ(this);
-                                            this.CurrentStage = ClientStage.Routing;
+                                            this.Controller.ClientMoveToRouting(this);
+                                            this.CurrentStage = RequestStages.Routing;
                                         }
                                         catch (Exception e)
                                         {
                                             this.Close("9. " + e.Message + "\r\n" + e.StackTrace);
                                         }
-                                    }, 
+                                    },
                                 null);
 
                             this.currentTimeout = this.NoDataTimeout * 1000;
-                            this.CurrentStage = ClientStage.ConnectingToServer;
+                            this.CurrentStage = RequestStages.ConnectingToTheServer;
                             break;
-                        case ClientStage.ConnectingToServer:
+                        case RequestStages.ConnectingToTheServer:
                             break;
                     }
 
@@ -609,19 +523,19 @@ namespace PeaRoxy.Server
         }
 
         /// <summary>
-        /// The close.
+        ///     The close method which supports mentioning a message about the reason
         /// </summary>
         /// <param name="message">
-        /// The message.
+        ///     The message.
         /// </param>
         /// <param name="async">
-        /// The async.
+        ///     Indicating if the closing process should treat the client as an asynchronous client
         /// </param>
         public void Close(string message = null, bool async = true)
         {
             if (message != null)
             {
-                // If we have message with this function, Send it to screen
+                // If there is a message here, Send it to screen
                 Screen.LogMessage(message);
             }
 
@@ -632,10 +546,10 @@ namespace PeaRoxy.Server
 
             if (this.forwarder != null)
             {
-                this.forwarder.Close(null, async);
+                this.forwarder.Close(async);
             }
 
-            this.Controller.Dissconnected(this);
+            this.Controller.ClientDisconnected(this);
             try
             {
                 if (async)
@@ -644,21 +558,21 @@ namespace PeaRoxy.Server
                     if (this.destinationSocket != null)
                     {
                         this.destinationSocket.BeginSend(
-                            db, 
-                            0, 
-                            db.Length, 
-                            SocketFlags.None, 
+                            db,
+                            0,
+                            db.Length,
+                            SocketFlags.None,
                             delegate(IAsyncResult ar)
                                 {
                                     try
                                     {
-                                        this.destinationSocket.Close(); // Close request connection it-self
+                                        this.destinationSocket.Close(); // Close request's connection
                                         this.destinationSocket.EndSend(ar);
                                     }
                                     catch (Exception)
                                     {
                                     }
-                                }, 
+                                },
                             null);
                     }
                 }
@@ -666,7 +580,7 @@ namespace PeaRoxy.Server
                 {
                     if (this.destinationSocket != null)
                     {
-                        // Close request connection it-self
+                        // Close request's connection
                         this.destinationSocket.Close();
                     }
                 }
@@ -675,38 +589,13 @@ namespace PeaRoxy.Server
             {
             }
 
-            Screen.ClientDisconnected(this.UserId, this.Id); // Inform that we have nothing to do after this.
+            Screen.ClientDisconnected(this.Username, this.Id); // Inform that we have nothing to do after this.
         }
 
         /// <summary>
-        /// The close cal.
+        ///     The method to handle the routing process, should call repeatedly
         /// </summary>
-        /// <param name="message">
-        /// The message.
-        /// </param>
-        /// <param name="async">
-        /// The async.
-        /// </param>
-        public void CloseCal(string message = null, bool async = true)
-        {
-            this.Close(message, async);
-        }
-
-        /// <summary>
-        /// The dispose.
-        /// </summary>
-        public void Dispose()
-        {
-            if (this.UnderlyingSocket != null)
-            {
-                this.UnderlyingSocket.Dispose();
-            }
-        }
-
-        /// <summary>
-        /// The do route.
-        /// </summary>
-        public void DoRoute()
+        public void Route()
         {
             try
             {
@@ -726,9 +615,9 @@ namespace PeaRoxy.Server
                             {
                                 // If we have any data
                                 this.Protocol.Write(buffer, true); // Write data to client
-                                Screen.DataReceived(this.UserId, this.Id, buffer.Length);
-                                    
-                                    // Inform that we have received new data
+                                Screen.DataReceived(this.Username, this.Id, buffer.Length);
+
+                                // Inform that we have received new data
                             }
                         }
 
@@ -741,9 +630,9 @@ namespace PeaRoxy.Server
                             {
                                 // If we have any data
                                 this.Write(buffer);
-                                Screen.DataSent(this.UserId, this.Id, buffer.Length);
-                                    
-                                    // Inform that we have Sent new data
+                                Screen.DataSent(this.Username, this.Id, buffer.Length);
+
+                                // Inform that we have Sent new data
                             }
                         }
 
@@ -769,9 +658,9 @@ namespace PeaRoxy.Server
                             {
                                 // If we have any data
                                 this.forwarder.Write(buffer); // Write data to client
-                                Screen.DataSent(this.UserId, this.Id, buffer.Length);
-                                    
-                                    // Inform that we have received new data
+                                Screen.DataSent(this.Username, this.Id, buffer.Length);
+
+                                // Inform that we have received new data
                             }
                         }
 
@@ -784,9 +673,9 @@ namespace PeaRoxy.Server
                             {
                                 // If we have any data
                                 this.Write(buffer);
-                                Screen.DataReceived(this.UserId, this.Id, buffer.Length);
-                                    
-                                    // Inform that we have Sent new data
+                                Screen.DataReceived(this.Username, this.Id, buffer.Length);
+
+                                // Inform that we have Sent new data
                             }
                         }
 
@@ -805,13 +694,13 @@ namespace PeaRoxy.Server
         }
 
         /// <summary>
-        /// The read.
+        ///     The read method to read the data from the other end
         /// </summary>
         /// <returns>
-        /// The <see>
+        ///     Received data in form of
+        ///     <see>
         ///         <cref>byte[]</cref>
         ///     </see>
-        ///     .
         /// </returns>
         public byte[] Read()
         {
@@ -843,10 +732,10 @@ namespace PeaRoxy.Server
         }
 
         /// <summary>
-        /// The write.
+        ///     The write method to write the data to the other end.
         /// </summary>
         /// <param name="bytes">
-        /// The bytes.
+        ///     The data to write.
         /// </param>
         public void Write(byte[] bytes)
         {
@@ -862,10 +751,10 @@ namespace PeaRoxy.Server
                 {
                     int bytesWritten = this.destinationSocket.Send(this.writeBuffer, SocketFlags.None);
                     Array.Copy(
-                        this.writeBuffer, 
-                        bytesWritten, 
-                        this.writeBuffer, 
-                        0, 
+                        this.writeBuffer,
+                        bytesWritten,
+                        this.writeBuffer,
+                        0,
                         this.writeBuffer.Length - bytesWritten);
                     Array.Resize(ref this.writeBuffer, this.writeBuffer.Length - bytesWritten);
                 }
@@ -875,7 +764,5 @@ namespace PeaRoxy.Server
                 this.Close("2. " + e.Message + "\r\n" + e.StackTrace);
             }
         }
-
-        #endregion
     }
 }

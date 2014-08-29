@@ -1,76 +1,43 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="HttpForwarder.cs" company="PeaRoxy.com">
+// <copyright file="Forwarder.cs" company="PeaRoxy.com">
 //   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
 //   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
 // </copyright>
-// <summary>
-//   The http forwarder.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.Server
 {
-    #region
-
     using System;
     using System.Net.Sockets;
     using System.Threading;
 
-    #endregion
-
     /// <summary>
-    /// The http forwarder.
+    ///     The Forwarder object is responsible for connecting the client and the forwarding server to each other
     /// </summary>
-    internal class HttpForwarder
+    internal class Forwarder
     {
-        #region Fields
+        private readonly int receiveBufferSize;
 
-        /// <summary>
-        /// The underlying client receive packet size.
-        /// </summary>
-        private int underlyingClientReceivePacketSize;
-
-        /// <summary>
-        /// The underlying client send packet size.
-        /// </summary>
-        // ReSharper disable once NotAccessedField.Local
-        private int underlyingClientSendPacketSize;
-
-        /// <summary>
-        /// The write buffer.
-        /// </summary>
         private byte[] writeBuffer = new byte[0];
 
-        #endregion
-
-        #region Constructors and Destructors
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpForwarder"/> class.
+        ///     Initializes a new instance of the <see cref="Forwarder" /> class.
         /// </summary>
         /// <param name="client">
-        /// The client.
+        ///     The client's socket.
         /// </param>
-        /// <param name="receivePacketSize">
-        /// The receive packet size.
+        /// <param name="receiveBufferSize">
+        ///     The max receive packet size.
         /// </param>
-        /// <param name="sendPacketSize">
-        /// The send packet size.
-        /// </param>
-        public HttpForwarder(Socket client, int receivePacketSize = 8192, int sendPacketSize = 1024)
+        public Forwarder(Socket client, int receiveBufferSize = 8192)
         {
             this.UnderlyingSocket = client;
             this.UnderlyingSocket.Blocking = false;
-            this.underlyingClientReceivePacketSize = receivePacketSize;
-            this.underlyingClientSendPacketSize = sendPacketSize;
+            this.receiveBufferSize = receiveBufferSize;
         }
 
-        #endregion
-
-        #region Public Properties
-
         /// <summary>
-        /// Gets a value indicating whether busy write.
+        ///     Gets a value indicating whether we are busy writing.
         /// </summary>
         public bool BusyWrite
         {
@@ -86,24 +53,17 @@ namespace PeaRoxy.Server
         }
 
         /// <summary>
-        /// Gets the underlying socket.
+        ///     Gets the underlying socket.
         /// </summary>
         public Socket UnderlyingSocket { get; private set; }
 
-        #endregion
-
-        #region Public Methods and Operators
-
         /// <summary>
-        /// The close.
+        ///     The close method is used to close the connection to the other end
         /// </summary>
-        /// <param name="message">
-        /// The message.
-        /// </param>
         /// <param name="async">
-        /// The async.
+        ///     Indicating if the closing process should treat the client as an asynchronous client
         /// </param>
-        public void Close(string message = null, bool async = true)
+        public void Close(bool async = true)
         {
             try
             {
@@ -113,10 +73,10 @@ namespace PeaRoxy.Server
                     if (this.UnderlyingSocket != null)
                     {
                         this.UnderlyingSocket.BeginSend(
-                            db, 
-                            0, 
-                            db.Length, 
-                            SocketFlags.None, 
+                            db,
+                            0,
+                            db.Length,
+                            SocketFlags.None,
                             delegate(IAsyncResult ar)
                                 {
                                     try
@@ -127,7 +87,7 @@ namespace PeaRoxy.Server
                                     catch (Exception)
                                     {
                                     }
-                                }, 
+                                },
                             null);
                     }
                 }
@@ -146,13 +106,13 @@ namespace PeaRoxy.Server
         }
 
         /// <summary>
-        /// The read.
+        ///     The read method to read the data from the other end
         /// </summary>
         /// <returns>
-        /// The <see>
+        ///     Received data in form of
+        ///     <see>
         ///         <cref>byte[]</cref>
         ///     </see>
-        ///     .
         /// </returns>
         public byte[] Read()
         {
@@ -165,7 +125,7 @@ namespace PeaRoxy.Server
                 {
                     if (this.UnderlyingSocket.Available > 0)
                     {
-                        byte[] buffer = new byte[this.underlyingClientReceivePacketSize];
+                        byte[] buffer = new byte[this.receiveBufferSize];
                         int bytes = this.UnderlyingSocket.Receive(buffer);
                         Array.Resize(ref buffer, bytes);
                         return buffer;
@@ -175,19 +135,19 @@ namespace PeaRoxy.Server
                     i--;
                 }
             }
-            catch (Exception e)
+            catch
             {
-                this.Close("F1. " + e.Message + "\r\n" + e.StackTrace);
+                this.Close();
             }
 
             return null;
         }
 
         /// <summary>
-        /// The write.
+        ///     The write method to write the data to the other end.
         /// </summary>
         /// <param name="bytes">
-        /// The bytes.
+        ///     The data to write.
         /// </param>
         public void Write(byte[] bytes)
         {
@@ -200,23 +160,18 @@ namespace PeaRoxy.Server
                 }
 
                 if (this.writeBuffer.Length <= 0 || !this.UnderlyingSocket.Poll(0, SelectMode.SelectWrite))
+                {
                     return;
+                }
 
                 int bytesWritten = this.UnderlyingSocket.Send(this.writeBuffer, SocketFlags.None);
-                Array.Copy(
-                    this.writeBuffer, 
-                    bytesWritten, 
-                    this.writeBuffer, 
-                    0, 
-                    this.writeBuffer.Length - bytesWritten);
+                Array.Copy(this.writeBuffer, bytesWritten, this.writeBuffer, 0, this.writeBuffer.Length - bytesWritten);
                 Array.Resize(ref this.writeBuffer, this.writeBuffer.Length - bytesWritten);
             }
-            catch (Exception e)
+            catch
             {
-                this.Close("F2. " + e.Message + "\r\n" + e.StackTrace);
+                this.Close();
             }
         }
-
-        #endregion
     }
 }

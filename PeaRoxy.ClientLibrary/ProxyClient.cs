@@ -34,19 +34,10 @@ namespace PeaRoxy.ClientLibrary
         /// </summary>
         public enum RequestTypes
         {
-            /// <summary>
-            ///     This is a TCP request
-            /// </summary>
             Tcp,
 
-            /// <summary>
-            ///     This is a UDP request
-            /// </summary>
             Udp,
 
-            /// <summary>
-            ///     this is a DNS request
-            /// </summary>
             Dns
         }
 
@@ -55,24 +46,12 @@ namespace PeaRoxy.ClientLibrary
         /// </summary>
         public enum StatusCodes
         {
-            /// <summary>
-            ///     Client is connected
-            /// </summary>
             Connected,
 
-            /// <summary>
-            ///     Client is waiting
-            /// </summary>
             Waiting,
 
-            /// <summary>
-            ///     Client is routing
-            /// </summary>
             Routing,
 
-            /// <summary>
-            ///     Client is closing
-            /// </summary>
             Closing
         }
 
@@ -780,7 +759,7 @@ namespace PeaRoxy.ClientLibrary
         }
 
         /// <summary>
-        ///     The close method which support a message about the reason
+        ///     The close method which supports mentioning a message about the reason
         /// </summary>
         /// <param name="title">
         ///     The title.

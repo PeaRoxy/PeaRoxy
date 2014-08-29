@@ -3,15 +3,10 @@
 //   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
 //   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
 // </copyright>
-// <summary>
-//   The controller.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.Server
 {
-    #region
-
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
@@ -21,104 +16,75 @@ namespace PeaRoxy.Server
     using System.Text;
     using System.Threading;
 
-    #endregion
-
     /// <summary>
-    /// The controller.
+    ///     The Controller Class is responsible for listening for new connections and managing them as well as controlling the
+    ///     accepting and routing threads for the server.
     /// </summary>
-    public class Controller : IDisposable
+    public class PeaRoxyController : IDisposable
     {
-        #region Fields
-
         /// <summary>
-        /// The accepting cycle last time.
+        ///     The Controller statuses
         /// </summary>
-        private int acceptingCycleLastTime = 1;
+        public enum ControllerStatuses
+        {
+            Stopped,
 
-        /// <summary>
-        /// The accepting wait.
-        /// </summary>
+            Working,
+        }
+
         private readonly int acceptingWait = 1;
 
-        /// <summary>
-        /// The accepting worker.
-        /// </summary>
         private readonly BackgroundWorker acceptingWorker;
 
-        /// <summary>
-        /// The connected clients.
-        /// </summary>
         private readonly List<PeaRoxyClient> connectedClients = new List<PeaRoxyClient>();
 
-        /// <summary>
-        /// The listening server.
-        /// </summary>
-        private Socket listeningServer;
-
-        /// <summary>
-        /// The routing clients.
-        /// </summary>
         private readonly List<PeaRoxyClient> routingClients = new List<PeaRoxyClient>();
 
-        /// <summary>
-        /// The routing cycle last time.
-        /// </summary>
+        private readonly int routingWait = 1;
+
+        private readonly BackgroundWorker routingWorker;
+
+        private int acceptingClock;
+
+        private int acceptingCycleLastTime = 1;
+
+        private Socket listeningServer;
+
+        private int routingClock;
+
         private int routingCycleLastTime = 1;
 
         /// <summary>
-        /// The routing wait.
+        ///     Initializes a new instance of the <see cref="PeaRoxyController" /> class.
         /// </summary>
-        private readonly int routingWait = 1;
-
-        /// <summary>
-        /// The routing worker.
-        /// </summary>
-        private readonly BackgroundWorker routingWorker;
-
-        /// <summary>
-        /// The accepting cycle.
-        /// </summary>
-        private int acceptingClock;
-
-        /// <summary>
-        /// The routing cycle.
-        /// </summary>
-        private int routingClock;
-
-        #endregion
-
-        #region Constructors and Destructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Controller"/> class.
-        /// </summary>
-        public Controller()
+        /// <param name="settings">
+        ///     The Settings object to read the settings from
+        /// </param>
+        public PeaRoxyController(Settings settings)
         {
-            this.Domain = Settings.Default.PeaRoxyDomain;
+            this.Settings = settings;
 
-            this.HttpForwardingIp = Settings.Default.HttpForwardingIp;
+            this.Port = (ushort)this.Settings.ServerPort;
 
-            this.HttpForwardingPort = (ushort)Settings.Default.HttpForwardingPort;
+            this.Ip = IPAddress.Parse(this.Settings.ServerIp);
 
-            this.Port = (ushort)Settings.Default.ServerPort;
+            this.acceptingWait = Math.Min(Math.Max(1000 / this.Settings.MaxAcceptingClock, 1), 1000);
+            this.routingWait = Math.Min(Math.Max(1000 / this.Settings.MaxRoutingClock, 1), 1000);
 
-            this.Ip = IPAddress.Parse(Settings.Default.ServerIp);
-
-            this.acceptingWait = Math.Min(Math.Max(1000 / Settings.Default.MaxAcceptingClock, 1), 1000);
-            this.routingWait = Math.Min(Math.Max(1000 / Settings.Default.MaxRoutingClock, 1), 1000);
-
-
-            Screen.StartScreen((Settings.Default.LogErrors ?? (bool?)true).Value, !string.IsNullOrEmpty(Settings.Default.UsersUsageLogAddress), Settings.Default.UsersUsageLogAddress);
+            Screen.StartScreen(
+                (this.Settings.LogErrors ?? (bool?)true).Value,
+                !string.IsNullOrEmpty(this.Settings.UsersUsageLogAddress),
+                this.Settings.UsersUsageLogAddress);
 
             try
             {
-                if ((Settings.Default.PingMasterServer ?? (bool?)true).Value)
+                if ((this.Settings.PingMasterServer ?? (bool?)true).Value)
                 {
                     TcpClient pingTcp = new TcpClient();
                     pingTcp.Connect("pearoxy.com", 80);
                     pingTcp.BeginConnect(
-                        "reporting.pearoxy.com", 
-                        80, 
+                        "reporting.pearoxy.com",
+                        80,
                         delegate(IAsyncResult ar)
                             {
                                 try
@@ -132,12 +98,12 @@ namespace PeaRoxy.Server
                                             "GET /ping.php?do=register&address={0}&port={1}&authmode={2} HTTP/1.1",
                                             this.Ip,
                                             this.Port,
-                                            Settings.Default.AuthMethod) + Rn + "Host: reporting.pearoxy.com" + Rn + Rn;
+                                            this.Settings.AuthMethod) + Rn + "Host: reporting.pearoxy.com" + Rn + Rn;
                                     byte[] pingRequestBytes = Encoding.ASCII.GetBytes(pingRequest);
                                     pingStream.BeginWrite(
-                                        pingRequestBytes, 
-                                        0, 
-                                        pingRequestBytes.Length, 
+                                        pingRequestBytes,
+                                        0,
+                                        pingRequestBytes.Length,
                                         delegate(IAsyncResult ar2)
                                             {
                                                 try
@@ -149,13 +115,13 @@ namespace PeaRoxy.Server
                                                 catch (Exception)
                                                 {
                                                 }
-                                            }, 
+                                            },
                                         null);
                                 }
                                 catch (Exception)
                                 {
                                 }
-                            }, 
+                            },
                         null);
                 }
             }
@@ -163,38 +129,29 @@ namespace PeaRoxy.Server
             {
             }
 
-            this.acceptingWorker = new BackgroundWorker { WorkerSupportsCancellation = true }; // Init a thread for listening for incoming requests
-            this.acceptingWorker.DoWork += this.AcceptingWorkerDoWork; // Add function to run async
+            this.acceptingWorker = new BackgroundWorker { WorkerSupportsCancellation = true };
+            this.acceptingWorker.DoWork += this.AcceptingWorkerDoWork;
             this.routingWorker = new BackgroundWorker { WorkerSupportsCancellation = true };
             this.routingWorker.DoWork += this.RoutingWorkerDoWork;
         }
 
-        #endregion
-
-        #region Enums
-
         /// <summary>
-        /// The controller status.
+        ///     Get the Settings object used by controller to read the settings from
         /// </summary>
-        public enum ControllerStatus
-        {
-            /// <summary>
-            /// The stopped.
-            /// </summary>
-            Stopped, 
-
-            /// <summary>
-            /// The working.
-            /// </summary>
-            Working, 
-        }
-
-        #endregion
-
-        #region Public Properties
+        public Settings Settings { get; private set; }
 
         /// <summary>
-        /// Gets the accepting cycle.
+        ///     Gets the port number we bind to.
+        /// </summary>
+        public ushort Port { get; private set; }
+
+        /// <summary>
+        ///     Gets the IP address we listening to.
+        /// </summary>
+        public IPAddress Ip { get; private set; }
+
+        /// <summary>
+        ///     Gets the accepting clock or in other word the number of times we had ran the accepting process per second.
         /// </summary>
         public int AcceptingCycle
         {
@@ -208,32 +165,7 @@ namespace PeaRoxy.Server
         }
 
         /// <summary>
-        /// Gets the http forwarding ip.
-        /// </summary>
-        public string HttpForwardingIp { get; private set; }
-
-        /// <summary>
-        /// Gets the http forwarding port.
-        /// </summary>
-        public ushort HttpForwardingPort { get; private set; }
-
-        /// <summary>
-        /// Gets the ip.
-        /// </summary>
-        public IPAddress Ip { get; private set; }
-
-        /// <summary>
-        /// Gets the pearoxy domain.
-        /// </summary>
-        public string Domain { get; private set; }
-
-        /// <summary>
-        /// Gets the port.
-        /// </summary>
-        public ushort Port { get; private set; }
-
-        /// <summary>
-        /// Gets the routing cycle.
+        ///     Gets the routing clock or in other word the number of times we had ran the routing process per second.
         /// </summary>
         public int RoutingCycle
         {
@@ -247,15 +179,14 @@ namespace PeaRoxy.Server
         }
 
         /// <summary>
-        /// Gets the status.
+        ///     Gets the current status of the controller.
         /// </summary>
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        public ControllerStatus Status { get; private set; }
+        public ControllerStatuses Status { get; private set; }
 
         /// <summary>
-        /// Gets the waiting acception connections.
+        ///     Gets the number of connections in accepting state
         /// </summary>
-        public int WaitingAcceptionConnections
+        public int AcceptingConnections
         {
             get
             {
@@ -263,13 +194,17 @@ namespace PeaRoxy.Server
             }
         }
 
-        #endregion
-
-        #region Public Methods and Operators
-
         /// <summary>
-        /// The dispose.
+        ///     Gets the number of connections in routing state
         /// </summary>
+        public int RoutingConnections
+        {
+            get
+            {
+                return this.routingClients.Count;
+            }
+        }
+
         public void Dispose()
         {
             if (this.acceptingWorker != null)
@@ -289,10 +224,10 @@ namespace PeaRoxy.Server
         }
 
         /// <summary>
-        /// The start.
+        ///     Listening for new requests and answering them
         /// </summary>
         /// <returns>
-        /// The <see cref="bool"/>.
+        ///     The <see cref="bool" /> value indicating success of the process
         /// </returns>
         public bool Start()
         {
@@ -303,10 +238,9 @@ namespace PeaRoxy.Server
                 IPEndPoint ipLocal = new IPEndPoint(this.Ip, this.Port);
                 this.listeningServer.Bind(ipLocal);
                 this.listeningServer.Listen(256);
-
-                this.acceptingWorker.RunWorkerAsync(); // Start client acceptation thread
+                this.acceptingWorker.RunWorkerAsync();
                 this.routingWorker.RunWorkerAsync();
-                this.Status = ControllerStatus.Working;
+                this.Status = ControllerStatuses.Working;
                 return true; // Every thing is good
             }
 
@@ -314,15 +248,15 @@ namespace PeaRoxy.Server
         }
 
         /// <summary>
-        /// The stop.
+        ///     Stop listening to the new requests or suspend the answering process
         /// </summary>
         public void Stop()
         {
-            this.Status = ControllerStatus.Stopped;
+            this.Status = ControllerStatuses.Stopped;
             if (this.acceptingWorker.IsBusy)
             {
                 // If we are working
-                this.acceptingWorker.CancelAsync(); // Sending cancel to acceptation thread
+                this.acceptingWorker.CancelAsync();
                 this.routingWorker.CancelAsync();
             }
 
@@ -342,17 +276,7 @@ namespace PeaRoxy.Server
             lock (this.routingClients) this.routingClients.Clear();
         }
 
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// The client disconnected callback.
-        /// </summary>
-        /// <param name="client">
-        /// The client.
-        /// </param>
-        internal void Dissconnected(PeaRoxyClient client)
+        internal void ClientDisconnected(PeaRoxyClient client)
         {
             lock (this.routingClients)
                 if (this.routingClients.Contains(client))
@@ -367,28 +291,11 @@ namespace PeaRoxy.Server
                 }
         }
 
-        /// <summary>
-        /// The client routing ready callback.
-        /// </summary>
-        /// <param name="client">
-        /// The client.
-        /// </param>
-        internal void MoveToQ(PeaRoxyClient client)
+        internal void ClientMoveToRouting(PeaRoxyClient client)
         {
             lock (this.routingClients) this.routingClients.Add(client);
         }
 
-        /// <summary>
-        /// The accepting worker_ do work.
-        /// </summary>
-        /// <param name="sender">
-        /// The sender.
-        /// </param>
-        /// <param name="e">
-        /// The e.
-        /// </param>
-        /// <exception cref="Exception">
-        /// </exception>
         private void AcceptingWorkerDoWork(object sender, DoWorkEventArgs e)
         {
             while (!this.acceptingWorker.CancellationPending)
@@ -403,23 +310,23 @@ namespace PeaRoxy.Server
                                 new PeaRoxyClient(
                                     this.listeningServer.Accept(),
                                     this,
-                                    Settings.Default.EncryptionType,
-                                    Settings.Default.CompressionType,
-                                    Settings.Default.ReceivePacketSize,
-                                    Settings.Default.SendPacketSize,
-                                    Settings.Default.AuthMethod,
-                                    Settings.Default.NoDataConnectionTimeOut,
-                                    Settings.Default.SupportedEncryptionTypes,
-                                    Settings.Default.SupportedCompressionTypes));
-
-                        // Create a client and send TCPClient to it, Let add this client to list too, So we can close it when needed
+                                    this.Settings.EncryptionType,
+                                    this.Settings.CompressionType,
+                                    this.Settings.ReceivePacketSize,
+                                    this.Settings.SendPacketSize,
+                                    this.Settings.AuthMethod,
+                                    this.Settings.NoDataConnectionTimeOut,
+                                    this.Settings.SupportedEncryptionTypes,
+                                    this.Settings.SupportedCompressionTypes));
                     }
 
                     if (this.connectedClients.Count > 0)
                     {
                         PeaRoxyClient[] st;
                         lock (this.connectedClients) st = this.connectedClients.ToArray();
-                        foreach (PeaRoxyClient client in st.Where(client => client != null && client.CurrentStage != PeaRoxyClient.ClientStage.Routing))
+                        foreach (PeaRoxyClient client in
+                            st.Where(
+                                client => client != null && client.CurrentStage != PeaRoxyClient.RequestStages.Routing))
                         {
                             client.Accepting();
                         }
@@ -433,18 +340,9 @@ namespace PeaRoxy.Server
                 }
             }
 
-            this.listeningServer.Close(); // Not bad to check if we have stopped listening server
+            this.listeningServer.Close();
         }
 
-        /// <summary>
-        /// The routing worker process.
-        /// </summary>
-        /// <param name="sender">
-        /// The sender.
-        /// </param>
-        /// <param name="e">
-        /// The e.
-        /// </param>
         private void RoutingWorkerDoWork(object sender, DoWorkEventArgs e)
         {
             while (!this.routingWorker.CancellationPending)
@@ -456,9 +354,11 @@ namespace PeaRoxy.Server
                     {
                         PeaRoxyClient[] st;
                         lock (this.routingClients) st = this.routingClients.ToArray();
-                        foreach (PeaRoxyClient client in st.Where(client => client != null && client.CurrentStage == PeaRoxyClient.ClientStage.Routing))
+                        foreach (PeaRoxyClient client in
+                            st.Where(
+                                client => client != null && client.CurrentStage == PeaRoxyClient.RequestStages.Routing))
                         {
-                            client.DoRoute();
+                            client.Route();
                         }
                     }
 
@@ -472,7 +372,5 @@ namespace PeaRoxy.Server
 
             this.listeningServer.Close();
         }
-
-        #endregion
     }
 }

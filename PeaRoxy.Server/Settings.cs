@@ -1,4 +1,11 @@
-﻿namespace PeaRoxy.Server
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Screen.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
+
+namespace PeaRoxy.Server
 {
     using System;
     using System.Collections.Generic;
@@ -52,6 +59,22 @@
 
         private Settings()
         {
+        }
+
+        public IEnumerable<ConfigUser> AthorizedUsers
+        {
+            get
+            {
+                return ConfigReader.GetUsers(this.UsersFileAddress);
+            }
+        }
+
+        public IEnumerable<string> BlackListedAddresses
+        {
+            get
+            {
+                return ConfigReader.GetBlackList(this.BlackListFileAddress);
+            }
         }
 
         private Dictionary<string, string> Config
@@ -577,16 +600,21 @@
             MetaValue = "TRUE/FALSE")]
         public bool ShowConnections { get; set; }
 
-        [Option('c', DefaultValue = "settings.ini", HelpText = "Specify a configuration file to read the settings from it.",
-            MetaValue = "FILENAME")]
+        [Option('c', DefaultValue = "settings.ini",
+            HelpText = "Specify a configuration file to read the settings from it.", MetaValue = "FILENAME")]
         public string ConfigFileAddress { get; set; }
 
-        [Option('u', DefaultValue = "users.ini", HelpText = "Specify a file to read the user names and passwords for authorized users from it.",
+        [Option('u', DefaultValue = "users.ini",
+            HelpText = "Specify a file to read the user names and passwords for authorized users from it.",
             MetaValue = "FILENAME")]
         public string UsersFileAddress { get; set; }
-                [Option('b', DefaultValue = "blacklist.ini", HelpText = "Specify a file to read the IP addresses or domains that we should reject connections from and to them.",
+
+        [Option('b', DefaultValue = "blacklist.ini",
+            HelpText =
+                "Specify a file to read the IP addresses or domains that we should reject connections from and to them.",
             MetaValue = "FILENAME")]
         public string BlackListFileAddress { get; set; }
+
         public static Settings Default
         {
             get

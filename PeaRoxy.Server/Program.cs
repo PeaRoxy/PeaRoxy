@@ -32,7 +32,7 @@ namespace PeaRoxy.Server
                 }
                 return;
             }
-            Controller sController = new Controller();
+            PeaRoxyController sController = new PeaRoxyController(Settings.Default);
             sController.Start();
             Console.WriteLine(
                 "PeaRoxy Server v{2} Started and now listening to {0}:{1}",
