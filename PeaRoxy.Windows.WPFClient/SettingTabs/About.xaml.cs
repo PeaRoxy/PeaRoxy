@@ -24,7 +24,6 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
 
     using PeaRoxy.ClientLibrary;
     using PeaRoxy.CommonLibrary;
-    using PeaRoxy.CoreProtocol;
     using PeaRoxy.Windows.Network.TAP;
     using PeaRoxy.Windows.WPFClient.Properties;
 

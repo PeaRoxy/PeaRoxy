@@ -46,7 +46,7 @@ namespace PeaRoxy.Updater
         {
             try
             {
-                XmlSerializer ser = new XmlSerializer(typeof(SmartProfile));
+                XmlSerializer ser = XmlSerializer.FromTypes(new[] { typeof(SmartProfile) })[0];
                 using (StringReader reader = new StringReader(xmltext))
                 {
                     return ser.Deserialize(reader) as SmartProfile;
@@ -62,7 +62,7 @@ namespace PeaRoxy.Updater
         {
             try
             {
-                XmlSerializer ser = new XmlSerializer(typeof(SmartProfile));
+                XmlSerializer ser = XmlSerializer.FromTypes(new[] { typeof(SmartProfile) })[0];
                 using (StringWriter writer = new StringWriter())
                 {
                     ser.Serialize(writer, this);

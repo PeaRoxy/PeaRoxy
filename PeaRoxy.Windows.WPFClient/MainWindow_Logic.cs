@@ -74,8 +74,6 @@ namespace PeaRoxy.Windows.WPFClient
 
         private bool skipUpdate;
 
-        private Updater updaterObject;
-
         /// <summary>
         ///     The upload speed.
         /// </summary>
@@ -122,17 +120,31 @@ namespace PeaRoxy.Windows.WPFClient
                     this.latestVersion = null;
                     try
                     {
-                        this.updaterObject = new Updater(
+                        Updater updaterObject = new Updater(
                             "PeaRoxyClient",
                             Assembly.GetExecutingAssembly().GetName().Version,
                             this.listener != null
                             && this.listener.Status.HasFlag(ProxyController.ControllerStatus.Proxy)
                                 ? new WebProxy(this.listener.Ip + ":" + this.listener.Port, true)
                                 : null);
-                        if (!this.skipUpdate && this.updaterObject.IsNewVersionAvailable())
+                        if (!this.skipUpdate && updaterObject.IsNewVersionAvailable())
                         {
-                            this.latestVersion = this.updaterObject.GetLatestVersion();
+                            this.latestVersion = updaterObject.GetLatestVersion();
                         }
+                        IEnumerable<string> httpList =
+                            Settings.Default.Smart_HTTP_List.Split(
+                                new[] { Environment.NewLine },
+                                StringSplitOptions.RemoveEmptyEntries);
+                        IEnumerable<string> httpsList =
+                            Settings.Default.Smart_Direct_List.Split(
+                                new[] { Environment.NewLine },
+                                StringSplitOptions.RemoveEmptyEntries);
+                        SmartProfile profile = new SmartProfile
+                                                   {
+                                                       HttpRules = new List<string>(httpList),
+                                                       DirectRules = new List<string>(httpsList)
+                                                   };
+                        updaterObject.SubmitSmartPearProfile(profile.ToXml(), Settings.Default.SelectedProfile);
                     }
                     catch
                     {
@@ -185,28 +197,6 @@ namespace PeaRoxy.Windows.WPFClient
                                         ? new WebProxy(this.listener.Ip + ":" + this.listener.Port, true)
                                         : null);
                                 downForm.ShowDialog();
-                            }
-                        }
-                        else
-                        {
-                            if (this.updaterObject != null)
-                            {
-                                IEnumerable<string> httpList =
-                                    Settings.Default.Smart_HTTP_List.Split(
-                                        new[] { Environment.NewLine },
-                                        StringSplitOptions.RemoveEmptyEntries);
-                                IEnumerable<string> httpsList =
-                                    Settings.Default.Smart_Direct_List.Split(
-                                        new[] { Environment.NewLine },
-                                        StringSplitOptions.RemoveEmptyEntries);
-                                SmartProfile profile = new SmartProfile
-                                                           {
-                                                               HttpRules = new List<string>(httpList),
-                                                               DirectRules = new List<string>(httpsList)
-                                                           };
-                                this.updaterObject.SubmitSmartPearProfile(
-                                    profile.ToXml(),
-                                    Settings.Default.SelectedProfile);
                             }
                         }
                     }
