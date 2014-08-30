@@ -487,17 +487,20 @@ namespace PeaRoxy.CoreProtocol
                                         {
                                             this.peerEncryptionType = (Common.EncryptionTypes)buffer[0];
 
-                                            if (this.EncryptionKey.Length == 0)
-                                            {
-                                                this.EncryptionKey = this.pearEncryptionSalt;
-                                            }
-
                                             switch (this.peerEncryptionType)
                                             {
                                                 case Common.EncryptionTypes.TripleDes:
+                                                    if (this.EncryptionKey.Length == 0)
+                                                    {
+                                                        this.EncryptionKey = this.pearEncryptionSalt;
+                                                    }
                                                     this.peerCryptor = new TripleDesCryptor(this.encryptionKey);
                                                     break;
                                                 case Common.EncryptionTypes.SimpleXor:
+                                                    if (this.EncryptionKey.Length == 0)
+                                                    {
+                                                        this.EncryptionKey = this.pearEncryptionSalt;
+                                                    }
                                                     this.peerCryptor = new SimpleXorCryptor(this.encryptionKey);
                                                     break;
                                             }
