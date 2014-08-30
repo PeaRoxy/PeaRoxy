@@ -41,7 +41,6 @@ namespace PeaRoxy.Windows.WPFClient
     using PeaRoxy.Windows.WPFClient.SettingTabs;
 
     using Application = System.Windows.Forms.Application;
-    using Common = PeaRoxy.Windows.Common;
     using IWin32Window = System.Windows.Forms.IWin32Window;
     using SmartPear = PeaRoxy.Windows.WPFClient.SettingTabs.SmartPear;
 
@@ -74,6 +73,8 @@ namespace PeaRoxy.Windows.WPFClient
         private ProxyController listener;
 
         private bool skipUpdate;
+
+        private Updater updaterObject;
 
         /// <summary>
         ///     The upload speed.
@@ -123,20 +124,20 @@ namespace PeaRoxy.Windows.WPFClient
                     {
                         if (!this.skipUpdate)
                         {
-                            Updater updaterObject = new Updater(
+                            this.updaterObject = new Updater(
                                 "PeaRoxyClient",
                                 Assembly.GetExecutingAssembly().GetName().Version,
                                 this.listener != null
                                 && this.listener.Status.HasFlag(ProxyController.ControllerStatus.Proxy)
                                     ? new WebProxy(this.listener.Ip + ":" + this.listener.Port, true)
                                     : null);
-                            if (updaterObject.IsNewVersionAvailable())
+                            if (this.updaterObject.IsNewVersionAvailable())
                             {
-                                this.latestVersion = updaterObject.GetLatestVersion();
+                                this.latestVersion = this.updaterObject.GetLatestVersion();
                             }
                         }
                     }
-                    catch (Exception)
+                    catch
                     {
                     }
                 };
@@ -187,6 +188,28 @@ namespace PeaRoxy.Windows.WPFClient
                                         ? new WebProxy(this.listener.Ip + ":" + this.listener.Port, true)
                                         : null);
                                 downForm.ShowDialog();
+                            }
+                        }
+                        else
+                        {
+                            if (this.updaterObject != null)
+                            {
+                                IEnumerable<string> httpList =
+                                    Settings.Default.Smart_HTTP_List.Split(
+                                        new[] { Environment.NewLine },
+                                        StringSplitOptions.RemoveEmptyEntries);
+                                IEnumerable<string> httpsList =
+                                    Settings.Default.Smart_Direct_List.Split(
+                                        new[] { Environment.NewLine },
+                                        StringSplitOptions.RemoveEmptyEntries);
+                                SmartProfile profile = new SmartProfile
+                                                           {
+                                                               HttpRules = new List<string>(httpList),
+                                                               DirectRules = new List<string>(httpsList)
+                                                           };
+                                this.updaterObject.SubmitSmartPearProfile(
+                                    profile.ToXml(),
+                                    Settings.Default.SelectedProfile);
                             }
                         }
                     }
@@ -279,16 +302,9 @@ namespace PeaRoxy.Windows.WPFClient
         #region Public Properties
 
         /// <summary>
-        ///     Gets the handle.
+        ///     Gets or sets the status.
         /// </summary>
-        public IntPtr Handle
-        {
-            get
-            {
-                WindowInteropHelper interopHelper = new WindowInteropHelper(this);
-                return interopHelper.Handle;
-            }
-        }
+        public CurrentStatus Status { get; set; }
 
         /// <summary>
         ///     Gets a value indicating whether invoke required.
@@ -302,9 +318,16 @@ namespace PeaRoxy.Windows.WPFClient
         }
 
         /// <summary>
-        ///     Gets or sets the status.
+        ///     Gets the handle.
         /// </summary>
-        public CurrentStatus Status { get; set; }
+        public IntPtr Handle
+        {
+            get
+            {
+                WindowInteropHelper interopHelper = new WindowInteropHelper(this);
+                return interopHelper.Handle;
+            }
+        }
 
         #endregion
 
@@ -348,6 +371,23 @@ namespace PeaRoxy.Windows.WPFClient
         }
 
         /// <summary>
+        ///     The invoke.
+        /// </summary>
+        /// <param name="method">
+        ///     The method.
+        /// </param>
+        /// <param name="args">
+        ///     The args.
+        /// </param>
+        /// <returns>
+        ///     The <see cref="object" />.
+        /// </returns>
+        public object Invoke(Delegate method, object[] args)
+        {
+            return this.Dispatcher.Invoke(method, args);
+        }
+
+        /// <summary>
         ///     The fail disconnected.
         /// </summary>
         /// <param name="e">
@@ -373,23 +413,6 @@ namespace PeaRoxy.Windows.WPFClient
                         this.ControlsStopClick(null, null);
                     },
                 new object[] { });
-        }
-
-        /// <summary>
-        ///     The invoke.
-        /// </summary>
-        /// <param name="method">
-        ///     The method.
-        /// </param>
-        /// <param name="args">
-        ///     The args.
-        /// </param>
-        /// <returns>
-        ///     The <see cref="object" />.
-        /// </returns>
-        public object Invoke(Delegate method, object[] args)
-        {
-            return this.Dispatcher.Invoke(method, args);
         }
 
         /// <summary>
@@ -775,7 +798,7 @@ namespace PeaRoxy.Windows.WPFClient
                                                     || VDialog.Show(
                                                         this,
                                                         string.Format(
-                                                            "It seems you have SmartPear enabled but no direct internet connection, Do you want us to disable SmartPear temporary?! \r\n\r\n{0}",
+                                                            "It seems you have SmartPear enabled but no direct Internet connection, Do you want us to disable SmartPear temporary?! \r\n\r\n{0}",
                                                             ex.Message),
                                                         "Smart Pear",
                                                         MessageBoxButtons.YesNo,
