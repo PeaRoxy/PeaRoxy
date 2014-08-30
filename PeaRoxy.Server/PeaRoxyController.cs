@@ -15,6 +15,7 @@ namespace PeaRoxy.Server
     using System.Net.Sockets;
     using System.Text;
     using System.Threading;
+    using System.Threading.Tasks;
 
     /// <summary>
     ///     The Controller Class is responsible for listening for new connections and managing them as well as controlling the
@@ -76,59 +77,63 @@ namespace PeaRoxy.Server
                 !string.IsNullOrEmpty(this.Settings.UsersUsageLogAddress),
                 this.Settings.UsersUsageLogAddress);
 
-            try
-            {
-                if ((this.Settings.PingMasterServer ?? (bool?)true).Value)
-                {
-                    TcpClient pingTcp = new TcpClient();
-                    pingTcp.Connect("pearoxy.com", 80);
-                    pingTcp.BeginConnect(
-                        "reporting.pearoxy.com",
-                        80,
-                        delegate(IAsyncResult ar)
+            new Task(
+                () =>
+                    {
+                        try
+                        {
+                            if ((this.Settings.PingMasterServer ?? (bool?)true).Value)
                             {
-                                try
-                                {
-                                    pingTcp.EndConnect(ar);
-                                    NetworkStream pingStream = pingTcp.GetStream();
-
-                                    const string Rn = "\r\n";
-                                    string pingRequest =
-                                        string.Format(
-                                            "GET /ping.php?do=register&address={0}&port={1}&authmode={2} HTTP/1.1",
-                                            this.Ip,
-                                            this.Port,
-                                            this.Settings.AuthMethod) + Rn + "Host: reporting.pearoxy.com" + Rn + Rn;
-                                    byte[] pingRequestBytes = Encoding.ASCII.GetBytes(pingRequest);
-                                    pingStream.BeginWrite(
-                                        pingRequestBytes,
-                                        0,
-                                        pingRequestBytes.Length,
-                                        delegate(IAsyncResult ar2)
+                                TcpClient pingTcp = new TcpClient();
+                                pingTcp.Connect("pearoxy.com", 80);
+                                pingTcp.BeginConnect(
+                                    "reporting.pearoxy.com",
+                                    80,
+                                    delegate(IAsyncResult ar)
+                                        {
+                                            try
                                             {
-                                                try
-                                                {
-                                                    pingStream.EndWrite(ar2);
-                                                    pingStream.Close();
-                                                    pingTcp.Close();
-                                                }
-                                                catch (Exception)
-                                                {
-                                                }
-                                            },
-                                        null);
-                                }
-                                catch (Exception)
-                                {
-                                }
-                            },
-                        null);
-                }
-            }
-            catch (Exception)
-            {
-            }
+                                                pingTcp.EndConnect(ar);
+                                                NetworkStream pingStream = pingTcp.GetStream();
 
+                                                const string Rn = "\r\n";
+                                                string pingRequest =
+                                                    string.Format(
+                                                        "GET /ping.php?do=register&address={0}&port={1}&authmode={2} HTTP/1.1",
+                                                        this.Ip,
+                                                        this.Port,
+                                                        this.Settings.AuthMethod) + Rn + "Host: reporting.pearoxy.com"
+                                                    + Rn + Rn;
+                                                byte[] pingRequestBytes = Encoding.ASCII.GetBytes(pingRequest);
+                                                pingStream.BeginWrite(
+                                                    pingRequestBytes,
+                                                    0,
+                                                    pingRequestBytes.Length,
+                                                    delegate(IAsyncResult ar2)
+                                                        {
+                                                            try
+                                                            {
+                                                                pingStream.EndWrite(ar2);
+                                                                pingStream.Close();
+                                                                pingTcp.Close();
+                                                            }
+                                                            catch (Exception)
+                                                            {
+                                                            }
+                                                        },
+                                                    null);
+                                            }
+                                            catch (Exception)
+                                            {
+                                            }
+                                        },
+                                    null);
+                            }
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }).Start();
             this.acceptingWorker = new BackgroundWorker { WorkerSupportsCancellation = true };
             this.acceptingWorker.DoWork += this.AcceptingWorkerDoWork;
             this.routingWorker = new BackgroundWorker { WorkerSupportsCancellation = true };
