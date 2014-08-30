@@ -4,3 +4,6 @@
 *.ilk
 *.vshost.exe
 ZipExcludeList.txt
+*.dll
+*.config
+*.xml

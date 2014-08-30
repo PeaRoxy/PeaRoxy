@@ -89,7 +89,7 @@
   <PropertyGroup />
   <PropertyGroup />
   <PropertyGroup>
-    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup>
@@ -364,10 +364,6 @@
     <ProjectReference Include="..\PeaRoxy.CommonLibrary\PeaRoxy.CommonLibrary.csproj">
       <Project>{0FA3DDDE-8A3C-4346-8C58-4662559D8A7B}</Project>
       <Name>PeaRoxy.CommonLibrary</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PeaRoxy.CoreProtocol\PeaRoxy.CoreProtocol.csproj">
-      <Project>{033154EE-19B5-4D3A-91EC-6B0FD48A80C3}</Project>
-      <Name>PeaRoxy.CoreProtocol</Name>
     </ProjectReference>
     <ProjectReference Include="..\PeaRoxy.Platform\PeaRoxy.Platform.csproj">
       <Project>{511CA971-9FAD-4BFA-9841-105CF644CF77}</Project>

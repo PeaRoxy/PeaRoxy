@@ -1,3 +1,14 @@
 *.pdb
 ZipExcludeList.txt
 *.crt
+PeaRoxy.Windows.*.dll
+PeaRoxy.ClientLibrary.dll
+CircularProgressBar.dll
+PeaRoxy.CommonLibrary.dll
+PeaRoxy.CoreProtocol.dll
+PeaRoxy.Platform.dll
+PeaRoxy.Updater.dll
+VDialog.dll
+WinFormAnimation.dll
+*.xml
+*.vshost.exe

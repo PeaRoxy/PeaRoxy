@@ -26,6 +26,7 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <FodyPath>..\packages\Fody.1.14.0</FodyPath>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>ZARA.Program</StartupObject>
@@ -55,7 +56,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup>
-    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CircularProgressBar, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -102,6 +103,7 @@
     </Compile>
     <None Include="app.config" />
     <None Include="app.manifest" />
+    <None Include="Fody.targets" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -190,6 +192,7 @@
     <None Include="Resources\host.png" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="FodyWeavers.xml" />
     <Content Include="ZipExcludeList.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -199,9 +202,10 @@ if $(ConfigurationName) == Release (
 del "$(SolutionDir)Binaries\ZARA-Win*.exe"
 del "$(SolutionDir)Binaries\ZARA-Win*.zip"
 "$(ProgramFiles)\NSIS\makensis.exe" /DVERSION=%25version%25 "$(SolutionDir)Setup\ZARA Client.nsi"
-"$(SolutionDir)Solution Items\7za" a -tzip "$(SolutionDir)Binaries\ZARA-Win-v%25version%25.zip" "$(SolutionDir)\bin\Zara\*" -mx9 -xr@"$(ProjectDir)ZipExcludeList.txt"
+"$(SolutionDir)Solution Items\7za" a -tzip "$(SolutionDir)Binaries\ZARA-Win-v%25version%25_ForDistribution.zip" "$(SolutionDir)\bin\Zara\*" -mx9 -xr@"$(ProjectDir)ZipExcludeList.txt"
 )</PostBuildEvent>
   </PropertyGroup>
+  <Import Project="Fody.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

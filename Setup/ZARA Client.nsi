@@ -1,4 +1,4 @@
-SetCompressor /SOLID lzma
+SetCompress off
 
 !include "nsProcess.nsh"
 ;--------------------------------
@@ -14,7 +14,7 @@ SetCompressor /SOLID lzma
   !include "x64.nsh"
   ;Name and file
   Name "ZARA for Windows v${VERSION}"
-  OutFile "..\Binaries\ZARA-Win-v${VERSION}.exe"
+  OutFile "..\Binaries\ZARA-Win-v${VERSION}_StandAlone.exe"
 
   ;Default installation folder
   InstallDir "$TEMP\ZARA v${VERSION}"
@@ -52,7 +52,8 @@ Section "Main Application" SecMain
 
   SectionIn RO
   SetOutPath "$INSTDIR"
-  File  /r /x "*.crt" /x "*.pdb" "..\bin\ZARA\*"
+  File  /r /x "*.pdb" /x "ZipExcludeList.txt" /x "*.crt" /x "PeaRoxy.Windows.*.dll" /x "PeaRoxy.ClientLibrary.dll" /x "CircularProgressBar.dll" /x "PeaRoxy.CommonLibrary.dll" /x "PeaRoxy.CoreProtocol.dll" /x "PeaRoxy.Platform.dll" /x "PeaRoxy.Updater.dll" /x "VDialog.dll" /x "WinFormAnimation.dll" /x "*.xml" /x "*.vshost.exe" "..\bin\ZARA\*"
+
   ExecShell open "$INSTDIR\ZARA.exe"
   Quit
 SectionEnd
