@@ -7,3 +7,6 @@ ZipExcludeList.txt
 *.dll
 *.config
 *.xml
+*.manifest
+*.log
+*/

@@ -14,6 +14,7 @@
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <IsWebBootstrapper>false</IsWebBootstrapper>
+    <FodyPath>..\packages\Fody.1.14.0</FodyPath>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -28,7 +29,6 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <FodyPath>..\packages\Fody.1.14.0</FodyPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -69,6 +69,7 @@
   <ItemGroup>
     <Reference Include="CommandLine">
       <HintPath>..\packages\CommandLineParser.1.9.71\lib\net40\CommandLine.dll</HintPath>
+      <IlMerge>True</IlMerge>
     </Reference>
     <Reference Include="System" />
   </ItemGroup>
@@ -82,7 +83,6 @@
     <Compile Include="Settings.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="FodyWeavers.xml" />
     <Content Include="Server.ico" />
     <Content Include="ZipExcludeList.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -97,7 +97,6 @@
     <Content Include="blacklist.ini">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Include="Fody.targets" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -126,10 +125,12 @@
     <ProjectReference Include="..\PeaRoxy.CommonLibrary\PeaRoxy.CommonLibrary.csproj">
       <Project>{0FA3DDDE-8A3C-4346-8C58-4662559D8A7B}</Project>
       <Name>PeaRoxy.CommonLibrary</Name>
+      <IlMerge>True</IlMerge>
     </ProjectReference>
     <ProjectReference Include="..\PeaRoxy.CoreProtocol\PeaRoxy.CoreProtocol.csproj">
       <Project>{033154EE-19B5-4D3A-91EC-6B0FD48A80C3}</Project>
       <Name>PeaRoxy.CoreProtocol</Name>
+      <IlMerge>True</IlMerge>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -139,7 +140,6 @@ del "$(SolutionDir)Binaries\PeaRoxyServer.zip"
 "$(SolutionDir)Solution Items\7za" a -tzip "$(SolutionDir)Binaries\PeaRoxyServer.zip" "$(TargetDir)*" -mx9 -xr@"$(ProjectDir)ZipExcludeList.txt"
 )</PostBuildEvent>
   </PropertyGroup>
-  <Import Project="Fody.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
@@ -147,4 +147,12 @@ del "$(SolutionDir)Binaries\PeaRoxyServer.zip"
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Target Name="AfterBuild">
+    <CreateItem Include="@(ReferencePath)" Condition="'%(CopyLocal)'=='true' and '%(ReferencePath.IlMerge)'=='true'">
+      <Output TaskParameter="Include" ItemName="IlmergeAssemblies" />
+    </CreateItem>
+    <Message Text="MERGING: @(IlmergeAssemblies->'%(Filename)')" Importance="High" />
+    <Exec Command="&quot;$(ProgramFiles)\Microsoft\Ilmerge\Ilmerge.exe&quot; /targetplatform:v4 /lib:&quot;$(MSBuildBinPath)&quot; /out:&quot;@(MainAssembly->'%(FullPath)')&quot; &quot;@(IntermediateAssembly->'%(FullPath)')&quot; @(IlmergeAssemblies->'&quot;%(FullPath)&quot;', ' ')" />
+  </Target>
+  <Target Name="_CopyFilesMarkedCopyLocal" />
 </Project>
