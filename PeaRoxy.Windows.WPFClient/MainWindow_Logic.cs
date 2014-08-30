@@ -122,19 +122,16 @@ namespace PeaRoxy.Windows.WPFClient
                     this.latestVersion = null;
                     try
                     {
-                        if (!this.skipUpdate)
+                        this.updaterObject = new Updater(
+                            "PeaRoxyClient",
+                            Assembly.GetExecutingAssembly().GetName().Version,
+                            this.listener != null
+                            && this.listener.Status.HasFlag(ProxyController.ControllerStatus.Proxy)
+                                ? new WebProxy(this.listener.Ip + ":" + this.listener.Port, true)
+                                : null);
+                        if (!this.skipUpdate && this.updaterObject.IsNewVersionAvailable())
                         {
-                            this.updaterObject = new Updater(
-                                "PeaRoxyClient",
-                                Assembly.GetExecutingAssembly().GetName().Version,
-                                this.listener != null
-                                && this.listener.Status.HasFlag(ProxyController.ControllerStatus.Proxy)
-                                    ? new WebProxy(this.listener.Ip + ":" + this.listener.Port, true)
-                                    : null);
-                            if (this.updaterObject.IsNewVersionAvailable())
-                            {
-                                this.latestVersion = this.updaterObject.GetLatestVersion();
-                            }
+                            this.latestVersion = this.updaterObject.GetLatestVersion();
                         }
                     }
                     catch
