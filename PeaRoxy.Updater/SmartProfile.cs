@@ -1,19 +1,23 @@
-﻿namespace PeaRoxy.Updater
-{
-    #region
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="SmartProfile.cs" company="PeaRoxy.com">
+//   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
+//   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 
+namespace PeaRoxy.Updater
+{
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Xml.Serialization;
 
-    #endregion
-
+    /// <summary>
+    ///     The SmartProfile class is representation of a SmartPear settings profile.
+    /// </summary>
     [Serializable]
     public class SmartProfile
     {
-        #region Public Properties
-
         public string AntiBlockPageRule { get; set; }
 
         public string AntiDnsPoisoningRule { get; set; }
@@ -37,10 +41,6 @@
         public bool TimeoutDetection { get; set; }
 
         public bool TreatPort80AsHttp { get; set; }
-
-        #endregion
-
-        #region Public Methods and Operators
 
         public static SmartProfile FromXml(string xmltext)
         {
@@ -74,7 +74,5 @@
             }
             return null;
         }
-
-        #endregion
     }
 }

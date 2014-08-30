@@ -170,7 +170,7 @@ namespace PeaRoxy.ASPear
                         ConfigUser user in
                             this.users.Where(
                                 user =>
-                                string.Equals(userName, user.Username, StringComparison.CurrentCultureIgnoreCase)
+                                string.Equals(userName, user.Username, StringComparison.OrdinalIgnoreCase)
                                 && Encoding.ASCII.GetBytes(passWord) == user.Hash))
                     {
                         encryptionKey = Encoding.ASCII.GetBytes(user.Password);
