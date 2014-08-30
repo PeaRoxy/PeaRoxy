@@ -63,7 +63,7 @@ SetCompressor /SOLID lzma
 Section "Main Application" SecMain
   ${nsProcess::FindProcess} "PeaRoxy.Windows.WPFClient.exe" $R0
   StrCmp $R0 0 0 +7
-     ExecWait '"$INSTDIR\PeaRoxy.Windows.WPFClient.exe" /quit'
+     ExecWait '"$INSTDIR\PeaRoxy.Windows.WPFClient.exe" /quit --quit'
      Sleep 20000
      ${nsProcess::FindProcess} "PeaRoxy.Windows.WPFClient.exe" $R0
      StrCmp $R0 0 0 +3
@@ -82,7 +82,7 @@ Section "Main Application" SecMain
   WriteRegStr HKLM "Software\PeaRoxy" "Version" ${VERSION}
 
   CreateShortCut "$SMPROGRAMS\PeaRoxy Client.lnk" "$INSTDIR\PeaRoxy.Windows.WPFClient.exe"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "PeaRoxy Client" '"$INSTDIR\PeaRoxy.Windows.WPFClient.exe" /autoRun'
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "PeaRoxy Client" '"$INSTDIR\PeaRoxy.Windows.WPFClient.exe" --autorun'
 
   ;Create uninstaller
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\PeaRoxy Client for Windows" "DisplayName" "PeaRoxy Client ${VERSION} for Windows (remove only)"
