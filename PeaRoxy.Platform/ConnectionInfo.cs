@@ -3,213 +3,151 @@
 //   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
 //   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
 // </copyright>
-// <summary>
-//   The connection info.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.Platform
 {
-    #region
-
     using System.Collections.Generic;
     using System.Net;
 
-    #endregion
-
     /// <summary>
-    ///     The connection info.
+    ///     This class is base class of all platform dependent classes about connections
     /// </summary>
     public abstract class ConnectionInfo : ClassRegistry.PlatformDependentClassBaseType
     {
-        #region Enums
-
         /// <summary>
-        ///     The protocol.
+        ///     The protocol types.
         /// </summary>
-        public enum Protocol
+        public enum ProtocolTypes
         {
-            /// <summary>
-            ///     The tcp.
-            /// </summary>
-            Tcp, 
+            Tcp,
 
-            /// <summary>
-            ///     The udp.
-            /// </summary>
             Udp
         }
 
         /// <summary>
-        ///     The status.
+        ///     The states.
         /// </summary>
-        public enum Status
+        public enum States
         {
-            /// <summary>
-            ///     The tcp closed.
-            /// </summary>
-            TcpClosed = 1, 
+            TcpClosed = 1,
 
-            /// <summary>
-            ///     The tcp listen.
-            /// </summary>
-            TcpListen = 2, 
+            TcpListen = 2,
 
-            /// <summary>
-            ///     The tcp syn sent.
-            /// </summary>
-            TcpSynSent = 3, 
+            TcpSynSent = 3,
 
-            /// <summary>
-            ///     The tcp syn received.
-            /// </summary>
-            TcpSynReceived = 4, 
+            TcpSynReceived = 4,
 
-            /// <summary>
-            ///     The tcp established.
-            /// </summary>
-            TcpEstablished = 5, 
+            TcpEstablished = 5,
 
-            /// <summary>
-            ///     The tcp fin wait 1.
-            /// </summary>
-            TcpFinWait1 = 6, 
+            TcpFinWait1 = 6,
 
-            /// <summary>
-            ///     The tcp fin wait 2.
-            /// </summary>
-            TcpFinWait2 = 7, 
+            TcpFinWait2 = 7,
 
-            /// <summary>
-            ///     The tcp close wait.
-            /// </summary>
-            TcpCloseWait = 8, 
+            TcpCloseWait = 8,
 
-            /// <summary>
-            ///     The tcp closing.
-            /// </summary>
-            TcpClosing = 9, 
+            TcpClosing = 9,
 
-            /// <summary>
-            ///     The tcp last acknowledge.
-            /// </summary>
-            TcpLastAcknowledge = 10, 
+            TcpLastAcknowledge = 10,
 
-            /// <summary>
-            ///     The tcp time wait.
-            /// </summary>
-            TcpTimeWait = 11, 
+            TcpTimeWait = 11,
 
-            /// <summary>
-            ///     The tcp delete tcb.
-            /// </summary>
             TcpDeleteTcb = 12
         }
 
-        #endregion
-
-        #region Public Properties
-
         /// <summary>
-        ///     Gets or sets the local address.
+        ///     Gets or sets the local end point of the connection.
         /// </summary>
         public IPEndPoint LocalAddress { get; protected set; }
 
         /// <summary>
-        ///     Gets or sets the process id.
+        ///     Gets or sets the PID of the process creating the connection.
         /// </summary>
         public int ProcessId { get; protected set; }
 
         /// <summary>
-        ///     Gets or sets the process name.
+        ///     Gets or sets the creating process's name.
         /// </summary>
         public string ProcessName { get; protected set; }
 
-
         /// <summary>
-        ///     Gets or sets the process path.
+        ///     Gets or sets the creating process's main executable file path.
         /// </summary>
         public string ProcessPath { get; protected set; }
 
         /// <summary>
         ///     Gets or sets the protocol type.
         /// </summary>
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        protected Protocol ProtocolType { get; set; }
+        public ProtocolTypes ProtocolType { get; set; }
 
         /// <summary>
-        ///     Gets or sets the remote address.
+        ///     Gets or sets the remote end point.
         /// </summary>
-        protected IPEndPoint RemoteAddress { get; set; }
+        public IPEndPoint RemoteAddress { get; set; }
 
         /// <summary>
-        ///     Gets or sets the state.
+        ///     Gets or sets the state of the connection.
         /// </summary>
-        // ReSharper disable once UnusedAutoPropertyAccessor.Global
-        protected Status State { get; set; }
-
-        #endregion
-
-        #region Public Methods and Operators
+        public States State { get; set; }
 
         /// <summary>
-        /// The get tcp connection by local address.
+        ///     Give more information about a TCP connection to specific IP address and port.
         /// </summary>
         /// <param name="ip">
-        /// The ip.
+        ///     The local IP address of the connection.
         /// </param>
         /// <param name="port">
-        /// The port.
+        ///     The local port number of the connection.
         /// </param>
         /// <returns>
-        /// The <see cref="ConnectionInfo"/>.
+        ///     The <see cref="ConnectionInfo" /> object contains the information about the connection.
         /// </returns>
         public abstract ConnectionInfo GetTcpConnectionByLocalAddress(IPAddress ip, ushort port);
 
         /// <summary>
-        ///     The get tcp connections.
+        ///     Get a list of all TCP connections.
         /// </summary>
         /// <returns>
-        ///     The <see>
+        ///     The
+        ///     <see>
         ///         <cref>List</cref>
         ///     </see>
-        ///     .
+        ///     of all connections.
         /// </returns>
         public abstract List<ConnectionInfo> GetTcpConnections();
 
         /// <summary>
-        /// The get udp connection by local address.
+        ///     Give more information about a UDP connection to specific IP address and port.
         /// </summary>
         /// <param name="ip">
-        /// The ip.
+        ///     The local IP address of the connection.
         /// </param>
         /// <param name="port">
-        /// The port.
+        ///     The local port number of the connection.
         /// </param>
         /// <returns>
-        /// The <see cref="ConnectionInfo"/>.
+        ///     The <see cref="ConnectionInfo" /> object contains the information about the connection.
         /// </returns>
         public abstract ConnectionInfo GetUdpConnectionByLocalAddress(IPAddress ip, ushort port);
 
         /// <summary>
-        ///     The get udp connections.
+        ///     Get a list of all UDP connections.
         /// </summary>
         /// <returns>
-        ///     The <see>
+        ///     The
+        ///     <see>
         ///         <cref>List</cref>
         ///     </see>
-        ///     .
+        ///     of all connections.
         /// </returns>
         public abstract List<ConnectionInfo> GetUdpConnections();
 
         /// <summary>
-        ///     The is supported.
+        ///     This method will shows if this functionality is supported in current environment/OS.
         /// </summary>
         /// <returns>
-        ///     The <see cref="bool" />.
+        ///     The result shows if we can use this class's in the current environment/OS.
         /// </returns>
         public abstract bool IsSupported();
-
-        #endregion
     }
 }

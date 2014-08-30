@@ -3,50 +3,35 @@
 //   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
 //   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
 // </copyright>
-// <summary>
-//   The class registry.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.Platform
 {
-    #region
-
     using System;
     using System.Collections.Generic;
 
-    #endregion
-
     /// <summary>
-    ///     The class registry.
+    ///     This class can be used to register and retrieve the platform dependent objects in a multi-platform environment so
+    ///     you can keep your code same between different platforms. This is the base class for platform dependent libraries.
     /// </summary>
     public abstract class ClassRegistry
     {
-        #region Static Fields
-
-        /// <summary>
-        ///     The _items.
-        /// </summary>
         private static readonly Dictionary<string, object> Items = new Dictionary<string, object>();
 
-        #endregion
-
-        #region Public Methods and Operators
-
         /// <summary>
-        ///     The get class.
+        ///     This method can be used to retrieve a registered object
         /// </summary>
         /// <typeparam name="TType">
         /// </typeparam>
         /// <returns>
-        ///     The <see cref="TType" />.
+        ///     The <see cref="TType" /> of the object you want to access.
         /// </returns>
         /// <exception cref="Exception">
+        ///     The selected type is not valid or there is no registration for this type.
         /// </exception>
         public static TType GetClass<TType>()
         {
-            // ReSharper disable once PossibleNullReferenceException
-            if (typeof(TType).BaseType.ToString() != typeof(PlatformDependentClassBaseType).ToString())
+            if (!typeof(TType).IsSubclassOf(typeof(PlatformDependentClassBaseType)))
             {
                 throw new Exception("Not supported class.");
             }
@@ -60,28 +45,13 @@ namespace PeaRoxy.Platform
         }
 
         /// <summary>
-        ///     The register platform.
+        ///     This method can be used to register the corresponding classes of the current platform
         /// </summary>
         public abstract void RegisterPlatform();
 
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// The register class.
-        /// </summary>
-        /// <param name="pclass">
-        /// The pclass.
-        /// </param>
-        /// <typeparam name="TType">
-        /// </typeparam>
-        /// <exception cref="Exception">
-        /// </exception>
         protected static void RegisterClass<TType>(TType pclass)
         {
-            // ReSharper disable once PossibleNullReferenceException
-            if (typeof(TType).BaseType.ToString() != typeof(PlatformDependentClassBaseType).ToString())
+            if (!typeof(TType).IsSubclassOf(typeof(PlatformDependentClassBaseType)))
             {
                 throw new Exception("Not supported class.");
             }
@@ -96,10 +66,8 @@ namespace PeaRoxy.Platform
             }
         }
 
-        #endregion
-
         /// <summary>
-        ///     The platform dependent class base type.
+        ///     An empty class that should be the base class of all platform-independent abstract classes.
         /// </summary>
         public class PlatformDependentClassBaseType
         {

@@ -66,9 +66,9 @@ namespace PeaRoxy.Windows
         /// <param name="processId">
         /// The process id.
         /// </param>
-        public WindowsConnection(Status stateId, IPEndPoint localAddress, IPEndPoint remoteAddress, int processId)
+        public WindowsConnection(States stateId, IPEndPoint localAddress, IPEndPoint remoteAddress, int processId)
         {
-            this.ProtocolType = Protocol.Tcp;
+            this.ProtocolType = ProtocolTypes.Tcp;
             this.State = stateId;
             this.LocalAddress = localAddress;
             if (this.LocalAddress.Port != 0 && this.LocalAddress.Address.Equals(new IPAddress(0x0)))
@@ -99,7 +99,7 @@ namespace PeaRoxy.Windows
         /// </param>
         public WindowsConnection(IPEndPoint localAddress, int processId)
         {
-            this.ProtocolType = Protocol.Udp;
+            this.ProtocolType = ProtocolTypes.Udp;
             this.LocalAddress = localAddress;
             if (this.LocalAddress.Port != 0 && this.LocalAddress.Address.Equals(new IPAddress(0x0)))
             {
@@ -450,7 +450,7 @@ namespace PeaRoxy.Windows
             current = (IntPtr)((int)current + 4);
             for (int i = 0; i < numEntries; i++)
             {
-                Status stat = (Status)Marshal.ReadIntPtr(current);
+                States stat = (States)Marshal.ReadIntPtr(current);
                 current = (IntPtr)((int)current + 4);
                 IPEndPoint localAddress = new IPEndPoint(
                     (UInt32)Marshal.ReadIntPtr(current), 
@@ -509,7 +509,7 @@ namespace PeaRoxy.Windows
                 nOffset += 4;
                 list.Add(
                     new WindowsConnection(
-                        (Status)Convert.ToInt32(buffer[nOffset - 4]), 
+                        (States)Convert.ToInt32(buffer[nOffset - 4]), 
                         CommonFunctions.Bytes2IpEndPoint(buffer, ref nOffset, false), 
                         CommonFunctions.Bytes2IpEndPoint(buffer, ref nOffset, true), 
                         CommonFunctions.Bytes2Int(buffer, ref nOffset)));
