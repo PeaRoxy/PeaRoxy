@@ -56,11 +56,6 @@ namespace PeaRoxy.Windows.WPFClient
         #region Public Properties
 
         /// <summary>
-        ///     Gets the args.
-        /// </summary>
-        public static string Args { get; private set; }
-
-        /// <summary>
         ///     Gets a value indicating whether is executed by user.
         /// </summary>
         public static bool IsExecutedByUser { get; private set; }
@@ -108,16 +103,15 @@ namespace PeaRoxy.Windows.WPFClient
         {
             try
             {
-                Args = string.Join(" ", args).ToLower().Trim();
                 defualtApp = new App();
                 WpfSingleInstance.Make();
-                if (Args.Contains("/quit"))
+                if (CommandLine.Default.Quit)
                 {
                     End();
                 }
 
                 WpfSingleInstance.SecondInstanceCallback += SecondInstanceExecuted;
-                IsExecutedByUser = !Args.Contains("/autorun");
+                IsExecutedByUser = !CommandLine.Default.AutoRun;
                 Timeline.DesiredFrameRateProperty.OverrideMetadata(
                     typeof(Timeline),
                     new FrameworkPropertyMetadata { DefaultValue = 60 });
@@ -138,8 +132,7 @@ namespace PeaRoxy.Windows.WPFClient
         {
             try
             {
-                Args = args.ToLower().Trim();
-                if (Args.Contains("/quit"))
+                if (CommandLine.GetByArguments(args).Quit)
                 {
                     End();
                 }
@@ -168,7 +161,7 @@ namespace PeaRoxy.Windows.WPFClient
             string ourFileName = Assembly.GetEntryAssembly().Location;
             JumpListLink quitLink = new JumpListLink(ourFileName, "Quit PeaRoxy")
                                         {
-                                            Arguments = "/quit",
+                                            Arguments = "--quit",
                                         };
             jumpList.AddUserTasks(new JumpListTask[] { quitLink });
             jumpList.Refresh();

@@ -95,7 +95,7 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
                 {
                     key.SetValue(
                         "PeaRoxy Client",
-                        "\"" + Process.GetCurrentProcess().MainModule.FileName + "\" /autoRun");
+                        "\"" + Process.GetCurrentProcess().MainModule.FileName + "\" --autorun");
                 }
                 else
                 {
