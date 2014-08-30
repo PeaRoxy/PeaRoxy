@@ -261,19 +261,9 @@ namespace PeaRoxy.ClientLibrary
                 int portSeperator = (rule.IndexOf(":", StringComparison.Ordinal) == -1)
                                         ? rule.Length
                                         : rule.IndexOf(":", StringComparison.Ordinal);
-                int startOf = (rule.IndexOf(" | ", StringComparison.Ordinal) == -1)
-                                  ? 0
-                                  : rule.IndexOf(" | ", StringComparison.Ordinal) + 3;
-                string rulepTopDomainPart = rule.Substring(startOf, portSeperator - startOf);
+                string rulepTopDomainPart = rule.Substring(0, portSeperator);
                 rulepTopDomainPart = rulepTopDomainPart.Trim(new[] { '*' });
-                byte temporaryMicrosoftStupidProgrammersVariable;
-                if (byte.TryParse(rulepTopDomainPart, out temporaryMicrosoftStupidProgrammersVariable))
-                {
-                    continue;
-                }
 
-                string ruleApp = rule.Substring(0, rule.IndexOf(" | ", StringComparison.Ordinal));
-                rule = rule.Substring(rule.IndexOf(" | ", StringComparison.Ordinal) + 3);
                 while (rule.IndexOf(".", StringComparison.Ordinal) > -1)
                 {
                     rule = rule.Substring(rule.IndexOf(".", StringComparison.Ordinal) + 1);
@@ -289,8 +279,7 @@ namespace PeaRoxy.ClientLibrary
                     }
 
                     rule = "*" + rule;
-                    string ruleP = ruleApp + " | " + rule;
-                    int pl = list.Count(t => Common.DoesMatchWildCard(MakeWildCardable(t), ruleP));
+                    int pl = list.Count(t => Common.DoesMatchWildCard(MakeWildCardable(t), rule));
 
                     if (pl < 3)
                     {
@@ -299,7 +288,7 @@ namespace PeaRoxy.ClientLibrary
 
                     for (int i = 0; i < list.Count; i++)
                     {
-                        if (Common.DoesMatchWildCard(MakeWildCardable(list[i]), ruleP))
+                        if (Common.DoesMatchWildCard(MakeWildCardable(list[i]), rule))
                         {
                             list.RemoveAt(i);
                             i--;
@@ -307,7 +296,7 @@ namespace PeaRoxy.ClientLibrary
                     }
 
                     i0 = -1;
-                    list.Add(ruleP);
+                    list.Add(rule);
                 }
             }
 
@@ -352,14 +341,7 @@ namespace PeaRoxy.ClientLibrary
                                       StringComparison.Ordinal) + 1;
                 string rulepTopDomainPart = rule.Substring(startOf, lastSlash - startOf);
                 rulepTopDomainPart = rulepTopDomainPart.Trim(new[] { '*' });
-                byte temporaryMicrosoftStupidProgrammersVariable;
-                if (byte.TryParse(rulepTopDomainPart, out temporaryMicrosoftStupidProgrammersVariable))
-                {
-                    break;
-                }
 
-                string ruleApp = rule.Substring(0, rule.IndexOf(" | ", StringComparison.Ordinal));
-                rule = rule.Substring(rule.IndexOf(" | ", StringComparison.Ordinal) + 3);
                 while (rule.IndexOf(".", StringComparison.Ordinal) > -1)
                 {
                     rule = rule.Substring(rule.IndexOf(".", StringComparison.Ordinal) + 1);
@@ -377,8 +359,7 @@ namespace PeaRoxy.ClientLibrary
                     }
 
                     rule = "*" + rule;
-                    string ruleP = ruleApp + " | " + rule;
-                    int pl = list.Count(t => Common.DoesMatchWildCard(MakeWildCardable(t), ruleP));
+                    int pl = list.Count(t => Common.DoesMatchWildCard(MakeWildCardable(t), rule));
 
                     if (pl < 3)
                     {
@@ -387,7 +368,7 @@ namespace PeaRoxy.ClientLibrary
 
                     for (int i = 0; i < list.Count; i++)
                     {
-                        if (Common.DoesMatchWildCard(MakeWildCardable(list[i]), ruleP))
+                        if (Common.DoesMatchWildCard(MakeWildCardable(list[i]), rule))
                         {
                             list.RemoveAt(i);
                             i--;
@@ -395,7 +376,7 @@ namespace PeaRoxy.ClientLibrary
                     }
 
                     i0 = -1;
-                    list.Add(ruleP);
+                    list.Add(rule);
                 }
             }
 

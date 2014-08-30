@@ -185,7 +185,6 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
         public void SmartAddItem()
         {
             this.TxtSmartEditRule.Text = string.Empty;
-            this.TxtSmartEditApp.Text = "*";
             this.TxtSmartEditRule.Tag = null;
             this.CbSmartEditType.SelectedItem = this.CbSmartEditType.Items[0];
             this.ShowOptionsDialog();
@@ -215,8 +214,7 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
 
             this.TxtSmartEditRule.Tag = rule;
             ps = ps.Substring(ps.IndexOf(") ", StringComparison.Ordinal) + 2);
-            this.TxtSmartEditApp.Text = ps.Substring(0, ps.IndexOf(" | ", StringComparison.Ordinal));
-            this.TxtSmartEditRule.Text = ps.Substring(ps.IndexOf(" | ", StringComparison.Ordinal) + 3);
+            this.TxtSmartEditRule.Text = ps;
             this.ShowOptionsDialog();
         }
 
@@ -231,12 +229,6 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
             try
             {
                 string rule = this.TxtSmartEditRule.Text.ToLower();
-                string app = this.TxtSmartEditApp.Text.ToLower();
-                if (app == string.Empty)
-                {
-                    app = "*";
-                }
-
                 if (rule.IndexOf("://", StringComparison.Ordinal) != -1)
                 {
                     rule = rule.Substring(rule.IndexOf("://", StringComparison.Ordinal) + 3);
@@ -290,11 +282,11 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
 
                 if (https)
                 {
-                    this.SmartList.Items.Insert(cp, "(Direct) " + app + " | " + rule);
+                    this.SmartList.Items.Insert(cp, "(Direct) " +  rule);
                 }
                 else
                 {
-                    this.SmartList.Items.Insert(cp, "(Http) " + app + " | " + rule);
+                    this.SmartList.Items.Insert(cp, "(Http) " + rule);
                 }
 
                 this.SaveSettings();

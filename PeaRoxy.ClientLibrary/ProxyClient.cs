@@ -278,22 +278,13 @@ namespace PeaRoxy.ClientLibrary
                 {
                     return false;
                 }
-
-                string name = "Unknown | ";
-
-                ConnectionInfo conInfo = this.GetExtendedInfo();
-                if (conInfo != null && conInfo.ProcessName != string.Empty)
-                {
-                    name = conInfo.ProcessName + " | ";
-                }
-
+                
                 SmartPear smart = this.Controller.SmartPear;
                 string p = this.RequestAddress.ToLower();
                 if (p.IndexOf("HTTP://", StringComparison.OrdinalIgnoreCase) == 0)
                 {
                     Uri parsedUrl = new Uri(p);
-                    p = name + parsedUrl.Host;
-                    if (smart.ForwarderHttpList.Any(t => Common.DoesMatchWildCard(p, t)))
+                    if (smart.ForwarderHttpList.Any(t => Common.DoesMatchWildCard(parsedUrl.Host, t)))
                     {
                         return true;
                     }
@@ -301,7 +292,7 @@ namespace PeaRoxy.ClientLibrary
                 else if (p.IndexOf("SOCKS://", StringComparison.OrdinalIgnoreCase) == 0
                          || p.IndexOf("HTTP://", StringComparison.OrdinalIgnoreCase) == 0)
                 {
-                    p = name + p.Substring(p.IndexOf("://", StringComparison.Ordinal) + 3);
+                    p = p.Substring(p.IndexOf("://", StringComparison.Ordinal) + 3);
                     if (smart.ForwarderDirectList.Any(t => Common.DoesMatchWildCard(p, t)))
                     {
                         return true;
@@ -410,11 +401,11 @@ namespace PeaRoxy.ClientLibrary
                             && Http.IsHttp(this.SmartRequestBuffer))
                         {
                             smart.AddRuleToHttpForwarder(
-                                "* | *" + url.Host.ToLower().TrimEnd(new[] { '/', '\\' }) + "*");
+                                string.Format("*{0}*", url.Host.ToLower().TrimEnd(new[] { '/', '\\' })));
                         }
                         else
                         {
-                            smart.AddRuleToDirectForwarder("* | *" + url.Host.ToLower() + ":" + url.Port);
+                            smart.AddRuleToDirectForwarder(string.Format("*{0}:{1}", url.Host.ToLower(), url.Port));
                         }
                     }
 
@@ -479,7 +470,7 @@ namespace PeaRoxy.ClientLibrary
                                 && Uri.TryCreate(this.RequestAddress, UriKind.Absolute, out url))
                             {
                                 smart.AddRuleToHttpForwarder(
-                                    "* | *" + url.Host.ToLower().TrimEnd(new[] { '/', '\\' }) + "*");
+                                    string.Format("*{0}*", url.Host.ToLower().TrimEnd(new[] { '/', '\\' })));
                             }
 
                             currentActiveServer.ReceiveDataDelegate = null;
@@ -638,7 +629,7 @@ namespace PeaRoxy.ClientLibrary
                             && Uri.TryCreate(this.RequestAddress, UriKind.Absolute, out url))
                         {
                             smart.AddRuleToHttpForwarder(
-                                "* | *" + url.Host.ToLower().TrimEnd(new[] { '/', '\\' }) + "*");
+                                string.Format("*{0}*", url.Host.ToLower().TrimEnd(new[] { '/', '\\' })));
                         }
 
                         currentActiveServer.ReceiveDataDelegate = null;

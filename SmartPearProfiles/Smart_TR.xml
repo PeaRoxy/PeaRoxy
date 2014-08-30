@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <SmartProfile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <HttpRules>
-    <string>* | *youtube.c*</string>
-    <string>* | *ytimg.c*</string>
-    <string>* | *twitter.c*</string>
+    <string>*youtube.c*</string>
+    <string>*ytimg.c*</string>
+    <string>*twitter.c*</string>
   </HttpRules>
   <DirectRules>
-    <string>* | *youtube.c*:*</string>
-    <string>* | *ytimg.c*:*</string>
-    <string>* | *twitter.c*:*</string>
+    <string>*youtube.c*:*</string>
+    <string>*ytimg.c*:*</string>
+    <string>*twitter.c*:*</string>
   </DirectRules>
   <AntiDnsPoisoningRule>^195.175.254.*</AntiDnsPoisoningRule>
   <AntiBlockPageRule />

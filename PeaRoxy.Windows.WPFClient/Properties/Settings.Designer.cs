@@ -650,7 +650,7 @@ namespace PeaRoxy.Windows.WPFClient.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("4")]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
         public int Settings_Version {
             get {
                 return ((int)(this["Settings_Version"]));

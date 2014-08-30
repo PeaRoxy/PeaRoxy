@@ -62,12 +62,12 @@
                 VerticalAlignment="Top" Width="53" Click="BtnSmartEditClick" x:FieldModifier="private" />
         <Button Content="Remove" HorizontalAlignment="Left" Margin="305,264,0,0" Name="RemoveButton" Width="53"
                 Height="23" VerticalAlignment="Top" Click="BtnSmartRemoveClick" x:FieldModifier="private" />
-        <Grid Height="120" HorizontalAlignment="Left" Margin="58,88,0,0" Name="GridOptionsdialog"
+        <Grid Height="104" HorizontalAlignment="Left" Margin="58,88,0,0" Name="GridOptionsdialog"
               VerticalAlignment="Top" Width="250" Background="White" IsEnabled="False" x:FieldModifier="private">
-            <Rectangle Width="250" Height="120" Margin="0,0,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"
+            <Rectangle Width="250" Height="104" Margin="0,0,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"
                        Stroke="#FF7D7D7D" StrokeThickness="2" />
-            <Label Content="Rule:" Height="28" HorizontalAlignment="Left" Margin="7,32,0,0" VerticalAlignment="Top" />
-            <TextBox Height="23" HorizontalAlignment="Left" Margin="81,34,0,0" Name="TxtSmartEditRule"
+            <Label Content="Rule:" Height="28" HorizontalAlignment="Left" Margin="7,38,0,0" VerticalAlignment="Top" />
+            <TextBox Height="23" HorizontalAlignment="Left" Margin="81,40,0,0" Name="TxtSmartEditRule"
                      VerticalAlignment="Top" Width="160" x:FieldModifier="private" />
             <ComboBox Height="23" HorizontalAlignment="Left" Margin="81,7,0,0" Name="CbSmartEditType"
                       VerticalAlignment="Top" Width="160" x:FieldModifier="private">
@@ -75,15 +75,11 @@
                 <ComboBoxItem Content="Direct (Https/Socks)" IsSelected="False" Tag="Direct" />
             </ComboBox>
             <Label Content="Rule Type:" Height="28" HorizontalAlignment="Left" Margin="7,5,0,0" VerticalAlignment="Top" />
-            <Label Content="Application:" Height="28" HorizontalAlignment="Left" Margin="7,59,0,0"
-                   VerticalAlignment="Top" />
-            <TextBox Height="23" HorizontalAlignment="Left" Margin="81,61,0,0" Name="TxtSmartEditApp"
-                     VerticalAlignment="Top" Width="160" x:FieldModifier="private" />
             <!-- ReSharper disable once UnusedMember.Global -->
-            <Button Content="Save" Height="23" HorizontalAlignment="Left" Margin="191,93,0,0" Name="BtnSmartEditOk"
+            <Button Content="Save" Height="23" HorizontalAlignment="Left" Margin="191,72,0,0" Name="BtnSmartEditOk"
                     VerticalAlignment="Top" Width="50" Click="BtnSmartEditOkClick" IsDefault="True" />
             <!-- ReSharper disable once UnusedMember.Global -->
-            <Button Content="Cancel" Height="23" HorizontalAlignment="Left" Margin="138,93,0,0"
+            <Button Content="Cancel" Height="23" HorizontalAlignment="Left" Margin="138,72,0,0"
                     Name="BtnSmartEditCancel" VerticalAlignment="Top" Width="50" Click="BtnSmartEditCancelClick"
                     IsCancel="True" />
             <Grid.RenderTransform>
