@@ -3,15 +3,10 @@
 //   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
 //   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
 // </copyright>
-// <summary>
-//   The http forger.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.CoreProtocol
 {
-    #region
-
     using System;
     using System.IO;
     using System.Linq;
@@ -21,106 +16,59 @@ namespace PeaRoxy.CoreProtocol
 
     using PeaRoxy.CommonLibrary;
 
-    #endregion
-
     /// <summary>
-    ///     The http forger.
+    ///     The HttpForger class is responsible for generating and detecting of fake HTTP requests as a way for hiding the real
+    ///     content of request
     /// </summary>
     public class HttpForger
     {
-        #region Static Fields
-
-        /// <summary>
-        ///     The random number generator.
-        /// </summary>
         private static readonly Random Random = new Random();
 
-        #endregion
-
-        #region Fields
-
-        /// <summary>
-        ///     The async.
-        /// </summary>
         private readonly bool async;
 
-        /// <summary>
-        ///     The client.
-        /// </summary>
         private readonly Socket client;
 
-        /// <summary>
-        ///     The domain name.
-        /// </summary>
         private readonly byte[] domainName;
 
-        /// <summary>
-        ///     The host string.
-        /// </summary>
         private readonly byte[] hostString = Encoding.ASCII.GetBytes("Host: ");
 
-        /// <summary>
-        ///     The timeout.
-        /// </summary>
         private readonly int timeout;
 
-        /// <summary>
-        ///     The domain pointer.
-        /// </summary>
         private int domainPointer;
 
-        /// <summary>
-        ///     The EOF pointer.
-        /// </summary>
         private int eofPointer;
 
-        /// <summary>
-        ///     The header bytes.
-        /// </summary>
         private byte[] headerBytes = { };
 
-        /// <summary>
-        ///     The max buffering.
-        /// </summary>
         private int maxBuffering;
 
-        /// <summary>
-        ///     The pointer.
-        /// </summary>
         private int pointer;
 
-        /// <summary>
-        ///     The timeout counter.
-        /// </summary>
         private int timeoutCounter;
 
-        #endregion
-
-        #region Constructors and Destructors
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpForger"/> class.
+        ///     Initializes a new instance of the <see cref="HttpForger" /> class.
         /// </summary>
         /// <param name="client">
-        /// The client.
+        ///     The connection's socket.
         /// </param>
         /// <param name="domainName">
-        /// The domain name.
+        ///     The domain name to be used to detect or generate the request.
         /// </param>
         /// <param name="async">
-        /// The async.
+        ///     This value indicates if we should write and read from the socket asynchronously.
         /// </param>
         /// <param name="maxBuffering">
-        /// The max buffering.
+        ///     The maximum buffering size.
         /// </param>
         /// <param name="asyncTimeout">
-        /// The async timeout.
+        ///     The timeout value for asynchronous operations.
         /// </param>
         public HttpForger(
-            Socket client, 
-            string domainName = "", 
-            bool async = false, 
-            int maxBuffering = 8192, 
+            Socket client,
+            string domainName = "",
+            bool async = false,
+            int maxBuffering = 8192,
             int asyncTimeout = 60)
         {
             this.domainName = Encoding.ASCII.GetBytes(domainName.ToLower().Trim());
@@ -130,12 +78,8 @@ namespace PeaRoxy.CoreProtocol
             this.client = client;
         }
 
-        #endregion
-
-        #region Public Properties
-
         /// <summary>
-        /// Gets the header bytes.
+        ///     Gets the request's header in form of byte[]
         /// </summary>
         public byte[] HeaderBytes
         {
@@ -144,10 +88,6 @@ namespace PeaRoxy.CoreProtocol
                 return this.headerBytes;
             }
         }
-
-        #endregion
-
-        #region Public Methods and Operators
 
         /// <summary>
         ///     The receive request.
@@ -163,13 +103,15 @@ namespace PeaRoxy.CoreProtocol
         }
 
         /// <summary>
-        /// The receive request.
+        ///     The ReceiveRequest method will detect the HTTP request and remove it from the stream. So we can read the real
+        ///     content of request.
         /// </summary>
         /// <param name="noRelated">
-        /// The no related.
+        ///     This will show if the passed request is a valid HTTP request or not a HTTP request at all and we should pass it
+        ///     through without analyzing.
         /// </param>
         /// <returns>
-        /// The <see cref="bool"/>.
+        ///     The return value indicates if we detected the fake request and removed it from the stream successfully.
         /// </returns>
         public bool ReceiveRequest(out bool noRelated)
         {
@@ -255,10 +197,10 @@ namespace PeaRoxy.CoreProtocol
         }
 
         /// <summary>
-        ///     The receive response.
+        ///     The ReceiveResponse method remove the unnecessary fake HTTP response to our fake HTTP request.
         /// </summary>
         /// <returns>
-        ///     The <see cref="bool" />.
+        ///     The return value indicates if the operation ended successfully.
         /// </returns>
         public bool ReceiveResponse()
         {
@@ -308,24 +250,24 @@ namespace PeaRoxy.CoreProtocol
         }
 
         /// <summary>
-        /// The send request.
+        ///     This method will generate a fake HTTP request
         /// </summary>
         /// <param name="hostname">
-        /// The hostname.
+        ///     The hostname of the request.
         /// </param>
         /// <param name="file">
-        /// The file.
+        ///     The file address of the request.
         /// </param>
         /// <param name="type">
-        /// The type.
+        ///     The type of HTTP request.
         /// </param>
         /// <param name="version">
-        /// The version.
+        ///     The version of the HTTP protocol.
         /// </param>
         public void SendRequest(
-            string hostname = "~", 
-            string file = "~", 
-            string type = "GET", 
+            string hostname = "~",
+            string file = "~",
+            string type = "GET",
             string version = "HTTP/1.1")
         {
             if (file.IndexOf("~", StringComparison.Ordinal) != -1)
@@ -351,13 +293,13 @@ namespace PeaRoxy.CoreProtocol
         }
 
         /// <summary>
-        /// The send response.
+        ///     This method will generate a fake HTTP response
         /// </summary>
         /// <param name="code">
-        /// The code.
+        ///     The HTTP status code.
         /// </param>
         /// <param name="version">
-        /// The version.
+        ///     The version of the HTTP protocol.
         /// </param>
         public void SendResponse(string code = "200 OK", string version = "HTTP/1.1")
         {
@@ -374,16 +316,6 @@ namespace PeaRoxy.CoreProtocol
             this.client.Send(byteDateLine, byteDateLine.Length, 0);
         }
 
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        ///     The random filename.
-        /// </summary>
-        /// <returns>
-        ///     The <see cref="string" />.
-        /// </returns>
         private static string RandomFilename()
         {
             int r = Random.Next(1, 5);
@@ -396,15 +328,9 @@ namespace PeaRoxy.CoreProtocol
             return res;
         }
 
-        /// <summary>
-        ///     The random hostname.
-        /// </summary>
-        /// <returns>
-        ///     The <see cref="string" />.
-        /// </returns>
         private static string RandomHostname()
         {
-            string[] domainends = { "com", "net", "ir", "org", "info" };
+            string[] domainends = { "com", "net", "ir", "org", "info", "uk", "us", "de", "ru" };
             int r = Random.Next(1, domainends.Length);
             string res = string.Empty;
             int p = (r % 2) + 1;
@@ -415,7 +341,5 @@ namespace PeaRoxy.CoreProtocol
 
             return res + "." + domainends[r - 1];
         }
-
-        #endregion
     }
 }

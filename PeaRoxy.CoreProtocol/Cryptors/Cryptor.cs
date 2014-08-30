@@ -3,65 +3,65 @@
 //   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
 //   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
 // </copyright>
-// <summary>
-//   The cryptor.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.CoreProtocol.Cryptors
 {
+    using System.Diagnostics;
+
     /// <summary>
-    /// The cryptor.
+    ///     The Cryptor class is the base class of all encryption classes.
     /// </summary>
     public class Cryptor
     {
-        #region Public Methods and Operators
-
         /// <summary>
-        /// The decrypt.
+        ///     The decrypt.
         /// </summary>
-        /// <param name="toDecrypt">
-        /// The to decrypt.
+        /// <param name="buffer">
+        ///     The to decrypt.
         /// </param>
         /// <returns>
-        /// The <see>
+        ///     The
+        ///     <see>
         ///         <cref>byte[]</cref>
         ///     </see>
         ///     .
         /// </returns>
-        public virtual byte[] Decrypt(byte[] toDecrypt)
+        [DebuggerStepThrough]
+        public virtual byte[] Decrypt(byte[] buffer)
         {
-            return toDecrypt;
+            return buffer;
         }
 
         /// <summary>
-        /// The encrypt.
+        ///     The encrypt method is used to encrypt the data.
         /// </summary>
-        /// <param name="toEncrypt">
-        /// The to encrypt.
+        /// <param name="buffer">
+        ///     The data in form of byte[].
         /// </param>
         /// <returns>
-        /// The <see>
+        ///     The encrypted data in form of
+        ///     <see>
         ///         <cref>byte[]</cref>
         ///     </see>
         ///     .
         /// </returns>
-        public virtual byte[] Encrypt(byte[] toEncrypt)
+        [DebuggerStepThrough]
+        public virtual byte[] Encrypt(byte[] buffer)
         {
-            return toEncrypt;
+            return buffer;
         }
 
         /// <summary>
-        /// The set salt.
+        ///     The SetSalt method is used to change the encryption salt value.
         /// </summary>
-        /// <param name="iv">
-        /// The iv.
+        /// <param name="newSalt">
+        ///     The encryption salt value in form of byte[].
         /// </param>
-        public virtual void SetSalt(byte[] iv)
+        [DebuggerStepThrough]
+        public virtual void SetSalt(byte[] newSalt)
         {
             // Do Nothing
         }
-
-        #endregion
     }
 }

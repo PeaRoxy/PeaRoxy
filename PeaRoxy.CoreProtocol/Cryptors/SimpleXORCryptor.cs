@@ -3,63 +3,36 @@
 //   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
 //   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
 // </copyright>
-// <summary>
-//   The simple xor cryptor.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.CoreProtocol.Cryptors
 {
-    #region
-
     using System.Diagnostics;
 
-    #endregion
-
     /// <summary>
-    /// The simple xor cryptor.
+    ///     The SimpleXorCryptor is a child of Cryptor class which can encrypt data using a custom algorithm based on XOR
+    ///     operations
     /// </summary>
     public class SimpleXorCryptor : Cryptor
     {
-        #region Fields
-
-        /// <summary>
-        /// The key.
-        /// </summary>
         private readonly byte[] key;
 
-        /// <summary>
-        /// The self sync.
-        /// </summary>
         private readonly bool selfSync = true;
 
-        /// <summary>
-        /// The key pos_dec.
-        /// </summary>
-        private int keyPosDec;
+        private int keyPositionDecryption;
 
-        /// <summary>
-        /// The key pos_enc.
-        /// </summary>
-        private int keyPosEnc;
+        private int keyPositionEncription;
 
-        /// <summary>
-        /// The salt.
-        /// </summary>
         private byte[] salt;
 
-        #endregion
-
-        #region Constructors and Destructors
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="SimpleXorCryptor"/> class.
+        ///     Initializes a new instance of the <see cref="SimpleXorCryptor" /> class.
         /// </summary>
         /// <param name="key">
-        /// The key.
+        ///     The encryption key.
         /// </param>
         /// <param name="selfSync">
-        /// The self sync.
+        ///     The self sync argument indicates if we should use "self key synchronization" or not.
         /// </param>
         [DebuggerStepThrough]
         public SimpleXorCryptor(byte[] key, bool selfSync = true)
@@ -68,34 +41,31 @@ namespace PeaRoxy.CoreProtocol.Cryptors
             this.selfSync = selfSync;
         }
 
-        #endregion
-
-        #region Public Methods and Operators
-
         /// <summary>
-        /// The decrypt.
+        ///     The decrypt.
         /// </summary>
-        /// <param name="toDecrypt">
-        /// The to decrypt.
+        /// <param name="buffer">
+        ///     The to decrypt.
         /// </param>
         /// <returns>
-        /// The <see>
+        ///     The
+        ///     <see>
         ///         <cref>byte[]</cref>
         ///     </see>
         ///     .
         /// </returns>
         [DebuggerStepThrough]
-        public override byte[] Decrypt(byte[] toDecrypt)
+        public override byte[] Decrypt(byte[] buffer)
         {
             if (this.selfSync)
             {
-                this.keyPosDec = 0;
+                this.keyPositionDecryption = 0;
             }
 
-            byte[] resultArray = new byte[toDecrypt.Length];
-            for (int i = 0; i < toDecrypt.Length; i++)
+            byte[] resultArray = new byte[buffer.Length];
+            for (int i = 0; i < buffer.Length; i++)
             {
-                resultArray[i] = (byte)(toDecrypt[i] ^ this.key[(i + this.keyPosDec) % this.key.Length]);
+                resultArray[i] = (byte)(buffer[i] ^ this.key[(i + this.keyPositionDecryption) % this.key.Length]);
                 if (this.selfSync)
                 {
                     this.key[(i + (this.key.Length / 2)) % this.key.Length] =
@@ -105,36 +75,37 @@ namespace PeaRoxy.CoreProtocol.Cryptors
 
             if (!this.selfSync)
             {
-                this.keyPosDec = (this.keyPosDec + toDecrypt.Length) % this.key.Length;
+                this.keyPositionDecryption = (this.keyPositionDecryption + buffer.Length) % this.key.Length;
             }
 
             return resultArray;
         }
 
         /// <summary>
-        /// The encrypt.
+        ///     The encrypt method is used to encrypt the data.
         /// </summary>
-        /// <param name="toEncrypt">
-        /// The to encrypt.
+        /// <param name="buffer">
+        ///     The data in form of byte[].
         /// </param>
         /// <returns>
-        /// The <see>
+        ///     The encrypted data in form of
+        ///     <see>
         ///         <cref>byte[]</cref>
         ///     </see>
         ///     .
         /// </returns>
         [DebuggerStepThrough]
-        public override byte[] Encrypt(byte[] toEncrypt)
+        public override byte[] Encrypt(byte[] buffer)
         {
             if (this.selfSync)
             {
-                this.keyPosEnc = 0;
+                this.keyPositionEncription = 0;
             }
 
-            byte[] resultArray = new byte[toEncrypt.Length];
-            for (int i = 0; i < toEncrypt.Length; i++)
+            byte[] resultArray = new byte[buffer.Length];
+            for (int i = 0; i < buffer.Length; i++)
             {
-                resultArray[i] = (byte)(toEncrypt[i] ^ this.key[(i + this.keyPosEnc) % this.key.Length]);
+                resultArray[i] = (byte)(buffer[i] ^ this.key[(i + this.keyPositionEncription) % this.key.Length]);
                 if (this.selfSync)
                 {
                     this.key[(i + (this.key.Length / 2)) % this.key.Length] =
@@ -144,17 +115,17 @@ namespace PeaRoxy.CoreProtocol.Cryptors
 
             if (!this.selfSync)
             {
-                this.keyPosEnc = (this.keyPosEnc + toEncrypt.Length) % this.key.Length;
+                this.keyPositionEncription = (this.keyPositionEncription + buffer.Length) % this.key.Length;
             }
 
             return resultArray;
         }
 
         /// <summary>
-        /// The set newSalt.
+        ///     The SetSalt method is used to change the encryption salt value.
         /// </summary>
         /// <param name="newSalt">
-        /// The newSalt.
+        ///     The encryption salt value in form of byte[].
         /// </param>
         [DebuggerStepThrough]
         public override void SetSalt(byte[] newSalt)
@@ -172,7 +143,5 @@ namespace PeaRoxy.CoreProtocol.Cryptors
                 }
             }
         }
-
-        #endregion
     }
 }

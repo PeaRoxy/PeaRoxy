@@ -3,15 +3,10 @@
 //   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
 //   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
 // </copyright>
-// <summary>
-//   The pea roxy protocol.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.CoreProtocol
 {
-    #region
-
     using System;
     using System.Net.Sockets;
     using System.Security.Cryptography;
@@ -21,117 +16,60 @@ namespace PeaRoxy.CoreProtocol
     using PeaRoxy.CoreProtocol.Compressors;
     using PeaRoxy.CoreProtocol.Cryptors;
 
-    #endregion
-
     /// <summary>
-    /// The pea roxy protocol.
+    ///     The PeaRoxy Protocol is responsible for sending and receiving of data between two instances of it-self in correct
+    ///     order and with specified encryption and compression algorithms
     /// </summary>
     public class PeaRoxyProtocol
     {
-        #region Static Fields
+        public delegate void CloseDelegate(string message, bool async);
 
-        /// <summary>
-        /// The rnd.
-        /// </summary>
         private static readonly RNGCryptoServiceProvider Random = new RNGCryptoServiceProvider();
 
-        #endregion
-
-        #region Fields
-
-        /// <summary>
-        /// The compressor.
-        /// </summary>
-        private readonly Compressor compressor = new Compressor();
-
-        /// <summary>
-        /// The compression type.
-        /// </summary>
         private readonly Common.CompressionTypes compressionType = Common.CompressionTypes.None;
 
-        /// <summary>
-        /// The encryption type.
-        /// </summary>
+        private readonly Compressor compressor = new Compressor();
+
         private readonly Common.EncryptionTypes encryptionType = Common.EncryptionTypes.None;
 
-        /// <summary>
-        /// The pear encryption salt.
-        /// </summary>
         private readonly byte[] pearEncryptionSalt = new byte[4];
 
-        /// <summary>
-        /// The cryptor.
-        /// </summary>
         private Cryptor cryptor = new Cryptor();
 
-        /// <summary>
-        /// The encryption key.
-        /// </summary>
         private byte[] encryptionKey = new byte[0];
 
-        /// <summary>
-        /// The is disconnected.
-        /// </summary>
         private bool isDisconnected;
 
-        /// <summary>
-        /// The needed bytes.
-        /// </summary>
         private int neededBytes;
 
-        /// <summary>
-        /// The peer compression type.
-        /// </summary>
         private Common.CompressionTypes peerCompressionType = Common.CompressionTypes.None;
 
-        /// <summary>
-        /// The peer compressor.
-        /// </summary>
         private Compressor peerCompressor = new Compressor();
 
-        /// <summary>
-        /// The peer cryptor.
-        /// </summary>
         private Cryptor peerCryptor = new Cryptor();
 
-        /// <summary>
-        /// The peer encryption type.
-        /// </summary>
         private Common.EncryptionTypes peerEncryptionType = Common.EncryptionTypes.None;
 
-        /// <summary>
-        /// The waiting buffer.
-        /// </summary>
         private byte[] waitingBuffer = new byte[0];
 
-        /// <summary>
-        /// The working buffer.
-        /// </summary>
         private byte[] workingBuffer = new byte[0];
 
-        /// <summary>
-        /// The write buffer.
-        /// </summary>
         private byte[] writeBuffer = new byte[0];
 
-        #endregion
-
-        #region Constructors and Destructors
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="PeaRoxyProtocol"/> class.
+        ///     Initializes a new instance of the <see cref="PeaRoxyProtocol" /> class.
         /// </summary>
         /// <param name="client">
-        /// The client.
+        ///     The underlying socket.
         /// </param>
         /// <param name="encType">
-        /// The enc type.
+        ///     The encryption type.
         /// </param>
         /// <param name="comType">
-        /// The com type.
+        ///     The compression type.
         /// </param>
         public PeaRoxyProtocol(
-            Socket client, 
+            Socket client,
             Common.EncryptionTypes encType = Common.EncryptionTypes.None,
             Common.CompressionTypes comType = Common.CompressionTypes.None)
         {
@@ -157,27 +95,8 @@ namespace PeaRoxy.CoreProtocol
             this.UnderlyingSocket.Blocking = false;
         }
 
-        #endregion
-
-        #region Delegates
-
         /// <summary>
-        /// The close delegate.
-        /// </summary>
-        /// <param name="message">
-        /// The message.
-        /// </param>
-        /// <param name="async">
-        /// The async.
-        /// </param>
-        public delegate void CloseDelegate(string message, bool async);
-
-        #endregion
-
-        #region Public Properties
-
-        /// <summary>
-        /// Gets a value indicating whether busy write.
+        ///     Gets a value indicating whether we are busy writing.
         /// </summary>
         public bool BusyWrite
         {
@@ -193,22 +112,22 @@ namespace PeaRoxy.CoreProtocol
         }
 
         /// <summary>
-        /// Gets or sets the client supported compression type.
+        ///     Gets or sets the supported compression types
         /// </summary>
         public Common.CompressionTypes ClientSupportedCompressionType { get; set; }
 
         /// <summary>
-        /// Gets or sets the client supported encryption type.
+        ///     Gets or sets the supported encryption types
         /// </summary>
         public Common.EncryptionTypes ClientSupportedEncryptionType { get; set; }
 
         /// <summary>
-        /// Gets or sets the close callback.
+        ///     Gets or sets the close callback which will be executed when we receive a close request or decide it our-self
         /// </summary>
         public CloseDelegate CloseCallback { get; set; }
 
         /// <summary>
-        /// Gets or sets the encryption key.
+        ///     Gets or sets the encryption key in form of byte[].
         /// </summary>
         public byte[] EncryptionKey
         {
@@ -235,9 +154,6 @@ namespace PeaRoxy.CoreProtocol
                         break;
                 }
 
-                // if (encryptionType == peerEncryptionType)
-                // peerCryptor = Cryptor;
-                // else
                 switch (this.peerEncryptionType)
                 {
                     case Common.EncryptionTypes.TripleDes:
@@ -251,42 +167,38 @@ namespace PeaRoxy.CoreProtocol
         }
 
         /// <summary>
-        /// Gets the pocket received.
+        ///     Gets the pockets received till now.
         /// </summary>
         public ushort PocketReceived { get; private set; }
 
         /// <summary>
-        /// Gets the pocket sent.
+        ///     Gets the pocket sent till now.
         /// </summary>
         public ushort PocketSent { get; private set; }
 
         /// <summary>
-        /// Gets or sets the receive packet size.
+        ///     Gets or sets the maximum receive packet size.
         /// </summary>
         public int ReceivePacketSize { get; set; }
 
         /// <summary>
-        /// Gets or sets the send packet size.
+        ///     Gets or sets the maximum send packet size.
         /// </summary>
         public int SendPacketSize { get; set; }
 
         /// <summary>
-        /// Gets the underlying socket.
+        ///     Gets the underlying socket.
         /// </summary>
         public Socket UnderlyingSocket { get; private set; }
 
-        #endregion
-
-        #region Public Methods and Operators
-
         /// <summary>
-        /// The close.
+        ///     The close method which supports mentioning a message about the reason
         /// </summary>
         /// <param name="message">
-        /// The message.
+        ///     The message.
         /// </param>
         /// <param name="async">
-        /// The async.
+        ///     Indicating if the closing process should treat the client as an asynchronous client
         /// </param>
         public void Close(string message = null, bool async = false)
         {
@@ -310,10 +222,10 @@ namespace PeaRoxy.CoreProtocol
                     if (this.UnderlyingSocket != null)
                     {
                         this.UnderlyingSocket.BeginSend(
-                            db, 
-                            0, 
-                            db.Length, 
-                            SocketFlags.None, 
+                            db,
+                            0,
+                            db.Length,
+                            SocketFlags.None,
                             delegate(IAsyncResult ar)
                                 {
                                     try
@@ -324,7 +236,7 @@ namespace PeaRoxy.CoreProtocol
                                     catch (Exception)
                                     {
                                     }
-                                }, 
+                                },
                             null);
                     }
                 }
@@ -342,13 +254,13 @@ namespace PeaRoxy.CoreProtocol
         }
 
         /// <summary>
-        /// The read.
+        ///     The read method to read the data from the other end
         /// </summary>
         /// <returns>
-        /// The <see>
+        ///     Received data in form of
+        ///     <see>
         ///         <cref>byte[]</cref>
         ///     </see>
-        ///     .
         /// </returns>
         public byte[] Read()
         {
@@ -363,18 +275,18 @@ namespace PeaRoxy.CoreProtocol
         }
 
         /// <summary>
-        /// The write.
+        ///     The write method to write the data to the other end.
         /// </summary>
         /// <param name="bytes">
-        /// The bytes.
+        ///     The data to write.
         /// </param>
         /// <param name="async">
-        /// The async.
+        ///     Indicating if the writing process should treat the client as an asynchronous client
         /// </param>
-        /// <param name="enc">
-        /// The enc.
+        /// <param name="encryption">
+        ///     Indicate if writing process should encrypt the data before sending
         /// </param>
-        public void Write(byte[] bytes, bool async, bool enc = true)
+        public void Write(byte[] bytes, bool async, bool encryption = true)
         {
             try
             {
@@ -396,7 +308,7 @@ namespace PeaRoxy.CoreProtocol
                         framingHeader[1] = (byte)this.compressionType;
                         framingBody = this.compressor.Compress(framingBody);
 
-                        if (enc && this.encryptionType != Common.EncryptionTypes.None)
+                        if (encryption && this.encryptionType != Common.EncryptionTypes.None)
                         {
                             // If encryption is enable
                             byte[] encryptionSalt = new byte[4];
@@ -418,19 +330,19 @@ namespace PeaRoxy.CoreProtocol
                         framingHeader[4] = (byte)Math.Floor((double)framingBody.Length / 256);
                         framingHeader[5] = (byte)(framingBody.Length % 256);
                         Array.Resize(
-                            ref this.writeBuffer, 
+                            ref this.writeBuffer,
                             this.writeBuffer.Length + framingHeader.Length + framingBody.Length);
                         Array.Copy(
-                            framingHeader, 
-                            0, 
-                            this.writeBuffer, 
-                            this.writeBuffer.Length - (framingHeader.Length + framingBody.Length), 
+                            framingHeader,
+                            0,
+                            this.writeBuffer,
+                            this.writeBuffer.Length - (framingHeader.Length + framingBody.Length),
                             framingHeader.Length);
                         Array.Copy(
-                            framingBody, 
-                            0, 
-                            this.writeBuffer, 
-                            this.writeBuffer.Length - framingBody.Length, 
+                            framingBody,
+                            0,
+                            this.writeBuffer,
+                            this.writeBuffer.Length - framingBody.Length,
                             framingBody.Length);
                         this.PocketSent++;
                     }
@@ -440,10 +352,10 @@ namespace PeaRoxy.CoreProtocol
                 {
                     int bytesWritten = this.UnderlyingSocket.Send(this.writeBuffer, SocketFlags.None);
                     Array.Copy(
-                        this.writeBuffer, 
-                        bytesWritten, 
-                        this.writeBuffer, 
-                        0, 
+                        this.writeBuffer,
+                        bytesWritten,
+                        this.writeBuffer,
+                        0,
                         this.writeBuffer.Length - bytesWritten);
                     Array.Resize(ref this.writeBuffer, this.writeBuffer.Length - bytesWritten);
                     if (!async && this.writeBuffer.Length > 0)
@@ -452,21 +364,21 @@ namespace PeaRoxy.CoreProtocol
                     }
                 }
             }
-            catch (Exception)
+            catch
             {
-                // e)
-                this.Close(); // "Protocol 5. " + e.Message);
+                this.Close();
             }
         }
 
         /// <summary>
-        /// The is data available.
+        ///     This method let us know if there is new data available to read from the underlying client. Should be executed
+        ///     repeatedly.
         /// </summary>
         /// <param name="syncWait">
-        /// The sync wait.
+        ///     Indicates if we should wait until we have something to read.
         /// </param>
         /// <returns>
-        /// The <see cref="bool"/>.
+        ///     Indicates if we have new data available to read.
         /// </returns>
         public bool IsDataAvailable(bool syncWait = false)
         {
@@ -475,8 +387,8 @@ namespace PeaRoxy.CoreProtocol
                 if ((this.UnderlyingSocket.Available > 0 || syncWait) && this.waitingBuffer.Length == 0)
                 {
                     int i = 10;
-                        
-                        // Time out by second, This timeout is about the max seconds that we wait for something if we don't have anything
+
+                    // Time out by second, This timeout is about the max seconds that we wait for something if we don't have anything
                     i = i * 1000;
                     int i2 = i;
                     byte[] buffer = new byte[0];
@@ -494,9 +406,9 @@ namespace PeaRoxy.CoreProtocol
                             int bufferLastLength = buffer.Length;
                             Array.Resize(ref buffer, bufferLastLength + this.ReceivePacketSize);
                             int bytes = this.UnderlyingSocket.Receive(
-                                buffer, 
-                                bufferLastLength, 
-                                buffer.Length - bufferLastLength, 
+                                buffer,
+                                bufferLastLength,
+                                buffer.Length - bufferLastLength,
                                 SocketFlags.None);
                             if (bytes == 0)
                             {
@@ -536,13 +448,13 @@ namespace PeaRoxy.CoreProtocol
                                         this.workingBuffer = this.peerCompressor.Decompress(this.workingBuffer);
 
                                         Array.Resize(
-                                            ref this.waitingBuffer, 
+                                            ref this.waitingBuffer,
                                             this.waitingBuffer.Length + this.workingBuffer.Length);
                                         Array.Copy(
-                                            this.workingBuffer, 
-                                            0, 
-                                            this.waitingBuffer, 
-                                            this.waitingBuffer.Length - this.workingBuffer.Length, 
+                                            this.workingBuffer,
+                                            0,
+                                            this.waitingBuffer,
+                                            this.waitingBuffer.Length - this.workingBuffer.Length,
                                             this.workingBuffer.Length);
                                         this.workingBuffer = new byte[0];
                                     }
@@ -575,9 +487,6 @@ namespace PeaRoxy.CoreProtocol
                                         {
                                             this.peerEncryptionType = (Common.EncryptionTypes)buffer[0];
 
-                                            // if (encryptionType == peerEncryptionType)
-                                            // peerCryptor = Cryptor;
-                                            // else
                                             if (this.EncryptionKey.Length == 0)
                                             {
                                                 this.EncryptionKey = this.pearEncryptionSalt;
@@ -606,15 +515,15 @@ namespace PeaRoxy.CoreProtocol
                                         if (this.neededBytes <= buffer.Length - 10)
                                         {
                                             Array.Resize(
-                                                ref this.workingBuffer, 
+                                                ref this.workingBuffer,
                                                 this.workingBuffer.Length + this.neededBytes);
                                             Array.Copy(buffer, 10, this.workingBuffer, 0, this.neededBytes);
 
                                             Array.Copy(
-                                                buffer, 
-                                                10 + this.neededBytes, 
-                                                buffer, 
-                                                0, 
+                                                buffer,
+                                                10 + this.neededBytes,
+                                                buffer,
+                                                0,
                                                 (buffer.Length - 10) - this.neededBytes);
                                             Array.Resize(ref buffer, (buffer.Length - 10) - this.neededBytes);
                                             this.neededBytes = 0;
@@ -623,7 +532,7 @@ namespace PeaRoxy.CoreProtocol
                                         else
                                         {
                                             Array.Resize(
-                                                ref this.workingBuffer, 
+                                                ref this.workingBuffer,
                                                 this.workingBuffer.Length + (buffer.Length - 10));
                                             Array.Copy(buffer, 10, this.workingBuffer, 0, buffer.Length - 10);
                                             this.neededBytes -= buffer.Length - 10;
@@ -638,20 +547,20 @@ namespace PeaRoxy.CoreProtocol
                                         if (this.neededBytes <= buffer.Length)
                                         {
                                             Array.Resize(
-                                                ref this.workingBuffer, 
+                                                ref this.workingBuffer,
                                                 this.workingBuffer.Length + this.neededBytes);
                                             Array.Copy(
-                                                buffer, 
-                                                0, 
-                                                this.workingBuffer, 
-                                                this.workingBuffer.Length - this.neededBytes, 
+                                                buffer,
+                                                0,
+                                                this.workingBuffer,
+                                                this.workingBuffer.Length - this.neededBytes,
                                                 this.neededBytes);
 
                                             Array.Copy(
-                                                buffer, 
-                                                this.neededBytes, 
-                                                buffer, 
-                                                0, 
+                                                buffer,
+                                                this.neededBytes,
+                                                buffer,
+                                                0,
                                                 buffer.Length - this.neededBytes);
                                             Array.Resize(ref buffer, buffer.Length - this.neededBytes);
                                             this.neededBytes = 0;
@@ -660,13 +569,13 @@ namespace PeaRoxy.CoreProtocol
                                         else
                                         {
                                             Array.Resize(
-                                                ref this.workingBuffer, 
+                                                ref this.workingBuffer,
                                                 this.workingBuffer.Length + buffer.Length);
                                             Array.Copy(
-                                                buffer, 
-                                                0, 
-                                                this.workingBuffer, 
-                                                this.workingBuffer.Length - buffer.Length, 
+                                                buffer,
+                                                0,
+                                                this.workingBuffer,
+                                                this.workingBuffer.Length - buffer.Length,
                                                 buffer.Length);
                                             this.neededBytes -= buffer.Length;
                                             buffer = new byte[0];
@@ -699,7 +608,5 @@ namespace PeaRoxy.CoreProtocol
 
             return false;
         }
-
-        #endregion
     }
 }

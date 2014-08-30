@@ -3,52 +3,30 @@
 //   PeaRoxy by PeaRoxy.com is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License .
 //   Permissions beyond the scope of this license may be requested by sending email to PeaRoxy's Dev Email .
 // </copyright>
-// <summary>
-//   The triple des cryptor.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace PeaRoxy.CoreProtocol.Cryptors
 {
-    #region
-
     using System;
     using System.Diagnostics;
     using System.Security.Cryptography;
 
-    #endregion
-
     /// <summary>
-    /// The triple DES cryptor.
+    ///     The TripleDesCryptor is a child of Cryptor class which can encrypt data using TripleDes Algorithm
     /// </summary>
     public class TripleDesCryptor : Cryptor, IDisposable
     {
-        #region Fields
+        private readonly TripleDESCryptoServiceProvider tripleDesCryptorService;
+
+        private ICryptoTransform decryptorTransform;
+
+        private ICryptoTransform encryptorTransform;
 
         /// <summary>
-        /// The tdes.
-        /// </summary>
-        private readonly TripleDESCryptoServiceProvider tdes;
-
-        /// <summary>
-        /// The c transform_dec.
-        /// </summary>
-        private ICryptoTransform cTransformDec;
-
-        /// <summary>
-        /// The c transform_enc.
-        /// </summary>
-        private ICryptoTransform cTransformEnc;
-
-        #endregion
-
-        #region Constructors and Destructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TripleDesCryptor"/> class.
+        ///     Initializes a new instance of the <see cref="TripleDesCryptor" /> class.
         /// </summary>
         /// <param name="key">
-        /// The key.
+        ///     The encryption key.
         /// </param>
         [DebuggerStepThrough]
         public TripleDesCryptor(byte[] key)
@@ -60,76 +38,71 @@ namespace PeaRoxy.CoreProtocol.Cryptors
 
             while (TripleDES.IsWeakKey(key))
             {
-                var md5 = MD5.Create().ComputeHash(key);
+                byte[] md5 = MD5.Create().ComputeHash(key);
                 Array.Copy(md5, 0, key, 8, key.Length - 8);
             }
 
-            this.tdes = new TripleDESCryptoServiceProvider
-                            {
-                                Key = key,
-                                Mode = CipherMode.CBC,
-                                Padding = PaddingMode.ANSIX923
-                            };
-            this.cTransformEnc = this.tdes.CreateEncryptor();
-            this.cTransformDec = this.tdes.CreateDecryptor();
+            this.tripleDesCryptorService = new TripleDESCryptoServiceProvider
+                                               {
+                                                   Key = key,
+                                                   Mode = CipherMode.CBC,
+                                                   Padding = PaddingMode.ANSIX923
+                                               };
+            this.encryptorTransform = this.tripleDesCryptorService.CreateEncryptor();
+            this.decryptorTransform = this.tripleDesCryptorService.CreateDecryptor();
         }
 
-        #endregion
-
-        #region Public Methods and Operators
-
-        /// <summary>
-        /// The decrypt.
-        /// </summary>
-        /// <param name="toDecrypt">
-        /// The to decrypt.
-        /// </param>
-        /// <returns>
-        /// The <see>
-        ///         <cref>byte[]</cref>
-        ///     </see>
-        ///     .
-        /// </returns>
-        [DebuggerStepThrough]
-        public override byte[] Decrypt(byte[] toDecrypt)
-        {
-            return this.cTransformDec.TransformFinalBlock(toDecrypt, 0, toDecrypt.Length);
-        }
-
-        /// <summary>
-        /// The dispose.
-        /// </summary>
         public void Dispose()
         {
-            if (this.tdes != null)
+            if (this.tripleDesCryptorService != null)
             {
-                this.tdes.Dispose();
+                this.tripleDesCryptorService.Dispose();
             }
         }
 
         /// <summary>
-        /// The encrypt.
+        ///     The decrypt.
         /// </summary>
-        /// <param name="toEncrypt">
-        /// The to encrypt.
+        /// <param name="buffer">
+        ///     The to decrypt.
         /// </param>
         /// <returns>
-        /// The <see>
+        ///     The
+        ///     <see>
         ///         <cref>byte[]</cref>
         ///     </see>
         ///     .
         /// </returns>
         [DebuggerStepThrough]
-        public override byte[] Encrypt(byte[] toEncrypt)
+        public override byte[] Decrypt(byte[] buffer)
         {
-            return this.cTransformEnc.TransformFinalBlock(toEncrypt, 0, toEncrypt.Length);
+            return this.decryptorTransform.TransformFinalBlock(buffer, 0, buffer.Length);
         }
 
         /// <summary>
-        /// The set salt.
+        ///     The encrypt method is used to encrypt the data.
+        /// </summary>
+        /// <param name="buffer">
+        ///     The data in form of byte[].
+        /// </param>
+        /// <returns>
+        ///     The encrypted data in form of
+        ///     <see>
+        ///         <cref>byte[]</cref>
+        ///     </see>
+        ///     .
+        /// </returns>
+        [DebuggerStepThrough]
+        public override byte[] Encrypt(byte[] buffer)
+        {
+            return this.encryptorTransform.TransformFinalBlock(buffer, 0, buffer.Length);
+        }
+
+        /// <summary>
+        ///     The SetSalt method is used to change the encryption salt value.
         /// </summary>
         /// <param name="newSalt">
-        /// The newSalt.
+        ///     The encryption salt value in form of byte[].
         /// </param>
         [DebuggerStepThrough]
         public override void SetSalt(byte[] newSalt)
@@ -139,11 +112,9 @@ namespace PeaRoxy.CoreProtocol.Cryptors
                 Array.Resize(ref newSalt, 8);
             }
 
-            this.tdes.IV = newSalt;
-            this.cTransformEnc = this.tdes.CreateEncryptor();
-            this.cTransformDec = this.tdes.CreateDecryptor();
+            this.tripleDesCryptorService.IV = newSalt;
+            this.encryptorTransform = this.tripleDesCryptorService.CreateEncryptor();
+            this.decryptorTransform = this.tripleDesCryptorService.CreateDecryptor();
         }
-
-        #endregion
     }
 }
