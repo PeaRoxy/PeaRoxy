@@ -596,7 +596,7 @@ namespace PeaRoxy.Windows.WPFClient
             try
             {
                 this.MainPage.IsEnabled = false;
-                if (Settings.Default.Auth_Type == 2)
+                if (Settings.Default.Auth_Type == (byte)CommonLibrary.Common.AuthenticationMethods.UserPass)
                 {
                     if (string.IsNullOrEmpty(Settings.Default.UserAndPassword_User))
                     {
@@ -654,8 +654,8 @@ namespace PeaRoxy.Windows.WPFClient
                             Settings.Default.PeaRoxySocks_Address,
                             Settings.Default.PeaRoxySocks_Port,
                             Settings.Default.PeaRoxySocks_Domain,
-                            (authType == 2) ? Settings.Default.UserAndPassword_User : string.Empty,
-                            (authType == 2) ? Settings.Default.UserAndPassword_Pass : string.Empty,
+                            (authType == (int)CommonLibrary.Common.AuthenticationMethods.UserPass) ? Settings.Default.UserAndPassword_User : string.Empty,
+                            (authType == (int)CommonLibrary.Common.AuthenticationMethods.UserPass) ? Settings.Default.UserAndPassword_Pass : string.Empty,
                             (CommonLibrary.Common.EncryptionTypes)Settings.Default.Connection_Encryption,
                             (CommonLibrary.Common.CompressionTypes)Settings.Default.Connection_Compression);
                         break;
@@ -663,8 +663,8 @@ namespace PeaRoxy.Windows.WPFClient
                         serverAddress = new Uri(Settings.Default.PeaRoxyWeb_Address).DnsSafeHost;
                         ser = new PeaRoxyWeb(
                             Settings.Default.PeaRoxyWeb_Address,
-                            (authType == 2) ? Settings.Default.UserAndPassword_User : string.Empty,
-                            (authType == 2) ? Settings.Default.UserAndPassword_Pass : string.Empty,
+                            (authType == (int)CommonLibrary.Common.AuthenticationMethods.UserPass) ? Settings.Default.UserAndPassword_User : string.Empty,
+                            (authType == (int)CommonLibrary.Common.AuthenticationMethods.UserPass) ? Settings.Default.UserAndPassword_Pass : string.Empty,
                             (CommonLibrary.Common.EncryptionTypes)Settings.Default.Connection_Encryption);
                         this.listener.SmartPear.ForwarderHttpsEnable = false;
                         break;

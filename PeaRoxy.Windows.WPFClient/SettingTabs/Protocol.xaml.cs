@@ -59,15 +59,15 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
             this.RbConnectionEncryptionNone.IsChecked = false;
             this.RbConnectionEncryptionTripleDes.IsChecked = false;
             this.RbConnectionEncryptionSimpleXor.IsChecked = false;
-            switch (Settings.Default.Connection_Encryption)
+            switch ((CommonLibrary.Common.EncryptionTypes)Settings.Default.Connection_Encryption)
             {
-                case 0:
+                case CommonLibrary.Common.EncryptionTypes.None:
                     this.RbConnectionEncryptionNone.IsChecked = true;
                     break;
-                case 1:
+                case CommonLibrary.Common.EncryptionTypes.TripleDes:
                     this.RbConnectionEncryptionTripleDes.IsChecked = true;
                     break;
-                case 2:
+                case CommonLibrary.Common.EncryptionTypes.SimpleXor:
                     this.RbConnectionEncryptionSimpleXor.IsChecked = true;
                     break;
             }
@@ -75,15 +75,15 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
             this.RbConnectionCompressionNone.IsChecked = false;
             this.RbConnectionCompressiongZip.IsChecked = false;
             this.RbConnectionCompressionDeflate.IsChecked = false;
-            switch (Settings.Default.Connection_Compression)
+            switch ((CommonLibrary.Common.CompressionTypes)Settings.Default.Connection_Compression)
             {
-                case 0:
+                case CommonLibrary.Common.CompressionTypes.None:
                     this.RbConnectionCompressionNone.IsChecked = true;
                     break;
-                case 1:
+                case CommonLibrary.Common.CompressionTypes.GZip:
                     this.RbConnectionCompressiongZip.IsChecked = true;
                     break;
-                case 2:
+                case CommonLibrary.Common.CompressionTypes.Deflate:
                     this.RbConnectionCompressionDeflate.IsChecked = true;
                     break;
             }
@@ -108,28 +108,28 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
 
             if (this.RbConnectionEncryptionNone.IsChecked ?? false)
             {
-                Settings.Default.Connection_Encryption = 0;
+                Settings.Default.Connection_Encryption = (byte)CommonLibrary.Common.EncryptionTypes.None;
             }
             else if (this.RbConnectionEncryptionTripleDes.IsChecked ?? false)
             {
-                Settings.Default.Connection_Encryption = 1;
+                Settings.Default.Connection_Encryption = (byte)CommonLibrary.Common.EncryptionTypes.TripleDes;
             }
             else if (this.RbConnectionEncryptionSimpleXor.IsChecked ?? false)
             {
-                Settings.Default.Connection_Encryption = 2;
+                Settings.Default.Connection_Encryption = (byte)CommonLibrary.Common.EncryptionTypes.SimpleXor;
             }
 
             if (this.RbConnectionCompressionNone.IsChecked ?? false)
             {
-                Settings.Default.Connection_Compression = 0;
+                Settings.Default.Connection_Compression = (byte)CommonLibrary.Common.CompressionTypes.None;
             }
             else if (this.RbConnectionCompressiongZip.IsChecked ?? false)
             {
-                Settings.Default.Connection_Compression = 1;
+                Settings.Default.Connection_Compression = (byte)CommonLibrary.Common.CompressionTypes.GZip;
             }
             else if (this.RbConnectionCompressionDeflate.IsChecked ?? false)
             {
-                Settings.Default.Connection_Compression = 2;
+                Settings.Default.Connection_Compression = (byte)CommonLibrary.Common.CompressionTypes.Deflate;
             }
 
             Settings.Default.Save();

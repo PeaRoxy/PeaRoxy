@@ -138,12 +138,12 @@ namespace PeaRoxy.Windows.WPFClient.Panels
                     break;
             }
 
-            switch (Settings.Default.Auth_Type)
+            switch ((CommonLibrary.Common.AuthenticationMethods)Settings.Default.Auth_Type)
             {
-                case 0:
+                case CommonLibrary.Common.AuthenticationMethods.None:
                     this.ExOpen.IsExpanded = true;
                     break;
-                case 2:
+                case CommonLibrary.Common.AuthenticationMethods.UserPass:
                     this.ExUsernameAndPass.IsExpanded = true;
                     break;
             }
@@ -198,11 +198,11 @@ namespace PeaRoxy.Windows.WPFClient.Panels
 
             if (this.ExOpen.IsExpanded)
             {
-                Settings.Default.Auth_Type = 0;
+                Settings.Default.Auth_Type = (byte)CommonLibrary.Common.AuthenticationMethods.None;
             }
             else if (this.ExUsernameAndPass.IsExpanded)
             {
-                Settings.Default.Auth_Type = 2;
+                Settings.Default.Auth_Type = (byte)CommonLibrary.Common.AuthenticationMethods.UserPass;
             }
 
             Settings.Default.ProxyServer_Address = this.TxtProxyAddress.Text;

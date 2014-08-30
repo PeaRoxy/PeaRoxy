@@ -229,7 +229,7 @@ namespace PeaRoxy.Windows.WPFClient.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("2")]
+        [global::System.Configuration.DefaultSettingValueAttribute("4")]
         public byte Connection_Encryption {
             get {
                 return ((byte)(this["Connection_Encryption"]));
@@ -289,7 +289,7 @@ namespace PeaRoxy.Windows.WPFClient.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
         public byte Connection_Compression {
             get {
                 return ((byte)(this["Connection_Compression"]));
@@ -650,7 +650,7 @@ namespace PeaRoxy.Windows.WPFClient.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        [global::System.Configuration.DefaultSettingValueAttribute("6")]
         public int Settings_Version {
             get {
                 return ((int)(this["Settings_Version"]));

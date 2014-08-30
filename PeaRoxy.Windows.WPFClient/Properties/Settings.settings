@@ -54,7 +54,7 @@
       <Value Profile="(Default)">6000</Value>
     </Setting>
     <Setting Name="Connection_Encryption" Type="System.Byte" Scope="User">
-      <Value Profile="(Default)">2</Value>
+      <Value Profile="(Default)">4</Value>
     </Setting>
     <Setting Name="Startup_StartServer" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
@@ -69,7 +69,7 @@
       <Value Profile="(Default)">8192</Value>
     </Setting>
     <Setting Name="Connection_Compression" Type="System.Byte" Scope="User">
-      <Value Profile="(Default)">0</Value>
+      <Value Profile="(Default)">1</Value>
     </Setting>
     <Setting Name="Smart_HTTP_Enable" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
@@ -169,7 +169,7 @@ idman
 dap</Value>
     </Setting>
     <Setting Name="Settings_Version" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">5</Value>
+      <Value Profile="(Default)">6</Value>
     </Setting>
     <Setting Name="Welcome_Shown" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
