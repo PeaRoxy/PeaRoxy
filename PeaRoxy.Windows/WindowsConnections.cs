@@ -84,8 +84,11 @@ namespace PeaRoxy.Windows
 
             this.ProcessId = processId;
             Win32Process process = Win32Process.GetProcessByPidWithCache(this.ProcessId);
-            this.ProcessName = process.Name;
-            this.ProcessPath = process.ExecutablePath;
+            if (process != null)
+            {
+                this.ProcessName = process.Name;
+                this.ProcessPath = process.ExecutablePath;
+            }
         }
 
         /// <summary>
