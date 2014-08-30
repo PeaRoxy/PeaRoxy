@@ -52,7 +52,7 @@ Section "Main Application" SecMain
 
   SectionIn RO
   SetOutPath "$INSTDIR"
-  File  /r /x "*.pdb" /x "ZipExcludeList.txt" /x "*.crt" /x "PeaRoxy.Windows.*.dll" /x "PeaRoxy.ClientLibrary.dll" /x "CircularProgressBar.dll" /x "PeaRoxy.CommonLibrary.dll" /x "PeaRoxy.CoreProtocol.dll" /x "PeaRoxy.Platform.dll" /x "PeaRoxy.Updater.dll" /x "VDialog.dll" /x "WinFormAnimation.dll" /x "*.xml" /x "*.vshost.exe" "..\bin\ZARA\*"
+  File  /r /x "*.pdb" /x "ZipExcludeList.txt" /x "*.crt" /x "PeaRoxy.Windows.*.dll" /x "PeaRoxy.ClientLibrary.dll" /x "CircularProgressBar.dll" /x "PeaRoxy.CommonLibrary.dll" /x "PeaRoxy.CoreProtocol.dll" /x "VDialog.dll" /x "WinFormAnimation.dll" /x "*.xml" /x "*.vshost.exe" "..\bin\ZARA\*"
 
   ExecShell open "$INSTDIR\ZARA.exe"
   Quit
