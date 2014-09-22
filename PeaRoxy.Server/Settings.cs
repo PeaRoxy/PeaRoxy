@@ -9,6 +9,7 @@ namespace PeaRoxy.Server
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
     using System.Net;
 
@@ -65,7 +66,9 @@ namespace PeaRoxy.Server
         {
             get
             {
-                return ConfigReader.GetUsers(this.UsersFileAddress);
+                return !string.IsNullOrWhiteSpace(this.UsersFileAddress)
+                           ? ConfigReader.GetUsers(this.UsersFileAddress)
+                           : new Collection<ConfigUser>();
             }
         }
 
@@ -73,7 +76,9 @@ namespace PeaRoxy.Server
         {
             get
             {
-                return ConfigReader.GetBlackList(this.BlackListFileAddress);
+                return !string.IsNullOrWhiteSpace(this.BlackListFileAddress)
+                           ? ConfigReader.GetBlackList(this.BlackListFileAddress)
+                           : new Collection<string>();
             }
         }
 
@@ -81,7 +86,9 @@ namespace PeaRoxy.Server
         {
             get
             {
-                return ConfigReader.GetSettings(this.ConfigFileAddress);
+                return !string.IsNullOrWhiteSpace(this.ConfigFileAddress)
+                           ? ConfigReader.GetSettings(this.ConfigFileAddress)
+                           : new Dictionary<string, string>();
             }
         }
 

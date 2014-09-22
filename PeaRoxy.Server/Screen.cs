@@ -117,7 +117,7 @@ namespace PeaRoxy.Server
         {
             if (errorLog != null)
             {
-                errorLog.WriteLine(message);
+                errorLog.WriteLine(DateTime.Now + " - " + message);
                 errorLog.Flush();
             }
         }
@@ -141,7 +141,7 @@ namespace PeaRoxy.Server
             {
                 try
                 {
-                    errorLog = new StreamWriter("errors.log", true);
+                    errorLog = new StreamWriter(Process.GetCurrentProcess().Id + "_" + "errors.log", true);
                 }
                 catch (Exception)
                 {
