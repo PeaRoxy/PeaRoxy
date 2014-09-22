@@ -66,6 +66,7 @@
     <Reference Include="System" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
     <Reference Include="VDialog">
       <HintPath>..\Reference Libraries\VDialog.dll</HintPath>
     </Reference>
@@ -103,7 +104,6 @@
     </Compile>
     <None Include="app.config" />
     <None Include="app.manifest" />
-    <None Include="Fody.targets" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -123,6 +123,8 @@
     <ProjectReference Include="..\PeaRoxy.CommonLibrary\PeaRoxy.CommonLibrary.csproj">
       <Project>{0fa3ddde-8a3c-4346-8c58-4662559d8a7b}</Project>
       <Name>PeaRoxy.CommonLibrary</Name>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\PeaRoxy.Platform\PeaRoxy.Platform.csproj">
       <Project>{511ca971-9fad-4bfa-9841-105cf644cf77}</Project>
@@ -192,7 +194,6 @@
     <None Include="Resources\host.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="FodyWeavers.xml" />
     <Content Include="ZipExcludeList.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -205,7 +206,6 @@ del "$(SolutionDir)Binaries\ZARA-Win*.zip"
 "$(SolutionDir)Solution Items\7za" a -tzip "$(SolutionDir)Binaries\ZARA-Win-v%25version%25_ForDistribution.zip" "$(SolutionDir)\bin\Zara\*" -mx9 -xr@"$(ProjectDir)ZipExcludeList.txt"
 )</PostBuildEvent>
   </PropertyGroup>
-  <Import Project="Fody.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
