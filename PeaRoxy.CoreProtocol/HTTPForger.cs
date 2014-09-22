@@ -28,21 +28,21 @@ namespace PeaRoxy.CoreProtocol
 
         private readonly Socket client;
 
-        private readonly byte[] domainName;
+        private readonly byte[] domainBytes;
 
-        private readonly byte[] hostString = Encoding.ASCII.GetBytes("Host: ");
+        private readonly bool domainSearch;
+
+        private readonly int maxBuffering;
 
         private readonly int timeout;
+
+        private int bufferingCounter;
 
         private int domainPointer;
 
         private int eofPointer;
 
         private byte[] headerBytes = { };
-
-        private int maxBuffering;
-
-        private int pointer;
 
         private int timeoutCounter;
 
@@ -71,10 +71,15 @@ namespace PeaRoxy.CoreProtocol
             int maxBuffering = 8192,
             int asyncTimeout = 60)
         {
-            this.domainName = Encoding.ASCII.GetBytes(domainName.ToLower().Trim());
+            if (!string.IsNullOrWhiteSpace(domainName))
+            {
+                this.domainSearch = true;
+                this.domainBytes = Encoding.ASCII.GetBytes("\r\nHost: " + domainName.ToLower().Trim() + "\r\n");
+            }
             this.async = async;
             this.timeout = this.timeoutCounter = asyncTimeout * 100;
             this.maxBuffering = maxBuffering;
+            this.headerBytes = new byte[0];
             this.client = client;
         }
 
@@ -90,46 +95,34 @@ namespace PeaRoxy.CoreProtocol
         }
 
         /// <summary>
-        ///     The receive request.
-        /// </summary>
-        /// <returns>
-        ///     The <see cref="bool" />.
-        /// </returns>
-        // ReSharper disable once UnusedMember.Global
-        public bool ReceiveRequest()
-        {
-            bool p;
-            return this.ReceiveRequest(out p);
-        }
-
-        /// <summary>
         ///     The ReceiveRequest method will detect the HTTP request and remove it from the stream. So we can read the real
         ///     content of request.
         /// </summary>
-        /// <param name="noRelated">
-        ///     This will show if the passed request is a valid HTTP request or not a HTTP request at all and we should pass it
-        ///     through without analyzing.
-        /// </param>
         /// <returns>
-        ///     The return value indicates if we detected the fake request and removed it from the stream successfully.
+        ///     The return value indicates if the request is a HTTP request and has the correct domain name.
         /// </returns>
-        public bool ReceiveRequest(out bool noRelated)
+        public bool ReceiveRequest()
         {
             byte[] bytes = new byte[1];
-            noRelated = false;
-            while (((this.async && this.client.Available > 0) || (!this.async)) && this.maxBuffering > 0
+            this.bufferingCounter = this.maxBuffering;
+            Array.Resize(ref this.headerBytes, this.maxBuffering);
+            while (((this.async && this.client.Available > 0) || (!this.async)) && this.bufferingCounter > 0
                    && this.timeoutCounter > 0)
             {
+                if (!Common.IsSocketConnected(this.client))
+                {
+                    return false;
+                }
+
                 if (this.client.Available > 0)
                 {
                     this.timeoutCounter = this.timeout;
-                    this.maxBuffering--;
+                    this.bufferingCounter--;
                     int i = this.client.Receive(bytes);
                     if (i > 0)
                     {
-                        Array.Resize(ref this.headerBytes, this.headerBytes.Length + 1);
-                        this.headerBytes[this.headerBytes.Length - 1] = bytes[0];
-                        if (bytes[0] == 13 || bytes[0] == 10)
+                        this.headerBytes[this.headerBytes.Length - (this.bufferingCounter + 1)] = bytes[0];
+                        if (bytes[0] == ((this.eofPointer % 2 == 0) ? 13 : 10))
                         {
                             this.eofPointer += 1;
                         }
@@ -140,45 +133,29 @@ namespace PeaRoxy.CoreProtocol
                     }
                     else
                     {
+                        Array.Resize(ref this.headerBytes, this.headerBytes.Length - this.bufferingCounter);
                         return false;
                     }
 
-                    if (this.domainName.Count() > 0)
+                    if (this.domainSearch)
                     {
-                        if (this.pointer == this.hostString.Count())
+                        if (this.domainPointer < this.domainBytes.Count())
                         {
-                            if (this.domainPointer != this.domainName.Count())
+                            if (bytes[0] == this.domainBytes[this.domainPointer])
                             {
-                                if (bytes[0] == 13 || bytes[0] == 10)
-                                {
-                                    noRelated = true;
-                                    return false;
-                                }
-
-                                if (bytes[0] == this.domainName[this.domainPointer])
-                                {
-                                    this.domainPointer++;
-                                }
-                                else
-                                {
-                                    this.domainPointer = 0;
-                                }
+                                this.domainPointer++;
                             }
-                        }
-                        else if (bytes[0] == this.hostString[this.pointer])
-                        {
-                            this.pointer++;
-                        }
-                        else
-                        {
-                            this.pointer = 0;
+                            else
+                            {
+                                this.domainPointer = 0;
+                            }
                         }
                     }
 
                     if (this.eofPointer == 4)
                     {
-                        noRelated = this.domainName.Count() > 0 && this.domainPointer != this.domainName.Count();
-                        return true;
+                        Array.Resize(ref this.headerBytes, this.headerBytes.Length - this.bufferingCounter);
+                        return !this.domainSearch || this.domainPointer == this.domainBytes.Count();
                     }
                 }
                 else
@@ -187,12 +164,7 @@ namespace PeaRoxy.CoreProtocol
                     Thread.Sleep(10);
                 }
             }
-
-            if (this.maxBuffering <= 0)
-            {
-                noRelated = true;
-            }
-
+            Array.Resize(ref this.headerBytes, this.headerBytes.Length - this.bufferingCounter);
             return false;
         }
 
@@ -205,7 +177,8 @@ namespace PeaRoxy.CoreProtocol
         public bool ReceiveResponse()
         {
             byte[] bytes = new byte[1];
-            while (((this.async && this.client.Available > 0) || (!this.async)) && this.maxBuffering > 0
+            this.bufferingCounter = this.maxBuffering;
+            while (((this.async && this.client.Available > 0) || (!this.async)) && this.bufferingCounter > 0
                    && this.timeoutCounter > 0)
             {
                 if (!Common.IsSocketConnected(this.client))
@@ -216,11 +189,11 @@ namespace PeaRoxy.CoreProtocol
                 if (this.client.Available > 0)
                 {
                     this.timeoutCounter = this.timeout;
-                    this.maxBuffering--;
-                    int i = this.client.Receive(bytes, 1, SocketFlags.None);
+                    this.bufferingCounter--;
+                    int i = this.client.Receive(bytes);
                     if (i > 0)
                     {
-                        if (bytes[0] == 13 || bytes[0] == 10)
+                        if (bytes[0] == ((this.eofPointer % 2 == 0) ? 13 : 10))
                         {
                             this.eofPointer += 1;
                         }
@@ -270,12 +243,12 @@ namespace PeaRoxy.CoreProtocol
             string type = "GET",
             string version = "HTTP/1.1")
         {
-            if (file.IndexOf("~", StringComparison.Ordinal) != -1)
+            if (file.Contains("~"))
             {
                 file = file.Replace("~", RandomFilename());
             }
 
-            if (hostname.IndexOf("~", StringComparison.Ordinal) != -1)
+            if (hostname.Contains("~"))
             {
                 hostname = hostname.Replace("~", RandomHostname());
             }
@@ -288,7 +261,7 @@ namespace PeaRoxy.CoreProtocol
                             + "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" + "\r\n"
                             + "Accept-Language: en-us,en;q=0.5" + "\r\n" + "Accept-Encoding: gzip, deflate" + "\r\n"
                             + "Connection: keep-alive" + "\r\n" + "\r\n";
-            byte[] byteDateLine = Encoding.ASCII.GetBytes(header.ToCharArray());
+            byte[] byteDateLine = Encoding.ASCII.GetBytes(header);
             this.client.Send(byteDateLine, byteDateLine.Length, 0);
         }
 
@@ -312,7 +285,7 @@ namespace PeaRoxy.CoreProtocol
                                   .ToString("ddd, dd MMM yyyy hh\\:mm\\:ss \\G\\M\\T") + "\r\n" + "Accept-Ranges:  none"
                             + "\r\n" + "Content-Type: text/html; charset=UTF-8" + "\r\n" + "Connection: close" + "\r\n"
                             + "\r\n";
-            byte[] byteDateLine = Encoding.ASCII.GetBytes(header.ToCharArray());
+            byte[] byteDateLine = Encoding.ASCII.GetBytes(header);
             this.client.Send(byteDateLine, byteDateLine.Length, 0);
         }
 

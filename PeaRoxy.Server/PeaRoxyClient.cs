@@ -115,6 +115,7 @@ namespace PeaRoxy.Server
             this.NoDataTimeout = noDataTimeout;
             this.Controller = parent;
             this.UnderlyingSocket = client;
+            this.UnderlyingSocket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.DontFragment, true);
             this.UnderlyingSocket.Blocking = false;
             this.underlyingClientEncryption = encType;
             this.underlyingClientCompression = comTypes;
@@ -210,24 +211,8 @@ namespace PeaRoxy.Server
                             this.CurrentStage = RequestStages.WaitingForForger;
                             break;
                         case RequestStages.WaitingForForger:
-                            bool notRelated;
-                            bool result = this.forger.ReceiveRequest(out notRelated);
-                            if (notRelated)
-                            {
-                                if (this.Controller.Settings.HttpForwardingPort == 0)
-                                {
-                                    this.Close();
-                                }
-                                else
-                                {
-                                    this.isForwarded = true;
-                                    this.CurrentStage = RequestStages.ResolvingLocalServer;
-                                    this.Id = Screen.ClientConnected(
-                                        this.Username,
-                                        "F." + this.UnderlyingSocket.RemoteEndPoint);
-                                }
-                            }
-                            else if (result)
+                            bool result = this.forger.ReceiveRequest();
+                            if (result)
                             {
                                 this.forger.SendResponse();
                                 this.Protocol = new PeaRoxyProtocol(
@@ -253,7 +238,24 @@ namespace PeaRoxy.Server
                                 this.currentTimeout = this.NoDataTimeout * 1000;
                                 this.CurrentStage = RequestStages.WaitingForWelcomeMessage;
                             }
-
+                            else
+                            {
+                                System.IO.File.WriteAllBytes(
+                                    System.IO.Path.GetRandomFileName(),
+                                    this.forger.HeaderBytes);
+                                if (this.Controller.Settings.HttpForwardingPort == 0 || !Common.IsSocketConnected(this.UnderlyingSocket))
+                                {
+                                    this.Close();
+                                }
+                                else
+                                {
+                                    this.isForwarded = true;
+                                    this.CurrentStage = RequestStages.ResolvingLocalServer;
+                                    this.Id = Screen.ClientConnected(
+                                        this.Username,
+                                        "F." + this.UnderlyingSocket.RemoteEndPoint);
+                                }
+                            }
                             break;
                         case RequestStages.WaitingForWelcomeMessage:
                             if (this.Protocol.IsDataAvailable())
