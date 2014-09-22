@@ -51,50 +51,56 @@ namespace PeaRoxy.CommonLibrary
         /// </returns>
         public static IEnumerable<string> GetBlackList(string fileAddress)
         {
-            if (blackList != null
-                && ((DateTime.Now - blackListLastReadTime) < new TimeSpan(0, 1, 0)
-                    || blackListLastWrite.Equals(File.GetLastWriteTime(fileAddress))))
+            try
             {
-                if ((DateTime.Now - blackListLastReadTime) >= new TimeSpan(0, 1, 0))
+                if (blackList != null
+                    && ((DateTime.Now - blackListLastReadTime) < new TimeSpan(0, 1, 0)
+                        || blackListLastWrite.Equals(File.GetLastWriteTime(fileAddress))))
                 {
-                    blackListLastReadTime = DateTime.Now;
+                    if ((DateTime.Now - blackListLastReadTime) >= new TimeSpan(0, 1, 0))
+                    {
+                        blackListLastReadTime = DateTime.Now;
+                    }
+                    return blackList;
                 }
-                return blackList;
             }
+            catch { }
 
+            blackListLastReadTime = DateTime.Now;
             blackList = new List<string>();
             try
             {
-                StreamReader st = new StreamReader(fileAddress);
-                blackListLastWrite = File.GetLastWriteTime(fileAddress);
-                blackListLastReadTime = DateTime.Now;
-                while (!st.EndOfStream)
+                if (File.Exists(fileAddress))
                 {
-                    try
+                    StreamReader st = new StreamReader(fileAddress);
+                    blackListLastWrite = File.GetLastWriteTime(fileAddress);
+                    while (!st.EndOfStream)
                     {
-                        string line = st.ReadLine();
-                        if (line == null)
+                        try
                         {
-                            continue;
-                        }
-                        if (line.IndexOf('#') > -1)
-                        {
-                            line = line.Substring(0, line.IndexOf('#'));
-                        }
+                            string line = st.ReadLine();
+                            if (line == null)
+                            {
+                                continue;
+                            }
+                            if (line.IndexOf('#') > -1)
+                            {
+                                line = line.Substring(0, line.IndexOf('#'));
+                            }
 
-                        if (line.IndexOf(';') > -1)
-                        {
-                            line = line.Substring(0, line.IndexOf(';'));
+                            if (line.IndexOf(';') > -1)
+                            {
+                                line = line.Substring(0, line.IndexOf(';'));
+                            }
+                            line = line.Trim().ToLower();
+                            blackList.Add(line.IndexOf(':') == -1 ? line + ":*" : line);
                         }
-                        line = line.Trim().ToLower();
-                        blackList.Add(line.IndexOf(':') == -1 ? line + ":*" : line);
+                        catch (Exception)
+                        {
+                        }
                     }
-                    catch (Exception)
-                    {
-                    }
+                    st.Close();
                 }
-
-                st.Close();
             }
             catch (Exception)
             {
@@ -118,68 +124,66 @@ namespace PeaRoxy.CommonLibrary
         /// </returns>
         public static Dictionary<string, string> GetSettings(string fileAddress)
         {
-            if (settings != null
-                && ((DateTime.Now - settingListLastReadTime) < new TimeSpan(0, 1, 0)
-                    || settingListLastWrite.Equals(File.GetLastWriteTime(fileAddress))))
+            try
             {
-                if ((DateTime.Now - settingListLastReadTime) >= new TimeSpan(0, 1, 0))
+                if (settings != null
+                    && ((DateTime.Now - settingListLastReadTime) < new TimeSpan(0, 1, 0)
+                        || settingListLastWrite.Equals(File.GetLastWriteTime(fileAddress))))
                 {
-                    settingListLastReadTime = DateTime.Now;
+                    if ((DateTime.Now - settingListLastReadTime) >= new TimeSpan(0, 1, 0))
+                    {
+                        settingListLastReadTime = DateTime.Now;
+                    }
+                    return settings;
                 }
-                return settings;
             }
+            catch { }
 
-            string[] args = Environment.CommandLine.Split('/');
+            settingListLastReadTime = DateTime.Now;
             settings = new Dictionary<string, string>();
             try
             {
-                StreamReader st = new StreamReader(fileAddress);
-                settingListLastWrite = File.GetLastWriteTime(fileAddress);
-                settingListLastReadTime = DateTime.Now;
-                while (!st.EndOfStream)
+                if (File.Exists(fileAddress))
                 {
-                    try
+                    StreamReader st = new StreamReader(fileAddress);
+                    settingListLastWrite = File.GetLastWriteTime(fileAddress);
+                    while (!st.EndOfStream)
                     {
-                        string line = st.ReadLine();
-                        if (line == null)
+                        try
                         {
-                            continue;
-                        }
-                        if (line.IndexOf('#') > -1)
-                        {
-                            line = line.Substring(0, line.IndexOf('#'));
-                        }
+                            string line = st.ReadLine();
+                            if (line == null)
+                            {
+                                continue;
+                            }
+                            if (line.IndexOf('#') > -1)
+                            {
+                                line = line.Substring(0, line.IndexOf('#'));
+                            }
 
-                        if (line.IndexOf(';') > -1)
-                        {
-                            line = line.Substring(0, line.IndexOf(';'));
-                        }
+                            if (line.IndexOf(';') > -1)
+                            {
+                                line = line.Substring(0, line.IndexOf(';'));
+                            }
 
-                        if (line.IndexOf('=') <= 0 || line.Trim().Length <= 3)
-                        {
-                            continue;
-                        }
+                            if (line.IndexOf('=') <= 0 || line.Trim().Length <= 3)
+                            {
+                                continue;
+                            }
 
-                        string option = line.Substring(0, line.IndexOf('=')).Trim().ToLower();
-                        string value = line.Substring(line.IndexOf('=') + 1);
-                        foreach (string arg in args.Where(arg => arg.ToLower().Trim().StartsWith(option)))
-                        {
-                            value =
-                                arg.Substring(arg.ToLower().IndexOf(option, StringComparison.Ordinal) + option.Length)
-                                    .Trim();
+                            string option = line.Substring(0, line.IndexOf('=')).Trim().ToLower();
+                            string value = line.Substring(line.IndexOf('=') + 1);
+                            if (option.Trim().Length > 0 && value.Length > 0)
+                            {
+                                settings.Add(option, value);
+                            }
                         }
-
-                        if (option.Trim().Length > 0 && value.Length > 0)
+                        catch (Exception)
                         {
-                            settings.Add(option, value);
                         }
                     }
-                    catch (Exception)
-                    {
-                    }
+                    st.Close();
                 }
-
-                st.Close();
             }
             catch (Exception)
             {
@@ -203,58 +207,64 @@ namespace PeaRoxy.CommonLibrary
         /// </returns>
         public static Collection<ConfigUser> GetUsers(string fileAddress)
         {
-            if (users != null
-                && ((DateTime.Now - userListLastReadTime) < new TimeSpan(0, 1, 0)
-                    || userListLastWrite.Equals(File.GetLastWriteTime(fileAddress))))
+            try
             {
-                if ((DateTime.Now - userListLastReadTime) >= new TimeSpan(0, 1, 0))
+                if (users != null
+                    && ((DateTime.Now - userListLastReadTime) < new TimeSpan(0, 1, 0)
+                        || userListLastWrite.Equals(File.GetLastWriteTime(fileAddress))))
                 {
-                    userListLastReadTime = DateTime.Now;
+                    if ((DateTime.Now - userListLastReadTime) >= new TimeSpan(0, 1, 0))
+                    {
+                        userListLastReadTime = DateTime.Now;
+                    }
+                    return users;
                 }
-                return users;
             }
+            catch { }
 
+            userListLastReadTime = DateTime.Now;
             users = new Collection<ConfigUser>();
             try
             {
-                StreamReader st = new StreamReader(fileAddress);
-                userListLastWrite = File.GetLastWriteTime(fileAddress);
-                userListLastReadTime = DateTime.Now;
-                while (!st.EndOfStream)
+                if (File.Exists(fileAddress))
                 {
-                    try
+                    StreamReader st = new StreamReader(fileAddress);
+                    userListLastWrite = File.GetLastWriteTime(fileAddress);
+                    while (!st.EndOfStream)
                     {
-                        string line = st.ReadLine();
-                        if (line == null)
+                        try
                         {
-                            continue;
-                        }
-                        if (line.IndexOf('#') > -1)
-                        {
-                            line = line.Substring(0, line.IndexOf('#'));
-                        }
-
-                        if (line.IndexOf(';') > -1)
-                        {
-                            line = line.Substring(0, line.IndexOf(';'));
-                        }
-
-                        if (line.IndexOf('=') > 2 && line.Trim().Length > 5)
-                        {
-                            string username = line.Substring(0, line.IndexOf('=')).Trim();
-                            string password = line.Substring(line.IndexOf('=') + 1);
-                            if (username.Trim().Length > 2 && password.Length > 2)
+                            string line = st.ReadLine();
+                            if (line == null)
                             {
-                                users.Add(new ConfigUser(username, password));
+                                continue;
+                            }
+                            if (line.IndexOf('#') > -1)
+                            {
+                                line = line.Substring(0, line.IndexOf('#'));
+                            }
+
+                            if (line.IndexOf(';') > -1)
+                            {
+                                line = line.Substring(0, line.IndexOf(';'));
+                            }
+
+                            if (line.IndexOf('=') > 2 && line.Trim().Length > 5)
+                            {
+                                string username = line.Substring(0, line.IndexOf('=')).Trim();
+                                string password = line.Substring(line.IndexOf('=') + 1);
+                                if (username.Trim().Length > 2 && password.Length > 2)
+                                {
+                                    users.Add(new ConfigUser(username, password));
+                                }
                             }
                         }
+                        catch (Exception)
+                        {
+                        }
                     }
-                    catch (Exception)
-                    {
-                    }
+                    st.Close();
                 }
-
-                st.Close();
             }
             catch (Exception)
             {
