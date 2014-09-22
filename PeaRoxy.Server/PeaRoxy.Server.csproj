@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\MSBuild.ILMerge.Task.1.0.2\build\MSBuild.ILMerge.Task.props" Condition="Exists('..\packages\MSBuild.ILMerge.Task.1.0.2\build\MSBuild.ILMerge.Task.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -72,6 +73,7 @@
       <IlMerge>True</IlMerge>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Forwarder.cs" />
@@ -83,6 +85,7 @@
     <Compile Include="Settings.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ILMergeOrder.txt" />
     <Content Include="Server.ico" />
     <Content Include="ZipExcludeList.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -97,6 +100,7 @@
     <Content Include="blacklist.ini">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="ILMerge.props" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -125,12 +129,10 @@
     <ProjectReference Include="..\PeaRoxy.CommonLibrary\PeaRoxy.CommonLibrary.csproj">
       <Project>{0FA3DDDE-8A3C-4346-8C58-4662559D8A7B}</Project>
       <Name>PeaRoxy.CommonLibrary</Name>
-      <IlMerge>True</IlMerge>
     </ProjectReference>
     <ProjectReference Include="..\PeaRoxy.CoreProtocol\PeaRoxy.CoreProtocol.csproj">
       <Project>{033154EE-19B5-4D3A-91EC-6B0FD48A80C3}</Project>
       <Name>PeaRoxy.CoreProtocol</Name>
-      <IlMerge>True</IlMerge>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -147,12 +149,12 @@ del "$(SolutionDir)Binaries\PeaRoxyServer.zip"
   <Target Name="AfterBuild">
   </Target>
   -->
-  <Target Name="AfterBuild">
-    <CreateItem Include="@(ReferencePath)" Condition="'%(CopyLocal)'=='true' and '%(ReferencePath.IlMerge)'=='true'">
-      <Output TaskParameter="Include" ItemName="IlmergeAssemblies" />
-    </CreateItem>
-    <Message Text="MERGING: @(IlmergeAssemblies->'%(Filename)')" Importance="High" />
-    <Exec Command="&quot;$(ProgramFiles)\Microsoft\Ilmerge\Ilmerge.exe&quot; /targetplatform:v4 /lib:&quot;$(MSBuildBinPath)&quot; /out:&quot;@(MainAssembly->'%(FullPath)')&quot; &quot;@(IntermediateAssembly->'%(FullPath)')&quot; @(IlmergeAssemblies->'&quot;%(FullPath)&quot;', ' ')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\MSBuild.ILMerge.Task.1.0.2\build\MSBuild.ILMerge.Task.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSBuild.ILMerge.Task.1.0.2\build\MSBuild.ILMerge.Task.props'))" />
+    <Error Condition="!Exists('..\packages\MSBuild.ILMerge.Task.1.0.2\build\MSBuild.ILMerge.Task.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSBuild.ILMerge.Task.1.0.2\build\MSBuild.ILMerge.Task.targets'))" />
   </Target>
-  <Target Name="_CopyFilesMarkedCopyLocal" />
+  <Import Project="..\packages\MSBuild.ILMerge.Task.1.0.2\build\MSBuild.ILMerge.Task.targets" Condition="Exists('..\packages\MSBuild.ILMerge.Task.1.0.2\build\MSBuild.ILMerge.Task.targets')" />
 </Project>
