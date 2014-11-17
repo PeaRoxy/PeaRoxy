@@ -145,54 +145,58 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
                 new Dictionary<string, List<ProxyClient>>();
             foreach (ProxyClient client in clients)
             {
-                ConnectionInfo conInfo = client.GetExtendedInfo();
-                string processName = "(Unknown)";
-                if (conInfo != null && conInfo.ProcessId > 0)
+                if (!client.IsClosed)
                 {
-                    processName = conInfo.ProcessId.ToString(CultureInfo.InvariantCulture);
-                    if (conInfo.ProcessName == string.Empty)
+                    ConnectionInfo conInfo = client.GetExtendedInfo();
+                    string processName = "(Unknown)";
+                    if (conInfo != null && conInfo.ProcessId > 0)
                     {
-                        processName = "[PID: " + processName + "] (Unknown)";
-                    }
-                    else
-                    {
-                        processName = "[PID: " + processName + "] " + conInfo.ProcessName;
-                        if (!this.processIconCache.ContainsKey(processName))
+                        processName = conInfo.ProcessId.ToString(CultureInfo.InvariantCulture);
+                        if (conInfo.ProcessName == string.Empty)
                         {
-                            try
+                            processName = "[PID: " + processName + "] (Unknown)";
+                        }
+                        else
+                        {
+                            processName = "[PID: " + processName + "] " + conInfo.ProcessName;
+                            if (!this.processIconCache.ContainsKey(processName))
                             {
-                                if (!string.IsNullOrEmpty(conInfo.ProcessPath))
+                                try
                                 {
-                                    string fileName = conInfo.ProcessPath;
-                                    if (File.Exists(fileName))
+                                    if (!string.IsNullOrEmpty(conInfo.ProcessPath))
                                     {
-                                        using (Icon icon = Icon.ExtractAssociatedIcon(fileName))
+                                        string fileName = conInfo.ProcessPath;
+                                        if (File.Exists(fileName))
                                         {
-                                            if (icon != null)
+                                            using (Icon icon = Icon.ExtractAssociatedIcon(fileName))
                                             {
-                                                BitmapSource iconImage = Imaging.CreateBitmapSourceFromHIcon(
-                                                    icon.Handle,
-                                                    Int32Rect.Empty,
-                                                    BitmapSizeOptions.FromWidthAndHeight(16, 16));
-                                                this.processIconCache.Add(processName, iconImage);
+                                                if (icon != null)
+                                                {
+                                                    BitmapSource iconImage =
+                                                        Imaging.CreateBitmapSourceFromHIcon(
+                                                            icon.Handle,
+                                                            Int32Rect.Empty,
+                                                            BitmapSizeOptions.FromWidthAndHeight(16, 16));
+                                                    this.processIconCache.Add(processName, iconImage);
+                                                }
                                             }
                                         }
                                     }
                                 }
-                            }
-                            catch (Exception)
-                            {
+                                catch (Exception)
+                                {
+                                }
                             }
                         }
                     }
-                }
 
-                if (!processSeperatedConnections.ContainsKey(processName))
-                {
-                    processSeperatedConnections.Add(processName, new List<ProxyClient>());
-                }
+                    if (!processSeperatedConnections.ContainsKey(processName))
+                    {
+                        processSeperatedConnections.Add(processName, new List<ProxyClient>());
+                    }
 
-                processSeperatedConnections[processName].Add(client);
+                    processSeperatedConnections[processName].Add(client);
+                }
             }
 
             for (int i = 0; i < this.ConnectionsListView.Items.Count; i++)

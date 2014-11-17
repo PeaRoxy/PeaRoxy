@@ -241,8 +241,16 @@ namespace PeaRoxy.Windows
             {
                 return con;
             }
-
-            tcpCache = this.GetTcpConnections();
+            var newConnections = this.GetTcpConnections();
+            if (newConnections.Count > 10)
+            {
+                tcpCache = newConnections;
+            }
+            else
+            {
+                tcpCache.AddRange(newConnections);
+            }
+            
             return tcpCache.Cast<WindowsConnection>().FirstOrDefault(con => con.LocalAddress.Address.Equals(ip) && con.LocalAddress.Port == port);
         }
 
@@ -487,13 +495,13 @@ namespace PeaRoxy.Windows
         {
             List<ConnectionInfo> list = new List<ConnectionInfo>();
             const int AfInet = 2; // IP_v4
-            int buffSize = 20000;
+            int buffSize = 48000;
             bool firstRun = true;
             exec:
             byte[] buffer = new byte[buffSize];
             Result res =
                 (Result)
-                GetExtendedTcpTable(buffer, out buffSize, true, AfInet, TcpTableClass.TcpTableOwnerPidAll, 0);
+                GetExtendedTcpTable(buffer, out buffSize, true, AfInet, TcpTableClass.TcpTableOwnerPidConnections, 0);
             if (res != Result.NoError)
             {
                 if (!firstRun)
@@ -509,6 +517,10 @@ namespace PeaRoxy.Windows
             int nOffset = 4;
             for (int i = 0; i < numEntries; i++)
             {
+                while (Convert.ToInt32(buffer[nOffset]) <= 0)
+                {
+                    nOffset++;
+                }
                 nOffset += 4;
                 list.Add(
                     new WindowsConnection(

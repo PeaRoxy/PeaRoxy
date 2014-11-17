@@ -98,22 +98,47 @@ namespace PeaRoxy.Windows.WPFClient.SettingTabs
         /// </param>
         private void NewLog(string message, EventArgs e)
         {
-            message = DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToShortTimeString() + ": " + message;
-            this.Logs.Items.Add(message);
-            try
+            message = message.Trim();
+            if (this.Logs.Items.Count > 0)
             {
-                this.Logs.ScrollIntoView(message);
-                //if (VisualTreeHelper.GetChildrenCount(this.Logs) <= 0
-                //    || VisualTreeHelper.GetChildrenCount(VisualTreeHelper.GetChild(this.Logs, 0)) <= 0) return;
-
-                //ScrollViewer scroll =
-                //    VisualTreeHelper.GetChild(VisualTreeHelper.GetChild(this.Logs, 0), 0) as ScrollViewer;
-                //if (scroll != null)
-                //{
-                //    scroll.ScrollToEnd();
-                //}
+                string lastMessage = this.Logs.Items[this.Logs.Items.Count - 1] as string;
+                if (!string.IsNullOrWhiteSpace(lastMessage))
+                {
+                    int dateSep = lastMessage.IndexOf(";", StringComparison.Ordinal);
+                    if (dateSep > -1)
+                    {
+                        if (lastMessage.Substring(dateSep + 1).Trim().Equals(message))
+                        {
+                            int multiSep = lastMessage.IndexOf("x", 0, dateSep, StringComparison.OrdinalIgnoreCase);
+                            int multiDateSep = lastMessage.IndexOf("-", 0, dateSep, StringComparison.OrdinalIgnoreCase);
+                            int multiDateStartSep = multiSep > -1 ? multiSep + 1 : 0;
+                            int multiEndStartSep = multiDateSep > -1 ? multiDateSep : dateSep;
+                            DateTime firstDate =
+                                DateTime.Parse(
+                                    lastMessage.Substring(multiDateStartSep, multiEndStartSep - multiDateStartSep)
+                                        .Trim());
+                            int multi = 1;
+                            if (multiSep > -1)
+                            {
+                                int.TryParse(lastMessage.Substring(0, multiSep), out multi);
+                                multi += 1;
+                            }
+                            this.Logs.Items[this.Logs.Items.Count - 1] = string.Format(
+                                "{0}x {1} {2} - {3}; {4}",
+                                multi,
+                                firstDate.ToShortDateString(),
+                                firstDate.ToShortTimeString(),
+                                DateTime.Now.ToShortTimeString(),
+                                message);
+                            this.Logs.ScrollIntoView(this.Logs.Items[this.Logs.Items.Count - 1]);
+                            return;
+                        }
+                    }
+                }
             }
-            catch { }
+
+            this.Logs.Items.Add(string.Format("{0} {1}; {2}", DateTime.Now.ToShortDateString(), DateTime.Now.ToShortTimeString(), message));
+            this.Logs.ScrollIntoView(this.Logs.Items[this.Logs.Items.Count - 1]);
         }
 
         /// <summary>
