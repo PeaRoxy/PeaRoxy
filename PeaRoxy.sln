@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeaRoxy.ClientLibrary", "PeaRoxy.ClientLibrary\PeaRoxy.ClientLibrary.csproj", "{EAE02F72-D535-420D-8A36-C8CE5ED607C9}"
 EndProject
@@ -50,6 +50,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SmartPearProfiles", "SmartP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeaRoxy.Updater", "PeaRoxy.Updater\PeaRoxy.Updater.csproj", "{9405B3D6-9A73-44C9-9F3F-28CEABCDC5B2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeaRoxy.Tests", "PeaRoxy.Tests\PeaRoxy.Tests.csproj", "{168426D4-1BD8-4115-A102-3844A718D1E4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -89,10 +91,13 @@ Global
 		{511CA971-9FAD-4BFA-9841-105CF644CF77}.Debug|x86.Build.0 = Debug|Any CPU
 		{511CA971-9FAD-4BFA-9841-105CF644CF77}.Release|x86.ActiveCfg = Release|Any CPU
 		{511CA971-9FAD-4BFA-9841-105CF644CF77}.Release|x86.Build.0 = Release|Any CPU
-		{F64700D4-2B90-4F95-9DB5-8D2E1E25D7E4}.Debug|x86.ActiveCfg = Production|PHP 5.2
+		{F64700D4-2B90-4F95-9DB5-8D2E1E25D7E4}.Debug|x86.ActiveCfg = Local|PHP 5.2
+		{F64700D4-2B90-4F95-9DB5-8D2E1E25D7E4}.Debug|x86.Deploy.0 = Local|PHP 5.2
 		{F64700D4-2B90-4F95-9DB5-8D2E1E25D7E4}.Release|x86.ActiveCfg = Production|PHP 5.2
+		{F64700D4-2B90-4F95-9DB5-8D2E1E25D7E4}.Release|x86.Deploy.0 = Production|PHP 5.2
 		{6FE76A55-F1D6-41C9-9D14-6E018F1F091E}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{6FE76A55-F1D6-41C9-9D14-6E018F1F091E}.Debug|x86.Build.0 = Debug|Any CPU
+		{6FE76A55-F1D6-41C9-9D14-6E018F1F091E}.Debug|x86.Deploy.0 = Debug|Any CPU
 		{6FE76A55-F1D6-41C9-9D14-6E018F1F091E}.Release|x86.ActiveCfg = Release|Any CPU
 		{6FE76A55-F1D6-41C9-9D14-6E018F1F091E}.Release|x86.Build.0 = Release|Any CPU
 		{7E227DF0-7F70-45E7-999B-01811E60CAB1}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -107,6 +112,9 @@ Global
 		{9405B3D6-9A73-44C9-9F3F-28CEABCDC5B2}.Debug|x86.Build.0 = Debug|Any CPU
 		{9405B3D6-9A73-44C9-9F3F-28CEABCDC5B2}.Release|x86.ActiveCfg = Release|Any CPU
 		{9405B3D6-9A73-44C9-9F3F-28CEABCDC5B2}.Release|x86.Build.0 = Release|Any CPU
+		{168426D4-1BD8-4115-A102-3844A718D1E4}.Debug|x86.ActiveCfg = Debug|x86
+		{168426D4-1BD8-4115-A102-3844A718D1E4}.Debug|x86.Build.0 = Debug|x86
+		{168426D4-1BD8-4115-A102-3844A718D1E4}.Release|x86.ActiveCfg = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
