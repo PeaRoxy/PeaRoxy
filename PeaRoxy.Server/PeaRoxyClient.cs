@@ -106,8 +106,8 @@ namespace PeaRoxy.Server
             int sendPacketSize = 1024,
             Common.AuthenticationMethods selectedAuthMode = Common.AuthenticationMethods.Invalid,
             int noDataTimeout = 6000,
-            Common.EncryptionTypes clientSupportedEncryptionType = Common.EncryptionTypes.AllDefaults,
-            Common.CompressionTypes clientSupportedCompressionType = Common.CompressionTypes.AllDefaults)
+            Common.EncryptionTypes clientSupportedEncryptionType = Common.EncryptionTypes.None | Common.EncryptionTypes.SimpleXor | Common.EncryptionTypes.TripleDes,
+            Common.CompressionTypes clientSupportedCompressionType = Common.CompressionTypes.None | Common.CompressionTypes.GZip | Common.CompressionTypes.Deflate)
         {
             this.Username = "Anonymous"; // Use Anonymous as temporary user name until client introduce it-self
             this.CurrentStage = RequestStages.JustConnected;
@@ -207,14 +207,14 @@ namespace PeaRoxy.Server
                             this.forger = new HttpForger(
                                 this.UnderlyingSocket,
                                 this.Controller.Settings.PeaRoxyDomain,
-                                true);
+                                false);
                             this.CurrentStage = RequestStages.WaitingForForger;
                             break;
                         case RequestStages.WaitingForForger:
-                            bool result = this.forger.ReceiveRequest();
-                            if (result)
+                            var result = this.forger.ReceiveRequest();
+                            if (result == HttpForger.CurrentState.ValidData)
                             {
-                                this.forger.SendResponse();
+                                HttpForger.SendResponse(this.UnderlyingSocket);
                                 this.Protocol = new PeaRoxyProtocol(
                                     this.UnderlyingSocket,
                                     this.underlyingClientEncryption,
@@ -238,7 +238,7 @@ namespace PeaRoxy.Server
                                 this.currentTimeout = this.NoDataTimeout * 1000;
                                 this.CurrentStage = RequestStages.WaitingForWelcomeMessage;
                             }
-                            else
+                            else if (result == HttpForger.CurrentState.InvalidData)
                             {
                                 System.IO.File.WriteAllBytes(
                                     System.IO.Path.GetRandomFileName(),
@@ -444,6 +444,7 @@ namespace PeaRoxy.Server
                                             {
                                                 this.destinationSocket.EndConnect(ar);
                                                 this.destinationSocket.Blocking = false;
+                                                this.destinationSocket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.DontFragment, true);
                                                 this.currentTimeout = this.NoDataTimeout * 1000;
                                                 this.Controller.ClientMoveToRouting(this);
                                                 this.CurrentStage = RequestStages.Routing;

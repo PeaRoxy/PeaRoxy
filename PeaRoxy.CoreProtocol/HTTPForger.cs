@@ -22,9 +22,18 @@ namespace PeaRoxy.CoreProtocol
     /// </summary>
     public class HttpForger
     {
+        public enum CurrentState
+        {
+            MoreDataNeeded,
+
+            InvalidData,
+
+            ValidData,
+        }
+
         private static readonly Random Random = new Random();
 
-        private readonly bool async;
+        private readonly bool block;
 
         private readonly Socket client;
 
@@ -55,32 +64,33 @@ namespace PeaRoxy.CoreProtocol
         /// <param name="domainName">
         ///     The domain name to be used to detect or generate the request.
         /// </param>
-        /// <param name="async">
-        ///     This value indicates if we should write and read from the socket asynchronously.
+        /// <param name="block">
+        ///     This value indicates if we should block the thread.
         /// </param>
         /// <param name="maxBuffering">
         ///     The maximum buffering size.
         /// </param>
-        /// <param name="asyncTimeout">
+        /// <param name="blockTimeout">
         ///     The timeout value for asynchronous operations.
         /// </param>
         public HttpForger(
             Socket client,
             string domainName = "",
-            bool async = false,
+            bool block = true,
             int maxBuffering = 8192,
-            int asyncTimeout = 60)
+            int blockTimeout = 60)
         {
             if (!string.IsNullOrWhiteSpace(domainName))
             {
                 this.domainSearch = true;
                 this.domainBytes = Encoding.ASCII.GetBytes("\r\nHost: " + domainName.ToLower().Trim() + "\r\n");
             }
-            this.async = async;
-            this.timeout = this.timeoutCounter = asyncTimeout * 100;
+            this.block = block;
+            this.timeout = blockTimeout * 100;
             this.maxBuffering = maxBuffering;
             this.headerBytes = new byte[0];
             this.client = client;
+            this.ResetInternalCounters();
         }
 
         /// <summary>
@@ -101,17 +111,19 @@ namespace PeaRoxy.CoreProtocol
         /// <returns>
         ///     The return value indicates if the request is a HTTP request and has the correct domain name.
         /// </returns>
-        public bool ReceiveRequest()
+        public CurrentState ReceiveRequest()
         {
             byte[] bytes = new byte[1];
-            this.bufferingCounter = this.maxBuffering;
+            if (this.block)
+            {
+                this.ResetInternalCounters();
+            }
             Array.Resize(ref this.headerBytes, this.maxBuffering);
-            while (((this.async && this.client.Available > 0) || (!this.async)) && this.bufferingCounter > 0
-                   && this.timeoutCounter > 0)
+            while ((this.block || this.client.Available > 0) && this.bufferingCounter > 0 && this.timeoutCounter > 0)
             {
                 if (!Common.IsSocketConnected(this.client))
                 {
-                    return false;
+                    return CurrentState.InvalidData;
                 }
 
                 if (this.client.Available > 0)
@@ -134,7 +146,7 @@ namespace PeaRoxy.CoreProtocol
                     else
                     {
                         Array.Resize(ref this.headerBytes, this.headerBytes.Length - this.bufferingCounter);
-                        return false;
+                        return CurrentState.InvalidData;
                     }
 
                     if (this.domainSearch)
@@ -155,7 +167,9 @@ namespace PeaRoxy.CoreProtocol
                     if (this.eofPointer == 4)
                     {
                         Array.Resize(ref this.headerBytes, this.headerBytes.Length - this.bufferingCounter);
-                        return !this.domainSearch || this.domainPointer == this.domainBytes.Count();
+                        return !this.domainSearch || this.domainPointer == this.domainBytes.Count()
+                                   ? CurrentState.ValidData
+                                   : CurrentState.InvalidData;
                     }
                 }
                 else
@@ -165,7 +179,23 @@ namespace PeaRoxy.CoreProtocol
                 }
             }
             Array.Resize(ref this.headerBytes, this.headerBytes.Length - this.bufferingCounter);
-            return false;
+            return this.bufferingCounter > 0 && this.timeoutCounter > 0
+                       ? CurrentState.MoreDataNeeded
+                       : CurrentState.InvalidData;
+        }
+
+        /// <summary>
+        ///     Resets the internal counters for "ReceiveResponse" and "ReceiveRequest" functions. Usable when we are not in
+        ///     Blocking Mode.
+        /// </summary>
+        public void ResetInternalCounters()
+        {
+            this.bufferingCounter = this.maxBuffering;
+            this.timeoutCounter = this.timeout;
+            Array.Resize(ref this.headerBytes, this.maxBuffering);
+            Array.Clear(this.headerBytes, 0, this.headerBytes.Length);
+            this.eofPointer = 0;
+            this.domainPointer = 0;
         }
 
         /// <summary>
@@ -174,16 +204,18 @@ namespace PeaRoxy.CoreProtocol
         /// <returns>
         ///     The return value indicates if the operation ended successfully.
         /// </returns>
-        public bool ReceiveResponse()
+        public CurrentState ReceiveResponse()
         {
             byte[] bytes = new byte[1];
-            this.bufferingCounter = this.maxBuffering;
-            while (((this.async && this.client.Available > 0) || (!this.async)) && this.bufferingCounter > 0
-                   && this.timeoutCounter > 0)
+            if (this.block)
+            {
+                this.ResetInternalCounters();
+            }
+            while ((this.block || this.client.Available > 0) && this.bufferingCounter > 0 && this.timeoutCounter > 0)
             {
                 if (!Common.IsSocketConnected(this.client))
                 {
-                    return false;
+                    return CurrentState.InvalidData;
                 }
 
                 if (this.client.Available > 0)
@@ -204,12 +236,12 @@ namespace PeaRoxy.CoreProtocol
                     }
                     else
                     {
-                        return false;
+                        return CurrentState.InvalidData;
                     }
 
                     if (this.eofPointer == 4)
                     {
-                        return true;
+                        return CurrentState.ValidData;
                     }
                 }
                 else
@@ -219,12 +251,17 @@ namespace PeaRoxy.CoreProtocol
                 }
             }
 
-            return false;
+            return this.bufferingCounter > 0 && this.timeoutCounter > 0
+                       ? CurrentState.MoreDataNeeded
+                       : CurrentState.InvalidData;
         }
 
         /// <summary>
         ///     This method will generate a fake HTTP request
         /// </summary>
+        /// <param name="client">
+        ///     The connection's socket.
+        /// </param>
         /// <param name="hostname">
         ///     The hostname of the request.
         /// </param>
@@ -237,7 +274,8 @@ namespace PeaRoxy.CoreProtocol
         /// <param name="version">
         ///     The version of the HTTP protocol.
         /// </param>
-        public void SendRequest(
+        public static void SendRequest(
+            Socket client,
             string hostname = "~",
             string file = "~",
             string type = "GET",
@@ -252,29 +290,34 @@ namespace PeaRoxy.CoreProtocol
             {
                 hostname = hostname.Replace("~", RandomHostname());
             }
-
-            string header = type + " " + file + " " + version + "\r\n" + "Host: " + hostname.Trim().ToLower() + "\r\n"
+            string header = type + " " + file + " " + version + "\r\n"
+                            + "Host: " + hostname.Trim().ToLower() + "\r\n"
                             + "User-Agent: Mozilla/5.0 (Windows NT 6.1; "
                             + ((Random.Next(0, 1) < 0.5) ? "WOW64; " : string.Empty) + "rv:"
-                            + Math.Round((double)Random.Next(3, 12), 1) + ") Gecko/20100101 Firefox/"
-                            + Math.Round((double)Random.Next(3, 12), 1) + "\r\n"
+                            + Math.Round((double) Random.Next(3, 12), 1) + ") Gecko/20100101 Firefox/"
+                            + Math.Round((double) Random.Next(3, 12), 1) + "\r\n"
                             + "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" + "\r\n"
-                            + "Accept-Language: en-us,en;q=0.5" + "\r\n" + "Accept-Encoding: gzip, deflate" + "\r\n"
+                            + "Accept-Language: en-us,en;q=0.5" + "\r\n"
+                            + "Accept-Encoding: gzip, deflate" + "\r\n"
                             + "Connection: keep-alive" + "\r\n" + "\r\n";
+            
             byte[] byteDateLine = Encoding.ASCII.GetBytes(header);
-            this.client.Send(byteDateLine, byteDateLine.Length, 0);
+            client.Send(byteDateLine, byteDateLine.Length, 0);
         }
 
         /// <summary>
         ///     This method will generate a fake HTTP response
         /// </summary>
+        /// <param name="client">
+        ///     The connection's socket.
+        /// </param>
         /// <param name="code">
         ///     The HTTP status code.
         /// </param>
         /// <param name="version">
         ///     The version of the HTTP protocol.
         /// </param>
-        public void SendResponse(string code = "200 OK", string version = "HTTP/1.1")
+        public static void SendResponse(Socket client, string code = "200 OK", string version = "HTTP/1.1")
         {
             string header = version + " " + code + "\r\n" + "Date: "
                             + DateTime.Now.ToString("ddd, dd MMM yyyy hh\\:mm\\:ss \\G\\M\\T") + "\r\n"
@@ -286,7 +329,7 @@ namespace PeaRoxy.CoreProtocol
                             + "\r\n" + "Content-Type: text/html; charset=UTF-8" + "\r\n" + "Connection: close" + "\r\n"
                             + "\r\n";
             byte[] byteDateLine = Encoding.ASCII.GetBytes(header);
-            this.client.Send(byteDateLine, byteDateLine.Length, 0);
+            client.Send(byteDateLine, byteDateLine.Length, 0);
         }
 
         private static string RandomFilename()

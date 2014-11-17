@@ -92,10 +92,6 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             }
 
             this.ServerDomain = domain.ToLower().Trim();
-            if (this.ServerDomain == string.Empty)
-            {
-                this.ServerDomain = "~";
-            }
 
             this.IsServerValid = false;
             this.ServerAddress = address;
@@ -123,6 +119,12 @@ namespace PeaRoxy.ClientLibrary.ServerModules
         ///     Gets or sets a value indicating whether server exists and is valid.
         /// </summary>
         public override bool IsServerValid { get; protected set; }
+
+        /// <summary>
+        ///     Gets or sets a value indicating whether we should use compatibility mode with http forger
+        /// </summary>
+        public bool ForgerCompatibility { get; set; }
+
 
         /// <summary>
         ///     Gets or sets the number of seconds after last data transmission to close the connection
@@ -189,7 +191,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                 this.Username,
                 this.Password,
                 this.encryptionType,
-                this.compressionTypes) { NoDataTimeout = this.NoDataTimeout };
+                this.compressionTypes) { NoDataTimeout = this.NoDataTimeout, ForgerCompatibility = this.ForgerCompatibility};
         }
 
         /// <summary>
@@ -274,7 +276,7 @@ namespace PeaRoxy.ClientLibrary.ServerModules
             }
             catch (Exception e)
             {
-                if (e.TargetSite.Name == "Receive")
+                if (e is ObjectDisposedException)
                 {
                     this.Close();
                 }
@@ -335,10 +337,14 @@ namespace PeaRoxy.ClientLibrary.ServerModules
                             try
                             {
                                 this.UnderlyingSocket.EndConnect(ar);
+                                this.UnderlyingSocket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.DontFragment, true);
                                 this.ParentClient.Controller.FailAttempts = 0;
-                                HttpForger forger = new HttpForger(this.UnderlyingSocket);
-                                forger.SendRequest(this.ServerDomain);
-                                if (!forger.ReceiveResponse())
+                                HttpForger.SendRequest(
+                                    this.UnderlyingSocket,
+                                    string.IsNullOrWhiteSpace(this.ServerDomain) ? "~" : this.ServerDomain, "~",
+                                    this.ForgerCompatibility ? "LINK" : "GET");
+                                if (new HttpForger(this.UnderlyingSocket).ReceiveResponse()
+                                    != HttpForger.CurrentState.ValidData)
                                 {
                                     this.Close(
                                         "HTTPForger failed to validate server response.",

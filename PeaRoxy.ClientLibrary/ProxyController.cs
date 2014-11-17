@@ -119,6 +119,7 @@ namespace PeaRoxy.ClientLibrary
             this.acceptingWorker.DoWork += this.AcceptingWorkerDoWork;
             this.routingWorker = new BackgroundWorker { WorkerSupportsCancellation = true };
             this.routingWorker.DoWork += this.RoutingWorkerDoWork;
+            this.ReceivePacketSize = this.SendPacketSize = 8 * 1024;
         }
 
         /// <summary>
@@ -531,12 +532,7 @@ namespace PeaRoxy.ClientLibrary
 
                     timeout -= 100;
                 }
-
-                if (activeServer.GetType() != typeof(PeaRoxy))
-                {
-                    // PeaRoxy problem with Forger and underlying IO
-                    throw new Exception("No acceptable response.");
-                }
+                throw new Exception("No acceptable response.");
             }
             catch (Exception ex)
             {

@@ -580,10 +580,13 @@ namespace PeaRoxy.Windows.WPFClient
         ///     The start server.
         /// </summary>
         /// <param name="silent">
-        ///     The silent.
+        ///     Indicates if we need to start the server silently.
+        /// </param>
+        /// <param name="compatibility">
+        ///     Indicates if we are in the compatibility mode.
         /// </param>
         /// <returns>
-        ///     The <see cref="bool" />.
+        ///     The <see cref="bool" /> indicating the success of the operation.
         /// </returns>
         /// <exception cref="ArgumentException">
         ///     Invalid username
@@ -591,7 +594,7 @@ namespace PeaRoxy.Windows.WPFClient
         /// <exception cref="Exception">
         ///     Failed to start server
         /// </exception>
-        public bool StartServer(bool silent = false)
+        public bool StartServer(bool silent = false, bool compatibility = false)
         {
             try
             {
@@ -654,10 +657,17 @@ namespace PeaRoxy.Windows.WPFClient
                             Settings.Default.PeaRoxySocks_Address,
                             Settings.Default.PeaRoxySocks_Port,
                             Settings.Default.PeaRoxySocks_Domain,
-                            (authType == (int)CommonLibrary.Common.AuthenticationMethods.UserPass) ? Settings.Default.UserAndPassword_User : string.Empty,
-                            (authType == (int)CommonLibrary.Common.AuthenticationMethods.UserPass) ? Settings.Default.UserAndPassword_Pass : string.Empty,
-                            (CommonLibrary.Common.EncryptionTypes)Settings.Default.Connection_Encryption,
-                            (CommonLibrary.Common.CompressionTypes)Settings.Default.Connection_Compression);
+                            (authType == (int) CommonLibrary.Common.AuthenticationMethods.UserPass)
+                                ? Settings.Default.UserAndPassword_User
+                                : string.Empty,
+                            (authType == (int) CommonLibrary.Common.AuthenticationMethods.UserPass)
+                                ? Settings.Default.UserAndPassword_Pass
+                                : string.Empty,
+                            (CommonLibrary.Common.EncryptionTypes) Settings.Default.Connection_Encryption,
+                            (CommonLibrary.Common.CompressionTypes) Settings.Default.Connection_Compression)
+                        {
+                            ForgerCompatibility = compatibility
+                        };
                         break;
                     case 2:
                         serverAddress = new Uri(Settings.Default.PeaRoxyWeb_Address).DnsSafeHost;
@@ -849,16 +859,22 @@ namespace PeaRoxy.Windows.WPFClient
                                 }
                                 catch (Exception ex)
                                 {
+                                    if (this.listener != null)
+                                    {
+                                        this.listener.Stop();
+                                    }
+                                    if (this.listener != null && this.listener.ActiveServer is PeaRoxy && !compatibility)
+                                    {
+                                        this.StartServer(silent, true);
+                                        return;
+                                    }
+
                                     VDialog.Show(
                                         this,
                                         "Error: " + ex.Message + "\r\n" + ex.StackTrace,
                                         "Start Error",
                                         MessageBoxButtons.OK,
                                         MessageBoxIcon.Error);
-                                    if (this.listener != null)
-                                    {
-                                        this.listener.Stop();
-                                    }
 
                                     this.MainPage.IsEnabled = true;
                                     this.RefreshStatus(true);

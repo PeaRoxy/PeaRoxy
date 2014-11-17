@@ -333,7 +333,7 @@ namespace ZARA
         /// <exception cref="Exception">
         ///     Failed to start server
         /// </exception>
-        public bool StartServer()
+        public bool StartServer(bool compatibility = false)
         {
             try
             {
@@ -388,14 +388,24 @@ namespace ZARA
                 this.listener.SmartPear.ForwarderDirectList.Clear();
 
                 string serverAddress = Settings.Default.ServerAddress;
+                ushort serverPort = Settings.Default.ServerPort;
+                int pIndex = serverAddress.IndexOf(":", StringComparison.Ordinal);
+                if (pIndex > 0)
+                {
+                    if (!ushort.TryParse(serverAddress.Substring(pIndex + 1), out serverPort))
+                    {
+                        serverPort = Settings.Default.ServerPort;
+                    }
+                    serverAddress = serverAddress.Substring(0, pIndex);
+                }
 
                 ServerType ser = new PeaRoxy(
-                    Settings.Default.ServerAddress,
-                    Settings.Default.ServerPort,
+                    serverAddress,
+                    serverPort,
                     string.Empty,
                     Settings.Default.UserAndPassword_User,
                     Settings.Default.UserAndPassword_Pass,
-                    Common.EncryptionTypes.SimpleXor);
+                    Common.EncryptionTypes.SimpleXor) { ForgerCompatibility = compatibility};
 
                 ser.NoDataTimeout = Settings.Default.Connection_NoDataTimeout;
                 this.listener.ActiveServer = ser;
@@ -443,15 +453,22 @@ namespace ZARA
                                 }
                                 catch (Exception ex)
                                 {
+                                    if (this.listener != null)
+                                    {
+                                        this.listener.Stop();
+                                    }
+
+                                    if (this.listener != null && this.listener.ActiveServer is PeaRoxy && !compatibility)
+                                    {
+                                        this.StartServer(true);
+                                        return;
+                                    }
+
                                     this.ShowDialog(
                                         "Error: " + ex.Message + ex.StackTrace,
                                         "Start Error",
                                         MessageBoxButtons.OK,
                                         MessageBoxIcon.Error);
-                                    if (this.listener != null)
-                                    {
-                                        this.listener.Stop();
-                                    }
 
                                     this.RefreshStatus();
                                     if (!this.updaterWorker.IsBusy)
@@ -1088,7 +1105,7 @@ namespace ZARA
                 }
 
                 Uri uri = new Uri(this.txt_server.Text);
-                this.txt_server.Text = uri.Host;
+                this.txt_server.Text = uri.IsDefaultPort ? uri.Host : uri.Host + ":" + uri.Port;
             }
             catch (Exception ex)
             {
