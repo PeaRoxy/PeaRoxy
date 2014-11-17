@@ -45,20 +45,23 @@ SetCompress off
 
 Section "Main Application" SecMain
   ${nsProcess::FindProcess} "ZARA.exe" $R0
-  StrCmp $R0 0 0 +2
+  StrCmp $R0 0 0 noprocess
      ${nsProcess::KillProcess} "ZARA.exe" $R0
-     
+  noprocess:
   ${nsProcess::Unload}
 
   SectionIn RO
   SetOutPath "$INSTDIR"
-  File  /r /x "*.pdb" /x "ZipExcludeList.txt" /x "*.crt" /x "PeaRoxy.Windows.*.dll" /x "PeaRoxy.ClientLibrary.dll" /x "CircularProgressBar.dll" /x "PeaRoxy.CommonLibrary.dll" /x "PeaRoxy.CoreProtocol.dll" /x "VDialog.dll" /x "WinFormAnimation.dll" /x "*.xml" /x "*.vshost.exe" "..\bin\ZARA\*"
+  File  /r /x "*.pdb" /x "ZipExcludeList.txt" /x "*.crt" /x "*.xml" /x "*.vshost.exe" "..\bin\ZARA\*"
 
   ExecShell open "$INSTDIR\ZARA.exe"
   Quit
 SectionEnd
 
 Function .onInit
+        Banner::show /set 76 "Initializing ZARA ..." "Please wait"
+        Banner::getWindow
+        Pop $1
         SetSilent silent
 	UserInfo::GetAccountType
 	pop $0
