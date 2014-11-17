@@ -89,8 +89,8 @@ namespace PeaRoxy.CoreProtocol
             this.SendPacketSize = 8192;
             this.PocketSent = 0;
             this.PocketReceived = 0;
-            this.ClientSupportedEncryptionType = Common.EncryptionTypes.AllDefaults;
-            this.ClientSupportedCompressionType = Common.CompressionTypes.AllDefaults;
+            this.ClientSupportedEncryptionType = Common.EncryptionTypes.None | Common.EncryptionTypes.SimpleXor | Common.EncryptionTypes.TripleDes;
+            this.ClientSupportedCompressionType = Common.CompressionTypes.None | Common.CompressionTypes.GZip | Common.CompressionTypes.Deflate;
             this.UnderlyingSocket = client;
             this.UnderlyingSocket.Blocking = false;
         }
@@ -606,7 +606,7 @@ namespace PeaRoxy.CoreProtocol
             }
             catch (Exception e)
             {
-                this.Close("Protocol 4. " + e.Message);
+                this.Close("Protocol 4. " + e);
             }
 
             return false;

@@ -11,3 +11,4 @@ Binaries/*/*
 packages
 packages/*
 *.exe
+*.puo

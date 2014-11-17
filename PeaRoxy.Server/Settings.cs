@@ -22,6 +22,10 @@ namespace PeaRoxy.Server
     {
         private static Settings defaultObject;
 
+        private readonly Collection<ConfigUser> athorizedUsers = new Collection<ConfigUser>();
+
+        private readonly Collection<string> blackListedAddresses = new Collection<string>();
+
         private int authMethod = -1;
 
         private byte compressionType;
@@ -58,17 +62,13 @@ namespace PeaRoxy.Server
 
         private int supportedEncryptionTypes;
 
-        private Settings()
-        {
-        }
-
-        public IEnumerable<ConfigUser> AthorizedUsers
+        public Collection<ConfigUser> AthorizedUsers
         {
             get
             {
                 return !string.IsNullOrWhiteSpace(this.UsersFileAddress)
                            ? ConfigReader.GetUsers(this.UsersFileAddress)
-                           : new Collection<ConfigUser>();
+                           : this.athorizedUsers;
             }
         }
 
@@ -78,7 +78,7 @@ namespace PeaRoxy.Server
             {
                 return !string.IsNullOrWhiteSpace(this.BlackListFileAddress)
                            ? ConfigReader.GetBlackList(this.BlackListFileAddress)
-                           : new Collection<string>();
+                           : this.blackListedAddresses;
             }
         }
 
@@ -275,7 +275,7 @@ namespace PeaRoxy.Server
                         return (Common.EncryptionTypes)i;
                     }
                 }
-                return Common.EncryptionTypes.AllDefaults;
+                return Common.EncryptionTypes.None | Common.EncryptionTypes.SimpleXor | Common.EncryptionTypes.TripleDes;
             }
             set
             {
@@ -301,7 +301,8 @@ namespace PeaRoxy.Server
                     int i;
                     if (int.TryParse(this.Config["SupportedCompressionTypes"], out i))
                     {
-                        return Common.CompressionTypes.AllDefaults;
+                        return Common.CompressionTypes.None | Common.CompressionTypes.GZip
+                               | Common.CompressionTypes.Deflate;
                     }
                 }
                 return (Common.CompressionTypes)7;

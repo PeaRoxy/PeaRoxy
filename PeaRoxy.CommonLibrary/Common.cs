@@ -44,8 +44,6 @@ namespace PeaRoxy.CommonLibrary
             GZip = 2,
 
             Deflate = 4,
-
-            AllDefaults = None | GZip | Deflate,
         }
 
         /// <summary>
@@ -59,8 +57,6 @@ namespace PeaRoxy.CommonLibrary
             TripleDes = 2,
 
             SimpleXor = 4,
-
-            AllDefaults = None | TripleDes | SimpleXor,
         }
 
         /// <summary>

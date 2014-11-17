@@ -99,13 +99,13 @@ namespace PeaRoxy.Server
                                                 const string Rn = "\r\n";
                                                 string pingRequest =
                                                     string.Format(
-                                                        "GET /ping.php?do=register&address={0}&port={1}&authmode={2} HTTP/1.1",
+                                                        "GET /ping?do=register&address={0}&port={1}&authmode={2} HTTP/1.1",
                                                         this.Ip,
                                                         this.Port,
-                                                        this.Settings.AuthMethod) + Rn + "Host: reporting.pearoxy.com"
+                                                        this.Settings.AuthMethod) + Rn + "Host: cloud.pearoxy.com"
                                                     + Rn + Rn;
                                                 byte[] pingRequestBytes = Encoding.ASCII.GetBytes(pingRequest);
-                                                pingStream.BeginWrite(
+                                                pingStream.BeginWrite (
                                                     pingRequestBytes,
                                                     0,
                                                     pingRequestBytes.Length,

@@ -37,6 +37,11 @@ namespace PeaRoxy.ClientLibrary
             C200Ok,
 
             /// <summary>
+            ///     404 Not Found.
+            /// </summary>
+            C404NotFound,
+
+            /// <summary>
             ///     500 Server Error.
             /// </summary>
             C500ServerError,
@@ -233,6 +238,9 @@ namespace PeaRoxy.ClientLibrary
                         break;
                     case HttpHeaderCode.C417ExpectationFailed:
                         statusCode = "417 Expectation Failed";
+                        break;
+                    case HttpHeaderCode.C404NotFound:
+                        statusCode = "404 Not Found";
                         break;
                     default:
                         statusCode = "500 Internal Server Error";

@@ -259,7 +259,7 @@ namespace PeaRoxy.ClientLibrary.ProxyModules
                 client.Close(
                     "Currently we only serve AutoConfig files. Try restarting your browser.",
                     null,
-                    ErrorRenderer.HttpHeaderCode.C417ExpectationFailed);
+                    ErrorRenderer.HttpHeaderCode.C404NotFound);
             }
         }
 

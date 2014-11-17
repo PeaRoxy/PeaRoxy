@@ -110,6 +110,7 @@ namespace PeaRoxy.ClientLibrary
             if (this.UnderlyingSocket != null)
             {
                 this.UnderlyingSocket.Blocking = false;
+                this.UnderlyingSocket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.DontFragment, true);
             }
         }
 
@@ -875,6 +876,10 @@ namespace PeaRoxy.ClientLibrary
                                         ((IPEndPoint)this.UnderlyingSocket.RemoteEndPoint).Address,
                                         (ushort)((IPEndPoint)this.UnderlyingSocket.RemoteEndPoint).Port);
                         }
+                        if (this.extendedInfo != null)
+                        {
+                            return this.extendedInfo;
+                        }
                     }
                 }
             }
@@ -969,7 +974,14 @@ namespace PeaRoxy.ClientLibrary
             }
             catch (Exception e)
             {
-                this.Close(e.Message, e.StackTrace);
+                if (e is ObjectDisposedException)
+                {
+                    this.Close();
+                }
+                else
+                {
+                    this.Close(e.Message, e.StackTrace);
+                }
             }
         }
 
