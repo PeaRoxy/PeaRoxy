@@ -591,15 +591,15 @@ namespace PeaRoxy.ClientLibrary
                         smartResponseBuffer.Length - binary.Length,
                         binary.Length);
                     Array.Resize(ref binary, 0);
-                    if (smart.DetectorHttpRegEx.IsMatch(Encoding.ASCII.GetString(smartResponseBuffer)))
+                    // If Response is blocked
+                    blocked = smart.DetectorHttpRegEx.IsMatch(Encoding.ASCII.GetString(smartResponseBuffer));
+                    if (blocked && this.IsSmartForwarderEnable && currentActiveServer is NoServer)
                     {
-                        // If Response is blocked
-                        blocked = true;
+                        blocked = false;
+                        this.IsSmartForwarderEnable = false;
                     }
-
                     this.SmartResponseBuffer = smartResponseBuffer;
                 }
-
                 if (blocked)
                 {
                     currentActiveServer.ReceiveDataDelegate = null;
@@ -618,7 +618,7 @@ namespace PeaRoxy.ClientLibrary
                         return false;
                     }
                 }
-                else
+                if (!blocked)
                 {
                     // Response is OK
                     if (!this.IsSmartForwarderEnable
@@ -641,7 +641,7 @@ namespace PeaRoxy.ClientLibrary
                     && (!this.IsSmartForwarderEnable
                         || this.SmartResponseBuffer.Length >= smart.DetectorHttpMaxBuffering))
                 {
-                    // If we have any thing in Response and (Client use Proxy or Client use NoServer but Response buffer is bigger than buffer)
+                    // If we have any thing in Response and (Client use Proxy or NoServer but Response buffer is bigger than buffer)
                     this.SmartFlushTheForwarder(smart.ForwarderHttpEnable);
                     currentActiveServer.ReceiveDataDelegate = null;
                 }

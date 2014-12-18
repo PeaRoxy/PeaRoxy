@@ -22,7 +22,9 @@ namespace PeaRoxy.Tests
             client.SmartPear.DetectorHttpMaxBuffering = 100;
             client.SmartPear.DetectorHttpPattern = "^HTTP/1.1 403 FORBIDDEN*";
             client.SmartPear.ForwarderListUpdated += delegate(string rule, bool direct, EventArgs args)
-                { success = rule == ""; };
+                {
+                    success = rule == "*httpbin.org*";
+                };
             using (WebClient webclient = new WebClient { Proxy = proxy })
             {
                 try
@@ -37,13 +39,15 @@ namespace PeaRoxy.Tests
                     }
                 }
             }
-
-            // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
-            while (success == null)
-            {
-                System.Threading.Thread.Sleep(100);
-            }
             client.Stop();
+            if (success == null)
+            {
+                throw new Exception("Failed to detect the HTTP Pattern");
+            }
+            if (!success.Value)
+            {
+                throw new Exception("Invalid Rule detected");
+            }
         }
         public ProxyController InitClient()
         {
